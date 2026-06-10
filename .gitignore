@@ -1,0 +1,64 @@
+# ── .NET ─────────────────────────────────────────────────────────────────────
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.vs/
+*.ncrunch*
+*.DotSettings.user
+
+# Pacotes restaurados (não commitar)
+packages/
+*.nupkg
+
+# Arquivos de publish
+publish/
+out/
+
+# Cobertura de testes
+TestResults/
+coverage/
+*.coverage
+*.coveragexml
+
+# ── Secrets / Configurações sensíveis ────────────────────────────────────────
+# NUNCA commitar estes arquivos — use dotnet user-secrets ou variáveis de ambiente
+appsettings.Development.json
+appsettings.Local.json
+appsettings.*.Local.json
+**/secrets.json
+
+# user-secrets ficam em %APPDATA%\Microsoft\UserSecrets\ — fora do repo por padrão
+# Mas se alguém criar um secrets.json local, garantimos que não sobe
+secrets.json
+
+# ── Entity Framework ─────────────────────────────────────────────────────────
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+
+# ── Node / Angular ────────────────────────────────────────────────────────────
+node_modules/
+dist/
+.angular/
+npm-debug.log*
+yarn-error.log
+
+# ── Copilot Skills & Agents ───────────────────────────────────────────────────
+skills/
+.agents/
+agents/
+
+# ── IDEs ──────────────────────────────────────────────────────────────────────
+.idea/
+.vscode/settings.json
+.vscode/launch.json
+
+# ── OS ────────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
