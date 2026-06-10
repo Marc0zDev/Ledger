@@ -1,0 +1,287 @@
+.cofres-page {
+  padding: 2.5rem 2.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+// ── Header ──────────────────────────────────────────────────────────────────
+
+.page-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.page-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(1.75rem, 3vw, 2.25rem);
+  font-weight: 400;
+  color: #1A1714;
+  color: var(--ink);
+  line-height: 1.1;
+  margin: 0 0 0.25rem;
+}
+
+.page-subtitle {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.875rem;
+  color: #6B6460;
+  color: var(--muted);
+  margin: 0;
+}
+
+.btn-novo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #1A1714;
+  background: var(--ink);
+  color: #fff;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  padding: 0.55rem 1.25rem;
+  border-radius: 8px;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: opacity 0.15s;
+  flex-shrink: 0;
+
+  &:hover { opacity: 0.8; }
+  i { font-size: 0.8rem; }
+}
+
+// ── States (loading / vazio / erro) ──────────────────────────────────────────
+
+.state-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 5rem 2rem;
+  text-align: center;
+  flex: 1;
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 2px solid #E0DDD8;
+  border: 2px solid var(--border);
+  border-top-color: #A8742A;
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.state-icon {
+  font-size: 2rem;
+  color: #A09B95;
+  color: var(--faint);
+
+  &.error { color: #C0392B; color: var(--error); }
+}
+
+.state-label {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.9rem;
+  color: #6B6460;
+  color: var(--muted);
+}
+
+.state-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.5rem;
+  font-weight: 400;
+  color: #1A1714;
+  color: var(--ink);
+  margin: 0;
+}
+
+.state-desc {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.9rem;
+  color: #6B6460;
+  color: var(--muted);
+  max-width: 320px;
+  margin: 0 0 0.5rem;
+  line-height: 1.6;
+}
+
+// ── Grid ───────────────────────────────────────────────────────────────────
+
+.cofres-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.25rem;
+}
+
+// ── Card ───────────────────────────────────────────────────────────────────
+
+.cofre-card {
+  background: #FFFFFF;
+  background: var(--surface);
+  border: 1px solid #E0DDD8;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 2rem;
+  cursor: pointer;
+  user-select: none;
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  transition: box-shadow 0.15s, transform 0.15s;
+
+  &:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
+  }
+}
+
+.card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.card-status {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.25rem 0.7rem;
+  border-radius: 20px;
+  background: rgba(168, 116, 42, 0.10);
+  background: var(--gold-subtle);
+  color: #A8742A;
+  color: var(--gold);
+
+  &.status-concluido {
+    background: rgba(39, 174, 96, 0.10);
+    color: #27AE60;
+  }
+
+  &.status-cancelado {
+    background: rgba(192, 57, 43, 0.10);
+    color: #C0392B;
+    color: var(--error);
+  }
+}
+
+.card-participantes {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.875rem;
+  color: #A09B95;
+  color: var(--faint);
+
+  i { font-size: 0.8rem; }
+}
+
+.card-nome {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.75rem;
+  font-weight: 400;
+  color: #1A1714;
+  color: var(--ink);
+  line-height: 1.2;
+  margin: 0;
+}
+
+.card-desc {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 1rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+// ── Progress bar ───────────────────────────────────────────────────────────
+
+.card-progress {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.progress-track {
+  flex: 1;
+  height: 4px;
+  background: #E0DDD8;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: #A8742A;
+  background: var(--gold);
+  border-radius: 2px;
+  transition: width 0.4s ease;
+}
+
+.progress-pct {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #A8742A;
+  color: var(--gold);
+  min-width: 32px;
+  text-align: right;
+}
+
+// ── Valores ────────────────────────────────────────────────────────────────
+
+.card-valores {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid #E0DDD8;
+  border-top: 1px solid var(--border);
+}
+
+.valor-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.valor-label {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #A09B95;
+  color: var(--faint);
+}
+
+.valor-num {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.4rem;
+  font-weight: 400;
+  color: #1A1714;
+  color: var(--ink);
+  line-height: 1;
+
+  &.meta { color: #A8742A; color: var(--gold); }
+}
+
+.valor-divider {
+  width: 1px;
+  height: 28px;
+  background: #E0DDD8;
+  background: var(--border);
+}

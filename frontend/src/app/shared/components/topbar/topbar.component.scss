@@ -1,0 +1,122 @@
+﻿.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  background: #D5CFC8;
+  background: var(--surface-alt);
+  border-radius: 18px;
+  box-shadow:
+    0 2px 12px rgba(0, 0, 0, 0.09),
+    0 1px 3px  rgba(0, 0, 0, 0.05);
+  flex-shrink: 0;
+}
+
+// ── Sides ──────────────────────────────────────────────────────────────────
+
+.topbar-left {
+  flex: 1;
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+// ── Icon buttons ───────────────────────────────────────────────────────────
+
+.topbar-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  cursor: pointer;
+  color: #6B6460;
+  color: var(--muted);
+  font-size: 1rem;
+  transition: background 0.15s, color 0.15s;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.06);
+    color: #1A1714;
+    color: var(--ink);
+  }
+}
+
+.notif-dot {
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  width: 7px;
+  height: 7px;
+  background: #A8742A;
+  background: var(--gold);
+  border-radius: 50%;
+  border: 1.5px solid #D5CFC8;
+  border-color: var(--surface-alt);
+}
+
+.logout-btn {
+  color: #A09B95;
+  color: var(--faint);
+
+  &:hover {
+    background: rgba(192, 57, 43, 0.08);
+    color: #C0392B;
+    color: var(--error);
+  }
+}
+
+// ── Divider ────────────────────────────────────────────────────────────────
+
+.topbar-divider {
+  width: 1px;
+  height: 20px;
+  background: rgba(0, 0, 0, 0.10);
+  margin: 0 0.5rem;
+}
+
+// ── User ───────────────────────────────────────────────────────────────────
+
+.user-area {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 10px;
+  cursor: default;
+  transition: background 0.15s;
+
+  &:hover { background: rgba(0, 0, 0, 0.05); }
+}
+
+.user-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #A8742A;
+  background: var(--gold);
+  color: #fff;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding-top: 1px;
+}
+
+.user-name {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #1A1714;
+  color: var(--ink);
+}

@@ -1,0 +1,27 @@
+<header class="topbar">
+
+  <div class="topbar-left">
+    <!-- espaço para breadcrumb futuro -->
+  </div>
+
+  <div class="topbar-right">
+
+    <button class="topbar-btn" aria-label="Notificações">
+      <i class="pi pi-bell"></i>
+      <span class="notif-dot"></span>
+    </button>
+
+    <div class="topbar-divider"></div>
+
+    <div class="user-area">
+      <span class="user-avatar">{{ userInitial() }}</span>
+      <span class="user-name">{{ userName() }}</span>
+    </div>
+
+    <button class="topbar-btn logout-btn" aria-label="Sair" (click)="logout()">
+      <i class="pi pi-sign-out"></i>
+    </button>
+
+  </div>
+
+</header>

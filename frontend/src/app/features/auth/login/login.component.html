@@ -1,0 +1,47 @@
+<div class="auth-page">
+  <div class="auth-card">
+
+    <div class="auth-brand">
+      <span class="brand-letter">L</span>
+      <span class="brand-name">Ledger</span>
+    </div>
+
+    <h1 class="auth-title">Bem-vindo de volta</h1>
+    <p class="auth-sub">Entre na sua conta para continuar.</p>
+
+    @if (emailConfirmado()) {
+      <div class="alert-success">
+        <span class="alert-icon">✓</span>
+        E-mail confirmado! Sua conta está ativa. Faça login para continuar.
+      </div>
+    }
+
+    <form [formGroup]="form" (ngSubmit)="entrar()" class="auth-form">
+
+      <div class="field">
+        <label>E-mail</label>
+        <input formControlName="email" type="email" placeholder="seu@email.com" class="input" autocomplete="email" />
+      </div>
+
+      <div class="field">
+        <label>Senha</label>
+        <input formControlName="senha" type="password" placeholder="••••••••" class="input" autocomplete="current-password" />
+      </div>
+
+      @if (erros().length > 0) {
+        <p class="form-erro">{{ erros()[0] }}</p>
+      }
+
+      <button type="submit" class="btn-primary" [disabled]="form.invalid || loading()">
+        {{ loading() ? 'Entrando...' : 'Entrar' }}
+      </button>
+
+    </form>
+
+    <p class="auth-link">
+      Não tem conta?
+      <a routerLink="/cadastro">Criar conta</a>
+    </p>
+
+  </div>
+</div>

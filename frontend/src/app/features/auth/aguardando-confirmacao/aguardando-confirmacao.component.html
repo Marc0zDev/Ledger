@@ -1,0 +1,41 @@
+<div class="wait-page">
+  <div class="wait-card">
+
+    <div class="auth-brand">
+      <span class="brand-letter">L</span>
+      <span class="brand-name">Ledger</span>
+    </div>
+
+    <div class="envelope">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <rect x="2" y="4" width="20" height="16" rx="2"/>
+        <path d="m2 7 10 6 10-6"/>
+      </svg>
+      <span class="pulse-ring"></span>
+    </div>
+
+    <h1>Verifique seu e-mail</h1>
+
+    @if (email()) {
+      <p class="sub">
+        Enviamos um link de confirmação para<br>
+        <strong>{{ email() }}</strong>
+      </p>
+    } @else {
+      <p class="sub">Enviamos um link de confirmação para o seu e-mail.</p>
+    }
+
+    <p class="info">
+      Clique no botão do e-mail para ativar sua conta. Esta página vai avançar automaticamente assim que você confirmar.
+    </p>
+
+    <div class="dots">
+      <span></span><span></span><span></span>
+    </div>
+
+    <p class="footer-link">
+      E-mail errado? <a routerLink="/cadastro">Criar nova conta</a>
+    </p>
+
+  </div>
+</div>

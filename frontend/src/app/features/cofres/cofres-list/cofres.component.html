@@ -1,0 +1,90 @@
+<div class="cofres-page">
+
+  <!-- Header -->
+  <div class="page-header">
+    <div class="page-header-text">
+      <h1 class="page-title">Cofres</h1>
+      <p class="page-subtitle">Suas metas financeiras compartilhadas</p>
+    </div>
+    <a routerLink="/cofres/novo" class="btn-novo">
+      <i class="pi pi-plus"></i>
+      Novo cofre
+    </a>
+  </div>
+
+  <!-- Loading -->
+  @if (loading()) {
+    <div class="state-center">
+      <div class="spinner"></div>
+      <span class="state-label">Carregando...</span>
+    </div>
+  }
+
+  <!-- Erro -->
+  @if (!loading() && erro()) {
+    <div class="state-center">
+      <i class="pi pi-exclamation-circle state-icon error"></i>
+      <span class="state-label">{{ erro() }}</span>
+    </div>
+  }
+
+  <!-- Vazio -->
+  @if (!loading() && !erro() && cofres().length === 0) {
+    <div class="state-center">
+      <i class="pi pi-lock state-icon"></i>
+      <p class="state-title">Nenhum cofre ainda</p>
+      <p class="state-desc">Crie seu primeiro cofre para começar a organizar suas metas.</p>
+      <a routerLink="/cofres/novo" class="btn-novo">
+        <i class="pi pi-plus"></i>
+        Criar cofre
+      </a>
+    </div>
+  }
+
+  <!-- Lista -->
+  @if (!loading() && !erro() && cofres().length > 0) {
+    <div class="cofres-grid">
+      @for (cofre of cofres(); track cofre.id) {
+        <div class="cofre-card" (dblclick)="abrirCofre(cofre.id)" title="Duplo clique para abrir">
+
+          <div class="card-top">
+            <span class="card-status" [class]="'status-' + cofre.status.toLowerCase()">
+              {{ cofre.status }}
+            </span>
+            <span class="card-participantes">
+              <i class="pi pi-users"></i>
+              {{ cofre.participantes.length }}
+            </span>
+          </div>
+
+          <h2 class="card-nome">{{ cofre.nome }}</h2>
+
+          @if (cofre.descricao) {
+            <p class="card-desc">{{ cofre.descricao }}</p>
+          }
+
+          <div class="card-progress">
+            <div class="progress-track">
+              <div class="progress-fill" [style.width.%]="progresso(cofre)"></div>
+            </div>
+            <span class="progress-pct">{{ progresso(cofre) }}%</span>
+          </div>
+
+          <div class="card-valores">
+            <div class="valor-item">
+              <span class="valor-label">Movimentado</span>
+              <span class="valor-num">{{ formatarMoeda(cofre.totalMovimentado) }}</span>
+            </div>
+            <div class="valor-divider"></div>
+            <div class="valor-item">
+              <span class="valor-label">Meta</span>
+              <span class="valor-num meta">{{ formatarMoeda(cofre.meta) }}</span>
+            </div>
+          </div>
+
+        </div>
+      }
+    </div>
+  }
+
+</div>

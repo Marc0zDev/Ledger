@@ -1,0 +1,90 @@
+<div class="criar-page">
+  <div class="criar-header">
+    <span class="criar-eyebrow">Novo cofre</span>
+    <h1 class="criar-title">Criar cofre</h1>
+    <p class="criar-subtitle">Defina uma meta e comece a acompanhar seu progresso.</p>
+  </div>
+
+  @if (success()) {
+    <div class="success-state">
+      <i class="pi pi-check-circle success-icon"></i>
+      <p>Cofre criado com sucesso!</p>
+    </div>
+  } @else {
+    <p-card styleClass="criar-card">
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+
+        <div class="field">
+          <label for="nome">Nome do cofre</label>
+          <input
+            pInputText
+            id="nome"
+            formControlName="nome"
+            placeholder="Ex: Viagem para Europa"
+            [class.ng-invalid]="nome.invalid && nome.touched"
+            [class.ng-dirty]="nome.touched"
+          />
+          @if (nome.invalid && nome.touched) {
+            @if (nome.errors?.["required"]) {
+              <small class="field-error">Nome é obrigatório.</small>
+            } @else if (nome.errors?.["maxlength"]) {
+              <small class="field-error">Máximo de 150 caracteres.</small>
+            }
+          }
+        </div>
+
+        <div class="field">
+          <label for="meta">Meta (R$)</label>
+          <p-inputnumber
+            inputId="meta"
+            formControlName="meta"
+            mode="currency"
+            currency="BRL"
+            locale="pt-BR"
+            placeholder="0,00"
+            [class.ng-invalid]="meta.invalid && meta.touched"
+            [class.ng-dirty]="meta.touched"
+          />
+          @if (meta.invalid && meta.touched) {
+            @if (meta.errors?.["required"]) {
+              <small class="field-error">Meta é obrigatória.</small>
+            } @else if (meta.errors?.["min"]) {
+              <small class="field-error">O valor deve ser maior que zero.</small>
+            }
+          }
+        </div>
+
+        <div class="field">
+          <label for="descricao">Descrição <span class="optional">(opcional)</span></label>
+          <textarea
+            pTextarea
+            id="descricao"
+            formControlName="descricao"
+            rows="3"
+            placeholder="Descreva o objetivo deste cofre..."
+            autoResize="true"
+          ></textarea>
+        </div>
+
+        @if (serverErrors().length > 0) {
+          <div class="server-errors">
+            @for (err of serverErrors(); track err) {
+              <p-message severity="error" [text]="err" styleClass="w-full" />
+            }
+          </div>
+        }
+
+        <div class="form-actions">
+          <p-button
+            type="submit"
+            label="Criar cofre"
+            [loading]="loading()"
+            [disabled]="form.invalid || loading()"
+            styleClass="submit-btn"
+          />
+        </div>
+
+      </form>
+    </p-card>
+  }
+</div>

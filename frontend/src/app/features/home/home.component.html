@@ -1,0 +1,64 @@
+<div class="home-page">
+  <div class="home-hero">
+    <span class="home-eyebrow">Bem-vindo ao Ledger</span>
+    <h1 class="home-title">Seus cofres,<br>sob controle.</h1>
+    <p class="home-subtitle">
+      Crie metas financeiras compartilhadas, adicione participantes
+      e acompanhe cada despesa em tempo real.
+    </p>
+    <a routerLink="/cofres/novo" class="home-cta">
+      <i class="pi pi-plus"></i>
+      Criar novo cofre
+    </a>
+  </div>
+
+  @if (convitesPendentes().length > 0) {
+    <div class="convites-section">
+      <h2 class="convites-title">
+        <i class="pi pi-envelope"></i>
+        Convites pendentes
+        <span class="badge">{{ convitesPendentes().length }}</span>
+      </h2>
+      @for (c of convitesPendentes(); track c.id) {
+        <div class="convite-card">
+          <div class="convite-info">
+            <span class="convite-cofre">{{ c.cofreNome }}</span>
+            <span class="convite-exp">Expira em {{ c.expiresAt | date:'dd/MM/yyyy' }}</span>
+          </div>
+          <div class="convite-actions">
+            <button class="btn-aceitar" (click)="aceitar(c.token)" [disabled]="aceitando() === c.token">
+              {{ aceitando() === c.token ? '...' : 'Aceitar' }}
+            </button>
+            <button class="btn-recusar" (click)="recusar(c.token)" [disabled]="recusando() === c.token">
+              {{ recusando() === c.token ? '...' : 'Recusar' }}
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  <div class="home-cards">
+    <div class="stat-card">
+      <i class="pi pi-lock stat-icon"></i>
+      <div class="stat-info">
+        <span class="stat-label">Cofres ativos</span>
+        <span class="stat-value">{{ loading() ? '—' : cofresAtivos() }}</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <i class="pi pi-users stat-icon"></i>
+      <div class="stat-info">
+        <span class="stat-label">Pessoas convidadas</span>
+        <span class="stat-value">{{ loading() ? '—' : totalParticipantes() }}</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <i class="pi pi-chart-bar stat-icon"></i>
+      <div class="stat-info">
+        <span class="stat-label">Total investido</span>
+        <span class="stat-value">{{ loading() ? '—' : formatarMoeda(totalInvestido()) }}</span>
+      </div>
+    </div>
+  </div>
+</div>

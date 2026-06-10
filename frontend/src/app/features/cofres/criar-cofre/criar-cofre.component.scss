@@ -1,0 +1,255 @@
+﻿.criar-page {
+  padding: 3rem 2.5rem;
+  max-width: 600px;
+}
+
+.criar-header {
+  margin-bottom: 2rem;
+  max-width: 480px;
+}
+
+.criar-eyebrow {
+  display: block;
+  font-family: "DM Sans", sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 0.5rem;
+}
+
+.criar-title {
+  font-family: "Cormorant Garamond", serif;
+  font-size: clamp(2rem, 4vw, 2.75rem);
+  font-weight: 400;
+  color: var(--ink);
+  margin: 0 0 0.75rem;
+  line-height: 1.1;
+}
+
+.criar-subtitle {
+  font-family: "DM Sans", sans-serif;
+  font-size: 0.9rem;
+  color: var(--muted);
+  margin: 0;
+  line-height: 1.6;
+}
+
+:host ::ng-deep .criar-card {
+  width: 100%;
+  max-width: 480px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 1px 3px oklch(0.155 0.012 55 / 0.06);
+
+  .p-card-body {
+    padding: 2rem;
+  }
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 1.5rem;
+
+  label {
+    font-family: "DM Sans", sans-serif;
+    font-size: 0.8rem;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+
+  .optional {
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: 0;
+    color: var(--faint);
+    font-size: 0.75rem;
+  }
+}
+
+.field-error {
+  font-family: "DM Sans", sans-serif;
+  font-size: 0.75rem;
+  color: var(--error);
+}
+
+.server-errors {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+:host ::ng-deep .submit-btn {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: #fff;
+  font-family: "DM Sans", sans-serif;
+  font-weight: 600;
+  padding: 0.6rem 1.75rem;
+  border-radius: 6px;
+  transition: opacity 0.15s;
+
+  &:not(:disabled):hover {
+    opacity: 0.8;
+  }
+
+  &:disabled {
+    opacity: 0.4;
+  }
+}
+
+.success-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  color: var(--gold);
+
+  .success-icon {
+    font-size: 3rem;
+  }
+
+  p {
+    font-family: "DM Sans", sans-serif;
+    font-size: 1rem;
+    color: var(--ink);
+  }
+}
+
+
+.criar-header {
+  margin-bottom: 2rem;
+  max-width: 480px;
+}
+
+.criar-eyebrow {
+  display: block;
+  font-family: "DM Sans", sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #B8923A;
+  margin-bottom: 0.5rem;
+}
+
+.criar-title {
+  font-family: "Cormorant Garamond", serif;
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 400;
+  color: #111111;
+  margin: 0 0 0.75rem;
+  line-height: 1.1;
+}
+
+.criar-subtitle {
+  font-family: "DM Sans", sans-serif;
+  font-size: 0.9rem;
+  color: #6B6B6B;
+  margin: 0;
+  line-height: 1.6;
+}
+
+:host ::ng-deep .criar-card {
+  width: 100%;
+  max-width: 480px;
+  background: #FFFFFF;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+
+  .p-card-body {
+    padding: 2rem;
+  }
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 1.5rem;
+
+  label {
+    font-family: "DM Sans", sans-serif;
+    font-size: 0.8rem;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    color: #6B6B6B;
+    text-transform: uppercase;
+  }
+
+  .optional {
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: 0;
+    color: #BABABA;
+    font-size: 0.75rem;
+  }
+}
+
+.field-error {
+  font-family: "DM Sans", sans-serif;
+  font-size: 0.75rem;
+  color: #e87070;
+}
+
+.server-errors {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+:host ::ng-deep .submit-btn {
+  background: #111111;
+  border-color: #111111;
+  color: #FFFFFF;
+  font-family: "DM Sans", sans-serif;
+  font-weight: 600;
+  padding: 0.6rem 1.75rem;
+  border-radius: 6px;
+
+  &:not(:disabled):hover {
+    background: #333333;
+    border-color: #333333;
+  }
+
+  &:disabled {
+    opacity: 0.4;
+  }
+}
+
+.success-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  color: #B8923A;
+
+  .success-icon {
+    font-size: 3rem;
+  }
+
+  p {
+    font-family: "DM Sans", sans-serif;
+    font-size: 1rem;
+    color: #111111;
+  }
+}

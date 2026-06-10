@@ -1,0 +1,173 @@
+<div class="detalhe-page">
+
+  <!-- Loading -->
+  @if (loading()) {
+    <div class="state-center">
+      <div class="spinner"></div>
+    </div>
+  }
+
+  <!-- Erro -->
+  @if (!loading() && erro()) {
+    <div class="state-center">
+      <i class="pi pi-exclamation-circle state-icon"></i>
+      <p class="state-msg">{{ erro() }}</p>
+      <a routerLink="/cofres" class="btn-voltar">← Voltar</a>
+    </div>
+  }
+
+  @if (!loading() && !erro() && cofre(); as c) {
+
+    <!-- Header -->
+    <div class="page-header">
+      <a routerLink="/cofres" class="btn-voltar">
+        <i class="pi pi-arrow-left"></i>
+        Cofres
+      </a>
+      <div class="header-main">
+        <div class="cofre-title-row">
+          <h1 class="cofre-nome">{{ c.nome }}</h1>
+          <span class="cofre-status" [class]="'status-' + c.status.toLowerCase()">{{ c.status }}</span>
+        </div>
+        @if (c.descricao) {
+          <p class="cofre-desc">{{ c.descricao }}</p>
+        }
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <span class="stat-label">Meta</span>
+        <span class="stat-value">{{ formatarMoeda(c.meta) }}</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Movimentado</span>
+        <span class="stat-value">{{ formatarMoeda(c.totalMovimentado) }}</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Saldo</span>
+        <span class="stat-value">{{ formatarMoeda(c.meta - c.totalMovimentado) }}</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Progresso</span>
+        <span class="stat-value accent">{{ progresso(c) }}%</span>
+      </div>
+    </div>
+
+    <!-- Barra de progresso -->
+    <div class="progress-bar">
+      <div class="progress-fill" [style.width.%]="progresso(c)"></div>
+    </div>
+
+      <!-- Grid: participantes + despesas -->
+      <div class="content-grid">
+
+        <!-- Participantes -->
+        <section class="section-card">
+          <div class="section-header">
+            <h2 class="section-title">
+              <i class="pi pi-users"></i>
+              Participantes
+            </h2>
+            <div class="section-actions">
+              <span class="section-count">{{ participantes().length }}</span>
+              <button class="btn-add" (click)="showFormParticipante.set(!showFormParticipante())" [class.active]="showFormParticipante()">
+                <i class="pi" [class.pi-plus]="!showFormParticipante()" [class.pi-times]="showFormParticipante()"></i>
+              </button>
+            </div>
+          </div>
+
+          @if (showFormParticipante()) {
+            <form [formGroup]="formParticipante" class="inline-form">
+              <div class="lookup-row">
+                <input formControlName="email" type="email" placeholder="E-mail do usuário" class="form-input" />
+                <button type="button" class="btn-lookup" (click)="buscarUsuario()" [disabled]="formParticipante.invalid || buscandoUsuario()">
+                  {{ buscandoUsuario() ? '...' : 'Buscar' }}
+                </button>
+              </div>
+              @if (usuarioEncontrado(); as u) {
+                <div class="usuario-preview">
+                  <span class="u-avatar">{{ u.nome.charAt(0).toUpperCase() }}</span>
+                  <div class="u-info">
+                    <span class="u-nome">{{ u.nome }}</span>
+                    <span class="u-email">{{ u.email }}</span>
+                  </div>
+                </div>
+              }
+              @if (errosParticipante().length > 0) {
+                <p class="form-erro">{{ errosParticipante()[0] }}</p>
+              }
+              <div class="form-actions">
+                <button type="button" class="btn-cancel" (click)="showFormParticipante.set(false); usuarioEncontrado.set(null)">Cancelar</button>
+                <button type="button" class="btn-save" (click)="adicionarParticipante()" [disabled]="!usuarioEncontrado() || savingParticipante()">
+                  {{ savingParticipante() ? 'Adicionando...' : 'Adicionar' }}
+                </button>
+              </div>
+            </form>
+          }
+
+          @if (participantes().length === 0 && !showFormParticipante()) {
+            <p class="empty-msg">Nenhum participante adicionado.</p>
+          }
+          @for (p of participantes(); track p.id) {
+            <div class="participante-item">
+              <span class="p-avatar">{{ p.nome.charAt(0).toUpperCase() }}</span>
+              <div class="p-info">
+                <span class="p-nome">{{ p.nome }}</span>
+                <span class="p-email">{{ p.email }}</span>
+              </div>
+            </div>
+          }
+        </section>
+
+        <!-- Despesas -->
+        <section class="section-card">
+          <div class="section-header">
+            <h2 class="section-title">
+              <i class="pi pi-receipt"></i>
+              Despesas
+            </h2>
+            <div class="section-actions">
+              <span class="section-count">{{ despesas().length }}</span>
+              <button class="btn-add" (click)="showFormDespesa.set(!showFormDespesa())" [class.active]="showFormDespesa()">
+                <i class="pi" [class.pi-plus]="!showFormDespesa()" [class.pi-times]="showFormDespesa()"></i>
+              </button>
+            </div>
+          </div>
+
+          @if (showFormDespesa()) {
+            <form [formGroup]="formDespesa" (ngSubmit)="registrarDespesa()" class="inline-form">
+              <input formControlName="descricao" type="text" placeholder="Descrição" class="form-input" />
+              <input formControlName="valor" type="number" step="0.01" min="0.01" placeholder="Valor (R$)" class="form-input" />
+              <input formControlName="dataVencimento" type="date" class="form-input" />
+              @if (errosDespesa().length > 0) {
+                <p class="form-erro">{{ errosDespesa()[0] }}</p>
+              }
+              <div class="form-actions">
+                <button type="button" class="btn-cancel" (click)="showFormDespesa.set(false)">Cancelar</button>
+                <button type="submit" class="btn-save" [disabled]="formDespesa.invalid || savingDespesa()">
+                  {{ savingDespesa() ? 'Salvando...' : 'Registrar' }}
+                </button>
+              </div>
+            </form>
+          }
+
+          @if (despesas().length === 0 && !showFormDespesa()) {
+            <p class="empty-msg">Nenhuma despesa registrada.</p>
+          }
+          @for (d of despesas(); track d.id) {
+            <div class="despesa-item">
+              <div class="d-info">
+                <span class="d-desc">{{ d.descricao }}</span>
+                <span class="d-data">{{ formatarData(d.dataVencimento) }}</span>
+              </div>
+              <span class="d-valor">{{ formatarMoeda(d.valor) }}</span>
+            </div>
+          }
+        </section>
+
+      </div>
+  }
+
+</div>

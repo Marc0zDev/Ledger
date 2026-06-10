@@ -1,0 +1,186 @@
+<div class="despesas-page">
+
+  <!-- Header -->
+  <div class="page-header">
+    <div class="page-header-text">
+      <h1 class="page-title">Despesas</h1>
+      <p class="page-subtitle">Seus gastos pessoais e compromissos financeiros</p>
+    </div>
+    <button class="btn-novo" (click)="abrirForm()">
+      <i class="pi pi-plus"></i>
+      Nova despesa
+    </button>
+  </div>
+
+  <!-- Resumo -->
+  <div class="summary-row">
+    <div class="summary-card">
+      <span class="summary-label">A pagar</span>
+      <span class="summary-value">{{ formatarMoeda(totalPendente()) }}</span>
+      <span class="summary-count">{{ pendentesCount() }} despesa{{ pendentesCount() !== 1 ? 's' : '' }}</span>
+    </div>
+    <div class="summary-card summary-card--pago">
+      <span class="summary-label">Pago</span>
+      <span class="summary-value summary-value--pago">{{ formatarMoeda(totalPago()) }}</span>
+      <span class="summary-count">{{ despesas().length - pendentesCount() }} quitada{{ (despesas().length - pendentesCount()) !== 1 ? 's' : '' }}</span>
+    </div>
+  </div>
+
+  <!-- Abas -->
+  <div class="abas">
+    <button class="aba" [class.aba--ativa]="abaAtiva() === 'todas'" (click)="abaAtiva.set('todas')">
+      Todas
+      <span class="aba-badge">{{ despesas().length }}</span>
+    </button>
+    <button class="aba" [class.aba--ativa]="abaAtiva() === 'pendentes'" (click)="abaAtiva.set('pendentes')">
+      Pendentes
+      @if (pendentesCount() > 0) {
+        <span class="aba-badge aba-badge--alert">{{ pendentesCount() }}</span>
+      }
+    </button>
+  </div>
+
+  <!-- Form inline -->
+  @if (showForm()) {
+    <div class="form-panel">
+      <h3 class="form-panel-title">{{ editando() ? 'Editar despesa' : 'Nova despesa' }}</h3>
+      <form [formGroup]="form" (ngSubmit)="salvar()" class="form-grid">
+        <input formControlName="descricao" type="text" placeholder="Descrição" class="form-field form-field--wide" />
+        <input formControlName="valor" type="number" step="0.01" min="0.01" placeholder="Valor (R$)" class="form-field" />
+        <input formControlName="dataVencimento" type="date" class="form-field" />
+        <select formControlName="categoria" class="form-field">
+          @for (cat of categorias; track cat.valor) {
+            <option [value]="cat.valor">{{ cat.label }}</option>
+          }
+        </select>
+        <label class="form-check">
+          <input formControlName="recorrente" type="checkbox" />
+          Recorrente (mensal)
+        </label>
+
+        @if (erros().length > 0) {
+          <p class="form-erro">{{ erros()[0] }}</p>
+        }
+
+        <div class="form-actions">
+          <button type="button" class="btn-cancel" (click)="fecharForm()">Cancelar</button>
+          <button type="submit" class="btn-save" [disabled]="form.invalid || saving()">
+            {{ saving() ? 'Salvando...' : (editando() ? 'Salvar alterações' : 'Registrar') }}
+          </button>
+        </div>
+      </form>
+    </div>
+  }
+
+  <!-- Loading -->
+  @if (loading()) {
+    <div class="state-center">
+      <div class="spinner"></div>
+      <span class="state-label">Carregando...</span>
+    </div>
+  }
+
+  <!-- Vazio -->
+  @if (!loading() && listagem().length === 0) {
+    <div class="state-center">
+      <i class="pi pi-receipt state-icon"></i>
+      <p class="state-title">{{ abaAtiva() === 'pendentes' ? 'Nenhuma pendência' : 'Nenhuma despesa' }}</p>
+      <p class="state-desc">
+        {{ abaAtiva() === 'pendentes'
+          ? 'Você está em dia com seus compromissos.'
+          : 'Registre sua primeira despesa para começar.' }}
+      </p>
+      @if (abaAtiva() === 'todas') {
+        <button class="btn-novo" (click)="abrirForm()">
+          <i class="pi pi-plus"></i>
+          Nova despesa
+        </button>
+      }
+    </div>
+  }
+
+  <!-- Lista agrupada por mês -->
+  @if (!loading() && grupos().length > 0) {
+    @for (grupo of grupos(); track grupo.mes) {
+      <div class="grupo-mes">
+        <h3 class="grupo-titulo">{{ grupo.mes }}</h3>
+        <div class="despesas-list">
+          @for (d of grupo.items; track d.id) {
+            <div class="despesa-card" [class.despesa-card--paga]="d.paga" [class.despesa-card--vencida]="vencida(d)">
+              <div class="card-content">
+                <div class="row-main">
+                  <div class="row-info">
+                    <div class="row-title-row">
+                      <span class="row-desc">{{ d.descricao }}</span>
+                      @if (d.recorrente) {
+                        <span class="badge-recorrente" title="Recorrente mensal">
+                          <i class="pi pi-refresh"></i>
+                        </span>
+                      }
+                    </div>
+                    <div class="row-meta">
+                      <span class="meta-item meta-item--cat">
+                        <i class="pi pi-tag"></i>
+                        {{ d.categoria }}
+                      </span>
+                      <span class="meta-item" [class.meta-item--alerta]="vencida(d)">
+                        <i class="pi pi-calendar"></i>
+                        {{ vencida(d) ? 'Venceu' : 'Vence' }} {{ formatarData(d.dataVencimento) }}
+                      </span>
+                      @if (d.paga && d.dataPagamento) {
+                        <span class="meta-item meta-item--quitado">
+                          <i class="pi pi-check-circle"></i>
+                          Pago {{ formatarData(d.dataPagamento) }}
+                        </span>
+                      }
+                    </div>
+                  </div>
+
+                  <div class="row-right">
+                    <span class="row-valor" [class.row-valor--pago]="d.paga">
+                      {{ formatarMoeda(d.valor) }}
+                    </span>
+                    @if (d.paga) {
+                      <span class="row-status-pill row-status-pill--pago">Pago</span>
+                    } @else if (vencida(d)) {
+                      <span class="row-status-pill row-status-pill--vencido">Vencida</span>
+                    } @else {
+                      <span class="row-status-pill row-status-pill--pendente">Pendente</span>
+                    }
+                  </div>
+                </div>
+
+                <div class="row-actions">
+                  @if (!d.paga) {
+                    <button class="action-btn action-btn--primary" (click)="pagar(d)" [disabled]="pagandoId() === d.id">
+                      <i class="pi pi-check"></i>
+                      {{ pagandoId() === d.id ? 'Processando...' : 'Marcar como pago' }}
+                    </button>
+                  }
+                  @if (d.boletoUrl) {
+                    <a class="action-btn" [href]="boletoUrl(d.boletoUrl!)" target="_blank" rel="noopener">
+                      <i class="pi pi-file-pdf"></i> Ver boleto
+                    </a>
+                  } @else if (!d.paga) {
+                    <label class="action-btn">
+                      <i class="pi pi-upload"></i> Anexar boleto
+                      <input type="file" accept="application/pdf" (change)="onBoletoChange($event, d)" hidden />
+                    </label>
+                  }
+                  <button class="action-btn action-btn--ghost" (click)="abrirForm(d)">
+                    <i class="pi pi-pencil"></i> Editar
+                  </button>
+                  <button class="action-btn action-btn--danger" (click)="deletar(d.id)" [disabled]="deletandoId() === d.id">
+                    <i class="pi pi-trash"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    }
+  }
+
+</div>
+

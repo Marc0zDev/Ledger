@@ -1,0 +1,173 @@
+﻿.home-page {
+  padding: 3rem 2.5rem;
+  max-width: 900px;
+}
+
+// ── Hero ───────────────────────────────────────────────────────────────────
+
+.home-hero {
+  margin-bottom: 3rem;
+}
+
+.home-eyebrow {
+  display: block;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #A8742A;
+  color: var(--gold);
+  margin-bottom: 0.75rem;
+}
+
+.home-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(2.25rem, 4vw, 3rem);
+  font-weight: 400;
+  color: #1A1714;
+  color: var(--ink);
+  line-height: 1.1;
+  margin: 0 0 1rem;
+  text-wrap: balance;
+}
+
+.home-subtitle {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 1rem;
+  color: #6B6460;
+  color: var(--muted);
+  line-height: 1.7;
+  max-width: 480px;
+  margin: 0 0 2rem;
+}
+
+.home-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #1A1714;
+  background: var(--ink);
+  color: #FFFFFF;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  padding: 0.65rem 1.5rem;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: opacity 0.15s;
+
+  &:hover { opacity: 0.8; }
+  i { font-size: 0.8rem; }
+}
+
+// ── Convites pendentes ──────────────────────────────────────────────────────
+
+.convites-section {
+  background: color-mix(in srgb, var(--color-warning, #f59e0b) 10%, var(--color-surface));
+  border: 1px solid color-mix(in srgb, var(--color-warning, #f59e0b) 40%, transparent);
+  border-radius: 1rem;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: .75rem;
+}
+
+.convites-title {
+  font-size: 1rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin: 0;
+}
+
+.badge {
+  background: #f59e0b;
+  color: #fff;
+  border-radius: 999px;
+  padding: .1rem .5rem;
+  font-size: .75rem;
+  font-weight: 700;
+}
+
+.convite-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--color-surface);
+  border-radius: .75rem;
+  padding: .75rem 1rem;
+  gap: 1rem;
+}
+
+.convite-info { display: flex; flex-direction: column; gap: .15rem; }
+.convite-cofre { font-weight: 600; font-size: .95rem; }
+.convite-exp   { font-size: .75rem; opacity: .6; }
+
+.convite-actions { display: flex; gap: .5rem; }
+
+.btn-aceitar, .btn-recusar {
+  padding: .35rem .85rem;
+  border: none;
+  border-radius: .5rem;
+  cursor: pointer;
+  font-size: .85rem;
+  font-weight: 600;
+  transition: opacity .15s;
+
+  &:disabled { opacity: .5; cursor: default; }
+}
+
+.btn-aceitar { background: #22c55e; color: #fff; }
+.btn-recusar { background: transparent; border: 1px solid #ef4444; color: #ef4444; }
+
+// ── Stat cards ─────────────────────────────────────────────────────────────
+
+.home-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+}
+
+.stat-card {
+  background: #FFFFFF;
+  background: var(--surface);
+  border: 1px solid #E0DDD8;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.stat-icon {
+  font-size: 1.25rem;
+  color: #A8742A;
+  color: var(--gold);
+  flex-shrink: 0;
+}
+
+.stat-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.stat-label {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.75rem;
+  color: #A09B95;
+  color: var(--faint);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.stat-value {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.5rem;
+  color: #1A1714;
+  color: var(--ink);
+  line-height: 1;
+}

@@ -1,0 +1,45 @@
+<div class="auth-page">
+  <div class="auth-card">
+
+    <div class="auth-brand">
+      <span class="brand-letter">L</span>
+      <span class="brand-name">Ledger</span>
+    </div>
+
+    <h1 class="auth-title">Criar conta</h1>
+    <p class="auth-sub">Comece a organizar suas finanças compartilhadas.</p>
+
+    <form [formGroup]="form" (ngSubmit)="cadastrar()" class="auth-form">
+
+      <div class="field">
+        <label>Nome</label>
+        <input formControlName="nome" type="text" placeholder="Seu nome" class="input" autocomplete="name" />
+      </div>
+
+      <div class="field">
+        <label>E-mail</label>
+        <input formControlName="email" type="email" placeholder="seu@email.com" class="input" autocomplete="email" />
+      </div>
+
+      <div class="field">
+        <label>Senha <span class="field-hint">(mín. 6 caracteres)</span></label>
+        <input formControlName="senha" type="password" placeholder="••••••••" class="input" autocomplete="new-password" />
+      </div>
+
+      @if (erros().length > 0) {
+        <p class="form-erro">{{ erros()[0] }}</p>
+      }
+
+      <button type="submit" class="btn-primary" [disabled]="form.invalid || loading()">
+        {{ loading() ? 'Criando conta...' : 'Criar conta' }}
+      </button>
+
+    </form>
+
+    <p class="auth-link">
+      Já tem conta?
+      <a routerLink="/login">Entrar</a>
+    </p>
+
+  </div>
+</div>

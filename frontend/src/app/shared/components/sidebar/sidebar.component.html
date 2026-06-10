@@ -1,0 +1,33 @@
+<aside class="sidebar" [class.collapsed]="collapsed()">
+
+  <div class="sidebar-brand">
+    <span class="brand-mark">L</span>
+    <span class="brand-name">Ledger</span>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a routerLink="/home" routerLinkActive="active" class="nav-item" title="Início">
+      <i class="pi pi-home"></i>
+      <span class="nav-label">Início</span>
+    </a>
+    <a routerLink="/cofres" routerLinkActive="active" class="nav-item" title="Cofres">
+      <i class="pi pi-lock"></i>
+      <span class="nav-label">Cofres</span>
+    </a>
+    <a routerLink="/despesas" routerLinkActive="active" class="nav-item" title="Despesas">
+      <i class="pi pi-receipt"></i>
+      <span class="nav-label">Despesas</span>
+    </a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <button
+      class="toggle-btn"
+      (click)="toggle()"
+      [attr.aria-label]="collapsed() ? 'Expandir menu' : 'Recolher menu'"
+    >
+      <i class="pi" [class.pi-chevron-right]="collapsed()" [class.pi-chevron-left]="!collapsed()"></i>
+    </button>
+  </div>
+
+</aside>
