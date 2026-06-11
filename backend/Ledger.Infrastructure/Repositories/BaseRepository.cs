@@ -25,6 +25,32 @@ public abstract class BaseRepository<TDomain, TModel> : IRepository<TDomain>
         Mapper = mapper;
     }
 
+    // ── Transação ──────────────────────────────────────────────────────────────
+    // Se já existe uma transação ativa (iniciada externamente), apenas executa
+    // a operação dentro dela. Caso contrário, abre, commita ou faz rollback.
+    private async Task ExecuteInTransactionAsync(Func<Task> operation, CancellationToken ct)
+    {
+        if (Context.Database.CurrentTransaction is not null)
+        {
+            await operation();
+            return;
+        }
+
+        await using var transaction = await Context.Database.BeginTransactionAsync(ct);
+        try
+        {
+            await operation();
+            await transaction.CommitAsync(ct);
+        }
+        catch
+        {
+            await transaction.RollbackAsync(ct);
+            throw;
+        }
+    }
+
+    // ── Leitura ────────────────────────────────────────────────────────────────
+
     public virtual async Task<TDomain?> GetByIdAsync(Guid id, CancellationToken ct = default)
     {
         var model = await DbSet.FindAsync(new object[] { id }, ct);
@@ -37,34 +63,44 @@ public abstract class BaseRepository<TDomain, TModel> : IRepository<TDomain>
         return Mapper.Map<IEnumerable<TDomain>>(models);
     }
 
+    // ── Escrita ────────────────────────────────────────────────────────────────
+
     public virtual async Task AddAsync(TDomain entity, CancellationToken ct = default)
     {
-        await DbSet.AddAsync(Mapper.Map<TModel>(entity), ct);
-        await Context.SaveChangesAsync(ct);
+        await ExecuteInTransactionAsync(async () =>
+        {
+            await DbSet.AddAsync(Mapper.Map<TModel>(entity), ct);
+            await Context.SaveChangesAsync(ct);
+        }, ct);
     }
 
     public virtual async Task UpdateAsync(TDomain entity, CancellationToken ct = default)
     {
-        var newModel = Mapper.Map<TModel>(entity);
+        await ExecuteInTransactionAsync(async () =>
+        {
+            var newModel = Mapper.Map<TModel>(entity);
 
-        // Se o contexto já está rastreando uma instância com o mesmo Id
-        // (carregada pelo GetByIdAsync), desanexe antes de atualizar.
-        var tracked = Context.ChangeTracker.Entries<TModel>()
-            .FirstOrDefault(e => (Guid)e.Property("Id").CurrentValue! == entity.Id);
-        if (tracked is not null)
-            tracked.State = EntityState.Detached;
+            var tracked = Context.ChangeTracker.Entries<TModel>()
+                .FirstOrDefault(e => (Guid)e.Property("Id").CurrentValue! == entity.Id);
+            if (tracked is not null)
+                tracked.State = EntityState.Detached;
 
-        DbSet.Update(newModel);
-        await Context.SaveChangesAsync(ct);
+            DbSet.Update(newModel);
+            await Context.SaveChangesAsync(ct);
+        }, ct);
     }
 
     public virtual async Task DeleteAsync(Guid id, CancellationToken ct = default)
     {
-        var model = await DbSet.FindAsync(new object[] { id }, ct);
-        if (model is not null)
+        await ExecuteInTransactionAsync(async () =>
         {
-            DbSet.Remove(model);
-            await Context.SaveChangesAsync(ct);
-        }
+            var model = await DbSet.FindAsync(new object[] { id }, ct);
+            if (model is not null)
+            {
+                DbSet.Remove(model);
+                await Context.SaveChangesAsync(ct);
+            }
+        }, ct);
     }
 }
+
