@@ -1,3 +1,6 @@
+<p-menu #rowMenu [popup]="true" [model]="activeMenuItems()" styleClass="ledger-row-menu" />
+<input #fileInput type="file" hidden (change)="onMenuFileChange($event)" />
+
 <p-table
   [value]="dataSource()"
   styleClass="tbl-primeng"
@@ -22,7 +25,7 @@
   <ng-template pTemplate="body" let-row>
     <tr>
       @for (col of options(); track col.field ?? col.title) {
-        <td [style.textAlign]="col.align ?? 'left'">
+        <td [style.textAlign]="col.type === 'actions' ? 'right' : (col.align ?? 'left')" [style.padding]="col.type === 'actions' ? '0' : null">
 
           @if (col.cellTpl) {
             <ng-container *ngTemplateOutlet="col.cellTpl; context: { $implicit: row, value: getValue(row, col.field) }" />
@@ -42,41 +45,15 @@
               }
 
               @case ('actions') {
-                <div class="acoes-row">
-                  @for (action of col.actions ?? []; track action.event) {
-                    @if (isVisible(action, row)) {
-                      @if (action.isFileUpload) {
-                        <label>
-                          <p-button
-                            [icon]="'pi ' + action.icon"
-                            [text]="true"
-                            [rounded]="true"
-                            [severity]="action.severity ?? 'secondary'"
-                            size="small"
-                            [title]="action.title ?? ''"
-                            [disabled]="isDisabled(action, row)"
-                          />
-                          <input
-                            type="file"
-                            [accept]="action.accept ?? '*'"
-                            (change)="onFileChange($event, action.event, row)"
-                            hidden
-                          />
-                        </label>
-                      } @else {
-                        <p-button
-                          [icon]="'pi ' + action.icon"
-                          [text]="true"
-                          [rounded]="true"
-                          [severity]="action.severity ?? 'secondary'"
-                          size="small"
-                          [title]="action.title ?? ''"
-                          [disabled]="isDisabled(action, row)"
-                          (onClick)="onAction(action.event, row)"
-                        />
-                      }
-                    }
-                  }
+                <div class="actions-menu-cell">
+                  <p-button
+                    icon="pi pi-ellipsis-h"
+                    [text]="true"
+                    [rounded]="true"
+                    severity="secondary"
+                    size="small"
+                    (onClick)="openRowMenu($event, rowMenu, row, col)"
+                  />
                 </div>
               }
 

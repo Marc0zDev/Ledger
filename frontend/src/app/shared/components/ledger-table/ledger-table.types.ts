@@ -8,6 +8,8 @@ export interface LedgerAction {
   severity?: 'primary' | 'secondary' | 'success' | 'info' | 'warn' | 'danger' | 'contrast';
   /** Nome do evento emitido em (rowAction) */
   event: string;
+  /** Texto exibido no menu. Fallback: title → event */
+  label?: string;
   title?: string;
   disabled?: (row: unknown) => boolean;
   visible?: (row: unknown) => boolean;
@@ -27,8 +29,10 @@ export interface LedgerColumn {
   tagLabel?: (value: unknown, row: unknown) => string;
   /** Para type='tag': retorna a severidade do badge */
   tagSeverity?: (value: unknown, row: unknown) => string;
-  /** Para type='actions': lista de botões */
+  /** Para type='actions': lista de ações no menu kebab */
   actions?: LedgerAction[];
+  /** Controla o que aparece nos itens do menu. Default: 'icon-label' */
+  actionMenuMode?: 'icon-label' | 'label-only';
   /** Para type='custom': template livre. Contexto: { $implicit: row, value: row[field] } */
   cellTpl?: TemplateRef<{ $implicit: unknown; value: unknown }>;
 }

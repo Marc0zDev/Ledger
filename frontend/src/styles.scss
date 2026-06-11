@@ -41,12 +41,34 @@
   --gold-subtle:  rgba(168, 116, 42, 0.10);
   --gold-subtle:  oklch(0.560 0.110 65 / 0.10);
 
+  --color-warn:        #966A26;
+  --color-warn:        oklch(0.50 0.112 65);
+
+  --color-warn-subtle: #D4C4AE;
+  --color-warn-subtle: oklch(0.80 0.06 65);
+
   // Semantic
   --error:        #C0392B;
   --error:        oklch(0.520 0.180 25);
 
+  --success:      #2E7D5A;
+  --success:      oklch(0.48 0.10 155);
+
+  --color-success:        #42874A;
+  --color-success:        oklch(0.50 0.112 134);
+
+  --color-success-subtle: #C8DCCC;
+  --color-success-subtle: oklch(0.80 0.06 134);
+
+  --info:         #2E6A7D;
+  --info:         oklch(0.46 0.07 215);
+
   --focus-ring:   rgba(168, 116, 42, 0.35);
   --focus-ring:   oklch(0.560 0.110 65 / 0.35);
+
+  // PrimeNG tag — success (Aura usa --p-tag-success-*)
+  --p-tag-success-background: var(--color-success-subtle);
+  --p-tag-success-color: var(--color-success);
 }
 
 // ── Reset ───────────────────────────────────────────────────────────────────
@@ -111,5 +133,46 @@ a {
 
 small {
   font-size: 0.8rem;
+}
+
+// ── Ledger table tags (PrimeNG 21 / Aura tokens) ────────────────────────────
+
+.tbl-primeng {
+  --p-tag-success-background: var(--color-success-subtle);
+  --p-tag-success-color: var(--color-success);
+  --p-tag-danger-background: var(--error);
+  --p-tag-danger-color: #ffffff;
+  --p-tag-warn-background: var(--color-warn-subtle);
+  --p-tag-warn-color: var(--color-warn);
+  --p-tag-info-background: var(--info);
+  --p-tag-info-color: #ffffff;
+  --p-tag-secondary-background: var(--surface-alt);
+  --p-tag-secondary-color: var(--muted);
+}
+
+// ── Menu popup da ledger-table (só esta instância) ──────────────────────────
+
+.p-menu.ledger-row-menu {
+  --p-menu-list-padding: 0.5rem;
+  --p-menu-list-gap: 0.375rem;
+  --p-menu-item-padding: 0.75rem 1rem;
+  --p-menu-item-gap: 0.75rem;
+
+  min-width: 14.5rem;
+  padding: 0.5rem;
+
+  .p-menu-item-link {
+    min-height: 2.5rem;
+    font-size: 1rem;
+  }
+
+  .p-menu-item-icon {
+    font-size: 1rem;
+  }
+
+  .p-menu-item-label {
+    font-size: 1rem;
+    line-height: 1.4;
+  }
 }
 

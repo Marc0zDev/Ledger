@@ -94,22 +94,22 @@ export class DespesasComponent implements OnInit {
       title: '', type: 'actions', width: '21%',
       actions: [
         {
-          icon: 'pi-check', severity: 'success', event: 'pagar', title: 'Marcar como pago',
+          icon: 'pi-check', severity: 'success', event: 'pagar', label: 'Marcar como pago',
           visible:  (r) => !(r as DespesaPeriodoResponse).paga,
           disabled: (r) => this.pagandoId() === (r as DespesaPeriodoResponse).id,
         },
         {
-          icon: 'pi-file-pdf', severity: 'secondary', event: 'verBoleto', title: 'Ver boleto',
+          icon: 'pi-file-pdf', severity: 'secondary', event: 'verBoleto', label: 'Ver boleto',
           visible: (r) => !!(r as DespesaPeriodoResponse).boletoUrl,
         },
         {
-          icon: 'pi-upload', severity: 'secondary', event: 'uploadBoleto', title: 'Anexar boleto',
+          icon: 'pi-upload', severity: 'secondary', event: 'uploadBoleto', label: 'Anexar boleto',
           isFileUpload: true, accept: 'application/pdf',
           visible: (r) => !(r as DespesaPeriodoResponse).boletoUrl && !(r as DespesaPeriodoResponse).paga,
         },
-        { icon: 'pi-pencil', severity: 'secondary', event: 'editar', title: 'Editar' },
+        { icon: 'pi-pencil', severity: 'secondary', event: 'editar', label: 'Editar' },
         {
-          icon: 'pi-trash', severity: 'danger', event: 'deletar', title: 'Excluir',
+          icon: 'pi-trash', severity: 'danger', event: 'deletar', label: 'Excluir',
           disabled: (r) => this.deletandoId() === (r as DespesaPeriodoResponse).id,
         },
       ],
@@ -134,10 +134,10 @@ export class DespesasComponent implements OnInit {
     {
       title: '', type: 'actions', width: '7%',
       actions: [
-        { icon: 'pi-pencil', severity: 'secondary', event: 'editar',     title: 'Editar' },
-        { icon: 'pi-pause',  severity: 'secondary', event: 'desativar',  title: 'Desativar', visible: (r) => !!(r as DespesaResponse).ativa },
+        { icon: 'pi-pencil', severity: 'secondary', event: 'editar',    label: 'Editar' },
+        { icon: 'pi-pause',  severity: 'secondary', event: 'desativar', label: 'Desativar', visible: (r) => !!(r as DespesaResponse).ativa },
         {
-          icon: 'pi-trash',  severity: 'danger',    event: 'deletar',   title: 'Excluir',
+          icon: 'pi-trash',  severity: 'danger',    event: 'deletar',  label: 'Excluir',
           disabled: (r) => this.deletandoId() === (r as DespesaResponse).id,
         },
       ],
