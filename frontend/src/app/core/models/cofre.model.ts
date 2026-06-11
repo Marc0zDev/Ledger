@@ -1,10 +1,21 @@
 ﻿// ── Cofre ────────────────────────────────────────────────────────────────
 
+export interface PagedResult<T> {
+  items: T[];
+  page: number;
+  pageSize: number;
+  total: number;
+  totalPages: number;
+  hasPrev: boolean;
+  hasNext: boolean;
+}
+
 export interface CriarCofreRequest {
   nome: string;
   meta: number;
   descricao?: string;
   categoria?: string;
+  visibilidade?: string; // 'Privado' | 'Compartilhado'
 }
 
 export interface AtualizarCofreRequest {
@@ -12,16 +23,26 @@ export interface AtualizarCofreRequest {
   meta: number;
   descricao?: string;
   categoria?: string;
+  visibilidade?: string; // 'Privado' | 'Compartilhado'
 }
 
 export interface MovimentacaoResponse {
   id: string;
   cofreId: string;
   usuarioId: string;
+  usuarioNome?: string;
   descricao: string;
   valor: number;
-  tipo: string;
+  tipo: string; // 'Entrada' | 'Saida' — may be missing on legacy records
+  data: string;
   createdAt: string;
+}
+
+export interface RegistrarMovimentacaoRequest {
+  descricao: string;
+  valor: number;
+  tipo: string; // 'Entrada' | 'Saida'
+  data: string;
 }
 
 export interface CofreResponse {
@@ -31,6 +52,7 @@ export interface CofreResponse {
   meta: number;
   status: string;
   categoria: string;
+  visibilidade: string; // 'Privado' | 'Compartilhado'
   totalMovimentado: number;
   createdAt: string;
   updatedAt?: string;
@@ -44,12 +66,17 @@ export interface AdicionarParticipanteRequest {
   usuarioId: string;
 }
 
+export interface AlterarRoleRequest {
+  role: string; // 'Admin' | 'Contributor'
+}
+
 export interface ParticipanteResponse {
   id: string;
   cofreId: string;
   usuarioId: string;
   nome: string;
   email: string;
+  role: string; // 'Admin' | 'Contributor'
   createdAt: string;
 }
 

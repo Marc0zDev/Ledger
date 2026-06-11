@@ -4,7 +4,8 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import {
   CofreResponse, CriarCofreRequest, AtualizarCofreRequest,
-  AdicionarParticipanteRequest, ParticipanteResponse,
+  AdicionarParticipanteRequest, AlterarRoleRequest, ParticipanteResponse,
+  PagedResult, RegistrarMovimentacaoRequest, MovimentacaoResponse,
   RegistrarDespesaRequest, CofreDespesaResponse,
 } from '../models/cofre.model';
 
@@ -51,6 +52,22 @@ export class CofreService {
 
   removerParticipante(cofreId: string, participanteId: string): Observable<void> {
     return this.http.delete<void>(`${this.base}/${cofreId}/participantes/${participanteId}`);
+  }
+
+  alterarRole(cofreId: string, participanteId: string, request: AlterarRoleRequest): Observable<ParticipanteResponse> {
+    return this.http.patch<ParticipanteResponse>(`${this.base}/${cofreId}/participantes/${participanteId}/role`, request);
+  }
+
+  // ── Movimentações ─────────────────────────────────────────────────────
+
+  registrarMovimentacao(cofreId: string, request: RegistrarMovimentacaoRequest): Observable<MovimentacaoResponse> {
+    return this.http.post<MovimentacaoResponse>(`${this.base}/${cofreId}/movimentacoes`, request);
+  }
+
+  listarMovimentacoes(cofreId: string, page = 1, pageSize = 5): Observable<PagedResult<MovimentacaoResponse>> {
+    return this.http.get<PagedResult<MovimentacaoResponse>>(
+      `${this.base}/${cofreId}/movimentacoes`, { params: { page, pageSize } }
+    );
   }
 
   // ── Despesas ─────────────────────────────────────────────────────────

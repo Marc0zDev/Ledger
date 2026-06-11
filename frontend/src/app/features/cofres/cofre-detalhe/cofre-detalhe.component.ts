@@ -1,9 +1,11 @@
-﻿import { Component, inject, OnInit, signal } from '@angular/core';
+﻿import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { CofreService } from '../../../core/services/cofre.service';
 import { UsuarioService } from '../../../core/services/usuario.service';
-import { CofreResponse, ParticipanteResponse, UsuarioResponse } from '../../../core/models/cofre.model';
+import {
+  CofreResponse, MovimentacaoResponse, PagedResult, ParticipanteResponse, UsuarioResponse
+} from '../../../core/models/cofre.model';
 
 @Component({
   selector: 'app-cofre-detalhe',
@@ -20,15 +22,27 @@ export class CofreDetalheComponent implements OnInit {
 
   cofre = signal<CofreResponse | null>(null);
   participantes = signal<ParticipanteResponse[]>([]);
+  movimentacoes = signal<MovimentacaoResponse[]>([]);
+  // Paginação server-side
+  readonly pageSize = 5;
+  movPage       = signal(1);
+  movTotal      = signal(0);
+  movTotalPags  = signal(1);
+  movCarregando = signal(false);
+  movPodeAnterior = computed(() => this.movPage() > 1);
+  movPodeProxima  = computed(() => this.movPage() < this.movTotalPags());
   loading = signal(true);
   erro = signal<string | null>(null);
 
   // Painéis
   showFormParticipante = signal(false);
+  showFormMovimentacao = signal(false);
 
   // Estado dos forms
   savingParticipante = signal(false);
   errosParticipante = signal<string[]>([]);
+  savingMovimentacao = signal(false);
+  errosMovimentacao = signal<string[]>([]);
 
   // Usuário encontrado pelo email (lookup)
   usuarioEncontrado = signal<UsuarioResponse | null>(null);
@@ -36,6 +50,13 @@ export class CofreDetalheComponent implements OnInit {
 
   formParticipante = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
+  });
+
+  formMovimentacao = this.fb.group({
+    descricao: ['', Validators.required],
+    valor: [0, [Validators.required, Validators.min(0.01)]],
+    tipo: ['Entrada', Validators.required],
+    data: [new Date().toISOString().substring(0, 10), Validators.required],
   });
 
   ngOnInit(): void {
@@ -49,6 +70,7 @@ export class CofreDetalheComponent implements OnInit {
         this.cofre.set(data);
         this.participantes.set(data.participantes ?? []);
         this.loading.set(false);
+        this.recarregarMovimentacoes(1);
       },
       error: () => {
         this.erro.set('Não foi possível carregar o cofre.');
@@ -60,6 +82,20 @@ export class CofreDetalheComponent implements OnInit {
   private recarregarParticipantes(): void {
     this.cofreService.listarParticipantes(this.cofre()!.id).subscribe({
       next: (list) => this.participantes.set(list),
+    });
+  }
+
+  private recarregarMovimentacoes(page = this.movPage()): void {
+    this.movCarregando.set(true);
+    this.cofreService.listarMovimentacoes(this.cofre()!.id, page, this.pageSize).subscribe({
+      next: (r) => {
+        this.movimentacoes.set(r.items ?? []);
+        this.movPage.set(r.page ?? 1);
+        this.movTotal.set(r.total ?? 0);
+        this.movTotalPags.set(r.totalPages ?? 1);
+        this.movCarregando.set(false);
+      },
+      error: () => { this.movCarregando.set(false); },
     });
   }
 
@@ -96,6 +132,40 @@ export class CofreDetalheComponent implements OnInit {
       },
     });
   }
+
+  registrarMovimentacao(): void {
+    if (this.formMovimentacao.invalid || this.savingMovimentacao()) return;
+    this.errosMovimentacao.set([]);
+    this.savingMovimentacao.set(true);
+    const v = this.formMovimentacao.value;
+    this.cofreService.registrarMovimentacao(this.cofre()!.id, {
+      descricao: v.descricao!,
+      valor: v.valor!,
+      tipo: v.tipo!,
+      data: v.data!,
+    }).subscribe({
+      next: (mov) => {
+        // Actualizar saldo localmente
+        const delta = v.tipo === 'Entrada' ? v.valor! : -v.valor!;
+        const c = this.cofre()!;
+        this.cofre.set({ ...c, totalMovimentado: c.totalMovimentado + delta });
+        this.recarregarMovimentacoes(1); // volta à página 1 com dados frescos do servidor
+        this.formMovimentacao.reset({
+          descricao: '', valor: 0, tipo: 'Entrada',
+          data: new Date().toISOString().substring(0, 10),
+        });
+        this.showFormMovimentacao.set(false);
+        this.savingMovimentacao.set(false);
+      },
+      error: (err) => {
+        this.errosMovimentacao.set(err?.error?.errors ?? ['Erro ao registrar movimentação.']);
+        this.savingMovimentacao.set(false);
+      },
+    });
+  }
+
+  movAnterior(): void { if (this.movPodeAnterior()) this.recarregarMovimentacoes(this.movPage() - 1); }
+  movProxima():  void { if (this.movPodeProxima())  this.recarregarMovimentacoes(this.movPage() + 1); }
 
   progresso(cofre: CofreResponse): number {
     if (!cofre.meta || cofre.meta === 0) return 0;
