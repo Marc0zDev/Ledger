@@ -9,7 +9,7 @@
     <div class="header-actions">
       @if (abaAtiva() === 'templates') {
         <button class="btn-novo" (click)="abrirFormTemplate()">
-          <i class="pi pi-plus"></i> Novo template
+          <i class="pi pi-plus"></i> Nova conta fixa
         </button>
       } @else {
         <button class="btn-secondary" (click)="gerarPeriodo()" [disabled]="gerando()">
@@ -29,8 +29,8 @@
       <span class="aba-badge">{{ periodos().length }}</span>
     </button>
     <button class="aba" [class.aba--ativa]="abaAtiva() === 'templates'" (click)="abaAtiva.set('templates'); showForm.set(false)">
-      Templates
-      <span class="aba-badge">{{ templates().length }}</span>
+      Contas Fixas
+      <span class="aba-badge">{{ tmTotal() }}</span>
     </button>
   </div>
 
@@ -115,93 +115,23 @@
       </div>
     }
 
-    <!-- Lista -->
+    <!-- Tabela de período -->
     @if (!loading() && periodos().length > 0) {
-      <div class="despesas-list">
-        @for (d of periodos(); track d.id) {
-          <div class="despesa-card" [class.despesa-card--paga]="d.paga" [class.despesa-card--vencida]="vencida(d)">
-            <div class="card-content">
-              <div class="row-main">
-                <div class="row-info">
-                  <div class="row-title-row">
-                    <span class="row-desc">{{ d.descricao }}</span>
-                    @if (d.despesaId) {
-                      <span class="badge-template" title="Gerado de template">
-                        <i class="pi pi-link"></i>
-                      </span>
-                    }
-                  </div>
-                  <div class="row-meta">
-                    <span class="meta-item meta-item--cat">
-                      <i class="pi pi-tag"></i>
-                      {{ d.categoriaNome }}
-                    </span>
-                    @if (d.paga && d.pagaEm) {
-                      <span class="meta-item meta-item--quitado">
-                        <i class="pi pi-check-circle"></i>
-                        Pago {{ formatarData(d.pagaEm) }}
-                      </span>
-                    } @else if (vencida(d)) {
-                      <span class="meta-item meta-item--alerta">
-                        <i class="pi pi-exclamation-circle"></i>
-                        Mês anterior
-                      </span>
-                    }
-                  </div>
-                </div>
-
-                <div class="row-right">
-                  <span class="row-valor" [class.row-valor--pago]="d.paga">
-                    {{ formatarMoeda(d.valorPlanejado) }}
-                  </span>
-                  @if (d.paga) {
-                    <span class="row-status-pill row-status-pill--pago">Pago</span>
-                  } @else if (vencida(d)) {
-                    <span class="row-status-pill row-status-pill--vencido">Atrasado</span>
-                  } @else {
-                    <span class="row-status-pill row-status-pill--pendente">Pendente</span>
-                  }
-                </div>
-              </div>
-
-              <div class="row-actions">
-                @if (!d.paga) {
-                  <button class="action-btn action-btn--primary" (click)="pagar(d)" [disabled]="pagandoId() === d.id">
-                    <i class="pi pi-check"></i>
-                    {{ pagandoId() === d.id ? 'Processando...' : 'Marcar como pago' }}
-                  </button>
-                }
-                @if (d.boletoUrl) {
-                  <a class="action-btn" [href]="boletoUrl(d.boletoUrl!)" target="_blank" rel="noopener">
-                    <i class="pi pi-file-pdf"></i> Ver boleto
-                  </a>
-                } @else if (!d.paga) {
-                  <label class="action-btn">
-                    <i class="pi pi-upload"></i> Anexar boleto
-                    <input type="file" accept="application/pdf" (change)="onBoletoChange($event, d)" hidden />
-                  </label>
-                }
-                <button class="action-btn action-btn--ghost" (click)="abrirFormPeriodo(d)">
-                  <i class="pi pi-pencil"></i> Editar
-                </button>
-                <button class="action-btn action-btn--danger" (click)="deletarPeriodo(d.id)" [disabled]="deletandoId() === d.id">
-                  <i class="pi pi-trash"></i>
-                </button>
-              </div>
-            </div>
-          </div>
-        }
-      </div>
+      <app-ledger-table
+        [dataSource]="periodos()"
+        [options]="periodoColumns"
+        (rowAction)="onPeriodoAction($event)"
+      />
     }
   }
 
-  <!-- ── TEMPLATES ── -->
+  <!-- ── CONTAS FIXAS ── -->
   @if (abaAtiva() === 'templates') {
 
-    <!-- Form inline para template -->
+    <!-- Form inline -->
     @if (showForm() && abaAtiva() === 'templates') {
       <div class="form-panel">
-        <h3 class="form-panel-title">{{ editandoTemplate() ? 'Editar template' : 'Novo template' }}</h3>
+        <h3 class="form-panel-title">{{ editandoTemplate() ? 'Editar conta fixa' : 'Nova conta fixa' }}</h3>
         <form [formGroup]="formTemplate" (ngSubmit)="salvarTemplate()" class="form-grid">
           <input formControlName="nome" type="text" placeholder="Nome" class="form-field form-field--wide" />
           <select formControlName="tipo" class="form-field">
@@ -224,73 +154,52 @@
           <div class="form-actions">
             <button type="button" class="btn-cancel" (click)="fecharForm()">Cancelar</button>
             <button type="submit" class="btn-save" [disabled]="formTemplate.invalid || saving()">
-              {{ saving() ? 'Salvando...' : (editandoTemplate() ? 'Salvar alterações' : 'Criar template') }}
+              {{ saving() ? 'Salvando...' : (editandoTemplate() ? 'Salvar alterações' : 'Criar conta fixa') }}
             </button>
           </div>
         </form>
       </div>
     }
 
-    @if (templates().length === 0) {
+    <!-- Loading -->
+    @if (tmLoading()) {
       <div class="state-center">
-        <i class="pi pi-copy state-icon"></i>
-        <p class="state-title">Nenhum template</p>
-        <p class="state-desc">Templates são despesas recorrentes usadas para gerar o período mensal.</p>
+        <div class="spinner"></div>
+        <span class="state-label">Carregando...</span>
+      </div>
+    }
+
+    <!-- Vazio -->
+    @if (!tmLoading() && templates().length === 0) {
+      <div class="state-center">
+        <i class="pi pi-wallet state-icon"></i>
+        <p class="state-title">Nenhuma conta fixa cadastrada</p>
+        <p class="state-desc">Cadastre suas contas recorrentes para gerar despesas mensais automaticamente.</p>
         <button class="btn-novo" (click)="abrirFormTemplate()">
-          <i class="pi pi-plus"></i> Criar template
+          <i class="pi pi-plus"></i> Nova conta fixa
         </button>
       </div>
     }
 
-    @if (templates().length > 0) {
-      <div class="despesas-list">
-        @for (t of templates(); track t.id) {
-          <div class="despesa-card" [class.despesa-card--inativa]="!t.ativa">
-            <div class="card-content">
-              <div class="row-main">
-                <div class="row-info">
-                  <div class="row-title-row">
-                    <span class="row-desc">{{ t.nome }}</span>
-                    <span class="badge-tipo">{{ t.tipo }}</span>
-                    @if (!t.ativa) {
-                      <span class="badge-inativo">Inativo</span>
-                    }
-                  </div>
-                  <div class="row-meta">
-                    <span class="meta-item meta-item--cat">
-                      <i class="pi pi-tag"></i>
-                      {{ t.categoriaNome }}
-                    </span>
-                    @if (t.diaVencimento) {
-                      <span class="meta-item">
-                        <i class="pi pi-calendar"></i>
-                        Vence dia {{ t.diaVencimento }}
-                      </span>
-                    }
-                  </div>
-                </div>
-                <div class="row-right">
-                  <span class="row-valor">{{ formatarMoeda(t.valorPlanejado) }}</span>
-                </div>
-              </div>
-              <div class="row-actions">
-                <button class="action-btn action-btn--ghost" (click)="abrirFormTemplate(t)">
-                  <i class="pi pi-pencil"></i> Editar
-                </button>
-                @if (t.ativa) {
-                  <button class="action-btn action-btn--ghost" (click)="desativarTemplate(t.id)">
-                    <i class="pi pi-pause"></i> Desativar
-                  </button>
-                }
-                <button class="action-btn action-btn--danger" (click)="deletarTemplate(t.id)" [disabled]="deletandoId() === t.id">
-                  <i class="pi pi-trash"></i>
-                </button>
-              </div>
-            </div>
-          </div>
-        }
-      </div>
+    <!-- Tabela de contas fixas -->
+    @if (!tmLoading() && templates().length > 0) {
+      <app-ledger-table
+        [dataSource]="templates()"
+        [options]="cfColumns"
+        (rowAction)="onCfAction($event)"
+      />
     }
+
+      <!-- Paginação -->
+      @if (tmTotalPags() > 1) {
+        <div class="paginacao">
+          <p-button icon="pi pi-chevron-left" [text]="true" [rounded]="true" severity="secondary" size="small"
+            [disabled]="!tmPodeAnterior() || tmLoading()" (onClick)="tmAnterior()" />
+          <span class="pag-info">{{ tmPage() }} / {{ tmTotalPags() }}</span>
+          <p-button icon="pi pi-chevron-right" [text]="true" [rounded]="true" severity="secondary" size="small"
+            [disabled]="!tmPodeProxima() || tmLoading()" (onClick)="tmProxima()" />
+        </div>
+      }
   }
 
 </div>

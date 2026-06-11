@@ -12,6 +12,9 @@ import {
   TipoDespesa,
 } from '../../../core/models/cofre.model';
 import { environment } from '../../../../environments/environment';
+import { LedgerTableComponent, LedgerColumn, RowActionEvent } from '../../../shared/components/ledger-table/ledger-table.component';
+import { TagModule } from 'primeng/tag';
+import { ButtonModule } from 'primeng/button';
 
 type Aba = 'periodo' | 'templates';
 
@@ -22,7 +25,7 @@ function primeiroDiaMes(d: Date): string {
 @Component({
   selector: 'app-despesas',
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, LedgerTableComponent, TagModule, ButtonModule],
   templateUrl: './despesas.component.html',
   styleUrl: './despesas.component.scss',
 })
@@ -54,6 +57,15 @@ export class DespesasComponent implements OnInit {
   deletandoId   = signal<string | null>(null);
   gerando       = signal(false);
 
+  // Paginação de contas fixas
+  readonly tmPageSize = 10;
+  tmPage      = signal(1);
+  tmTotal     = signal(0);
+  tmTotalPags = signal(1);
+  tmLoading   = signal(false);
+  tmPodeAnterior = computed(() => this.tmPage() > 1);
+  tmPodeProxima  = computed(() => this.tmPage() < this.tmTotalPags());
+
   // ── Computed ─────────────────────────────────────────────────────────────
   competenciaLabel = computed(() => {
     const [ano, mes] = this.competencia().split('-');
@@ -67,6 +79,91 @@ export class DespesasComponent implements OnInit {
     this.periodos().filter(d => d.paga).reduce((s, d) => s + d.valorRealizado, 0));
 
   pendentesCount = computed(() => this.periodos().filter(d => !d.paga).length);
+
+  // ── Colunas da tabela ────────────────────────────────────────────────────
+  periodoColumns: LedgerColumn[] = [
+    { title: 'Descrição', field: 'descricao', width: '32%' },
+    { title: 'Categoria', field: 'categoriaNome', width: '20%' },
+    { title: 'Valor', field: 'valorPlanejado', type: 'currency', width: '15%', align: 'right' },
+    {
+      title: 'Status', type: 'tag', width: '12%',
+      tagLabel:    (_, row) => this.statusLabel(row as DespesaPeriodoResponse),
+      tagSeverity: (_, row) => this.statusSeverity(row as DespesaPeriodoResponse),
+    },
+    {
+      title: '', type: 'actions', width: '21%',
+      actions: [
+        {
+          icon: 'pi-check', severity: 'success', event: 'pagar', title: 'Marcar como pago',
+          visible:  (r) => !(r as DespesaPeriodoResponse).paga,
+          disabled: (r) => this.pagandoId() === (r as DespesaPeriodoResponse).id,
+        },
+        {
+          icon: 'pi-file-pdf', severity: 'secondary', event: 'verBoleto', title: 'Ver boleto',
+          visible: (r) => !!(r as DespesaPeriodoResponse).boletoUrl,
+        },
+        {
+          icon: 'pi-upload', severity: 'secondary', event: 'uploadBoleto', title: 'Anexar boleto',
+          isFileUpload: true, accept: 'application/pdf',
+          visible: (r) => !(r as DespesaPeriodoResponse).boletoUrl && !(r as DespesaPeriodoResponse).paga,
+        },
+        { icon: 'pi-pencil', severity: 'secondary', event: 'editar', title: 'Editar' },
+        {
+          icon: 'pi-trash', severity: 'danger', event: 'deletar', title: 'Excluir',
+          disabled: (r) => this.deletandoId() === (r as DespesaPeriodoResponse).id,
+        },
+      ],
+    },
+  ];
+
+  cfColumns: LedgerColumn[] = [
+    { title: 'Nome',       field: 'nome',           width: '28%' },
+    { title: 'Categoria',  field: 'categoriaNome',   width: '20%' },
+    {
+      title: 'Tipo', field: 'tipo', type: 'tag', width: '10%',
+      tagSeverity: (v) => this.tipoSeverity(v as string),
+    },
+    { title: 'Vencimento', field: 'diaVencimento',   width: '11%',
+      tagLabel: (v) => v ? `dia ${v}` : '—' },
+    { title: 'Valor', field: 'valorPlanejado', type: 'currency', width: '14%', align: 'right' },
+    {
+      title: 'Status', field: 'ativa', type: 'tag', width: '10%',
+      tagLabel:    (v) => v ? 'Ativo' : 'Inativo',
+      tagSeverity: (v) => v ? 'success' : 'secondary',
+    },
+    {
+      title: '', type: 'actions', width: '7%',
+      actions: [
+        { icon: 'pi-pencil', severity: 'secondary', event: 'editar',     title: 'Editar' },
+        { icon: 'pi-pause',  severity: 'secondary', event: 'desativar',  title: 'Desativar', visible: (r) => !!(r as DespesaResponse).ativa },
+        {
+          icon: 'pi-trash',  severity: 'danger',    event: 'deletar',   title: 'Excluir',
+          disabled: (r) => this.deletandoId() === (r as DespesaResponse).id,
+        },
+      ],
+    },
+  ];
+
+  // ── Row action handler ────────────────────────────────────────────────────
+  onPeriodoAction({ event, row, file }: RowActionEvent): void {
+    const d = row as DespesaPeriodoResponse;
+    switch (event) {
+      case 'pagar':       this.pagar(d); break;
+      case 'verBoleto':   window.open(this.boletoUrl(d.boletoUrl!), '_blank', 'noopener'); break;
+      case 'uploadBoleto': if (file) this.periodoService.uploadBoleto(d.id, file).subscribe({ next: (u) => this.periodos.update(l => l.map(x => x.id === u.id ? u : x)) }); break;
+      case 'editar':      this.abrirFormPeriodo(d); break;
+      case 'deletar':     this.deletarPeriodo(d.id); break;
+    }
+  }
+
+  onCfAction({ event, row }: RowActionEvent): void {
+    const t = row as DespesaResponse;
+    switch (event) {
+      case 'editar':    this.abrirFormTemplate(t); break;
+      case 'desativar': this.desativarTemplate(t.id); break;
+      case 'deletar':   this.deletarTemplate(t.id); break;
+    }
+  }
 
   // ── Forms ─────────────────────────────────────────────────────────────────
   formPeriodo = this.fb.group({
@@ -107,11 +204,22 @@ export class DespesasComponent implements OnInit {
     });
   }
 
-  carregarTemplates(): void {
-    this.despesaService.listar().subscribe({
-      next: (list) => this.templates.set(list),
+  carregarTemplates(page = 1): void {
+    this.tmLoading.set(true);
+    this.despesaService.listar(page, this.tmPageSize).subscribe({
+      next: (r) => {
+        this.templates.set(r.items ?? []);
+        this.tmPage.set(r.page ?? 1);
+        this.tmTotal.set(r.total ?? 0);
+        this.tmTotalPags.set(r.totalPages ?? 1);
+        this.tmLoading.set(false);
+      },
+      error: () => this.tmLoading.set(false),
     });
   }
+
+  tmAnterior(): void { if (this.tmPodeAnterior()) this.carregarTemplates(this.tmPage() - 1); }
+  tmProxima():  void { if (this.tmPodeProxima())  this.carregarTemplates(this.tmPage() + 1); }
 
   // ── Navegação de mês ──────────────────────────────────────────────────────
   mesAnterior(): void {
@@ -247,20 +355,20 @@ export class DespesasComponent implements OnInit {
       : this.despesaService.criar(payload);
 
     req$.subscribe({
-      next: () => { this.fecharForm(); this.carregarTemplates(); this.saving.set(false); },
-      error: (err) => { this.erros.set(err?.error?.errors ?? ['Erro ao salvar template.']); this.saving.set(false); },
+      next: () => { this.fecharForm(); this.carregarTemplates(1); this.saving.set(false); },
+      error: (err) => { this.erros.set(err?.error?.errors ?? ['Erro ao salvar conta fixa.']); this.saving.set(false); },
     });
   }
 
   desativarTemplate(id: string): void {
-    this.despesaService.desativar(id).subscribe({ next: () => this.carregarTemplates() });
+    this.despesaService.desativar(id).subscribe({ next: () => this.carregarTemplates(this.tmPage()) });
   }
 
   deletarTemplate(id: string): void {
     if (this.deletandoId()) return;
     this.deletandoId.set(id);
     this.despesaService.deletar(id).subscribe({
-      next: () => { this.templates.update(list => list.filter(t => t.id !== id)); this.deletandoId.set(null); },
+      next: () => { this.carregarTemplates(this.tmPage()); this.deletandoId.set(null); },
       error: () => this.deletandoId.set(null),
     });
   }
@@ -280,6 +388,24 @@ export class DespesasComponent implements OnInit {
 
   vencida(d: DespesaPeriodoResponse): boolean {
     return !d.paga && new Date(d.competencia) < new Date(primeiroDiaMes(new Date()));
+  }
+
+  statusSeverity(d: DespesaPeriodoResponse): 'success' | 'warn' | 'danger' | 'secondary' {
+    if (d.paga) return 'success';
+    if (this.vencida(d)) return 'danger';
+    return 'warn';
+  }
+
+  statusLabel(d: DespesaPeriodoResponse): string {
+    if (d.paga) return 'Pago';
+    if (this.vencida(d)) return 'Atrasado';
+    return 'Pendente';
+  }
+
+  tipoSeverity(tipo: string): 'success' | 'info' | 'warn' | 'danger' | 'secondary' | 'contrast' {
+    if (tipo === 'Fixa') return 'warn';
+    if (tipo === 'Variavel') return 'info';
+    return 'secondary';
   }
 }
 
