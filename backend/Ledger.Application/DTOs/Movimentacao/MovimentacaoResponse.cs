@@ -9,6 +9,7 @@ public class MovimentacaoResponse
     public DateTime  Data         { get; set; }
     public Guid      CofreId      { get; set; }
     public Guid      UsuarioId    { get; set; }
+    public string?   UsuarioNome  { get; set; }
     public DateTime  CreatedAt    { get; set; }
     public DateTime? UpdatedAt    { get; set; }
 }

@@ -9,11 +9,12 @@ namespace Ledger.Application.Commands.Cofre;
 
 // ── Command ───────────────────────────────────────────────────────────────────
 public record AtualizarCofreCommand(
-    Guid           Id,
-    string         Nome,
-    decimal        Meta,
-    string?        Descricao,
-    CategoriaCofre Categoria) : IRequest<CofreResponse?>;
+    Guid              Id,
+    string            Nome,
+    decimal           Meta,
+    string?           Descricao,
+    CategoriaCofre    Categoria,
+    VisibilidadeCofre Visibilidade = VisibilidadeCofre.Privado) : IRequest<CofreResponse?>;
 
 // ── Handler ───────────────────────────────────────────────────────────────────
 public class AtualizarCofreCommandHandler : IRequestHandler<AtualizarCofreCommand, CofreResponse?>
@@ -32,7 +33,7 @@ public class AtualizarCofreCommandHandler : IRequestHandler<AtualizarCofreComman
         var cofre = await _cofreRepository.GetByIdAsync(cmd.Id, ct);
         if (cofre is null) return null;
 
-        cofre.Atualizar(cmd.Nome, cmd.Meta, cmd.Descricao, cmd.Categoria);
+        cofre.Atualizar(cmd.Nome, cmd.Meta, cmd.Descricao, cmd.Categoria, cmd.Visibilidade);
 
         if (!cofre.IsValid)
             throw new DomainValidationException(cofre.Notifications.Select(n => n.Message));

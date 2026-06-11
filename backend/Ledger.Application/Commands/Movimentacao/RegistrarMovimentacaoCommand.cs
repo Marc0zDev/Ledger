@@ -22,15 +22,18 @@ public class RegistrarMovimentacaoCommandHandler : IRequestHandler<RegistrarMovi
 {
     private readonly ICofreRepository        _cofreRepository;
     private readonly IMovimentacaoRepository _movimentacaoRepository;
+    private readonly IUsuarioRepository      _usuarioRepository;
     private readonly IMapper                 _mapper;
 
     public RegistrarMovimentacaoCommandHandler(
         ICofreRepository cofreRepository,
         IMovimentacaoRepository movimentacaoRepository,
+        IUsuarioRepository usuarioRepository,
         IMapper mapper)
     {
         _cofreRepository        = cofreRepository;
         _movimentacaoRepository = movimentacaoRepository;
+        _usuarioRepository      = usuarioRepository;
         _mapper                 = mapper;
     }
 
@@ -43,7 +46,11 @@ public class RegistrarMovimentacaoCommandHandler : IRequestHandler<RegistrarMovi
             throw new DomainValidationException([$"Tipo de movimentação inválido: {cmd.Tipo}."]);
 
         var mov = MovimentacaoDomain.Criar(
-            cmd.Descricao, cmd.Valor, tipo, cmd.Data, cmd.CofreId, cmd.UsuarioId);
+            cmd.Descricao, cmd.Valor, tipo,
+            cmd.Data.Kind == DateTimeKind.Unspecified
+                ? DateTime.SpecifyKind(cmd.Data, DateTimeKind.Utc)
+                : cmd.Data.ToUniversalTime(),
+            cmd.CofreId, cmd.UsuarioId);
 
         cofre.RegistrarMovimentacao(mov);
 
@@ -51,6 +58,10 @@ public class RegistrarMovimentacaoCommandHandler : IRequestHandler<RegistrarMovi
             throw new DomainValidationException(cofre.Notifications.Select(n => n.Message));
 
         await _movimentacaoRepository.AddAsync(mov, ct);
-        return _mapper.Map<MovimentacaoResponse>(mov);
+
+        var response = _mapper.Map<MovimentacaoResponse>(mov);
+        var usuario  = await _usuarioRepository.GetByIdAsync(cmd.UsuarioId, ct);
+        response.UsuarioNome = usuario?.Nome;
+        return response;
     }
 }

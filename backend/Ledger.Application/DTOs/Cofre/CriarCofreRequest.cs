@@ -11,4 +11,7 @@ public class CriarCofreRequest
 
     /// <summary>Ex: Viagem, Emergencia, Objetivo, Moradia, Lazer, Educacao, Saude, Outro</summary>
     public string Categoria { get; set; } = "Outro";
+
+    /// <summary>Privado ou Compartilhado</summary>
+    public string Visibilidade { get; set; } = "Privado";
 }

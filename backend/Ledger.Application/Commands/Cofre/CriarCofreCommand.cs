@@ -11,11 +11,12 @@ namespace Ledger.Application.Commands.Cofre;
 
 // ── Command ──────────────────────────────────────────────────────────────────
 public record CriarCofreCommand(
-    string         Nome,
-    decimal        Meta,
-    Guid           CriadoPorUsuarioId,
-    string?        Descricao = null,
-    CategoriaCofre Categoria = CategoriaCofre.Outro) : IRequest<CofreResponse>;
+    string            Nome,
+    decimal           Meta,
+    Guid              CriadoPorUsuarioId,
+    string?           Descricao   = null,
+    CategoriaCofre    Categoria   = CategoriaCofre.Outro,
+    VisibilidadeCofre Visibilidade = VisibilidadeCofre.Privado) : IRequest<CofreResponse>;
 
 // ── Handler ───────────────────────────────────────────────────────────────────
 public class CriarCofreCommandHandler : IRequestHandler<CriarCofreCommand, CofreResponse>
@@ -39,14 +40,14 @@ public class CriarCofreCommandHandler : IRequestHandler<CriarCofreCommand, Cofre
 
     public async Task<CofreResponse> Handle(CriarCofreCommand cmd, CancellationToken ct)
     {
-        var cofre = CofreDomain.Criar(cmd.Nome, cmd.Meta, cmd.CriadoPorUsuarioId, cmd.Descricao, cmd.Categoria);
+        var cofre = CofreDomain.Criar(cmd.Nome, cmd.Meta, cmd.CriadoPorUsuarioId, cmd.Descricao, cmd.Categoria, cmd.Visibilidade);
 
         if (!cofre.IsValid)
             throw new DomainValidationException(cofre.Notifications.Select(n => n.Message));
 
         await _cofreRepository.AddAsync(cofre, ct);
 
-        var participante = ParticipanteDomain.Criar(cofre.Id, cmd.CriadoPorUsuarioId);
+        var participante = ParticipanteDomain.Criar(cofre.Id, cmd.CriadoPorUsuarioId, RoleParticipante.Admin);
         await _participanteRepository.AddAsync(participante, ct);
 
         await _dispatcher.DispatchAsync(cofre, ct);

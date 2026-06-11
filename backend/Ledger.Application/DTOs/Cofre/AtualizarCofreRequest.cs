@@ -6,4 +6,7 @@ public class AtualizarCofreRequest
     public decimal  Meta      { get; set; }
     public string?  Descricao { get; set; }
     public string   Categoria { get; set; } = "Outro";
+
+    /// <summary>Privado ou Compartilhado</summary>
+    public string   Visibilidade { get; set; } = "Privado";
 }
