@@ -42,12 +42,12 @@
         <span class="stat-value">{{ formatarMoeda(c.meta) }}</span>
       </div>
       <div class="stat-card">
-        <span class="stat-label">Movimentado</span>
+        <span class="stat-label">Saldo</span>
         <span class="stat-value">{{ formatarMoeda(c.totalMovimentado) }}</span>
       </div>
       <div class="stat-card">
-        <span class="stat-label">Saldo</span>
-        <span class="stat-value">{{ formatarMoeda(c.meta - c.totalMovimentado) }}</span>
+        <span class="stat-label">Faltante</span>
+        <span class="stat-value">{{ formatarMoeda(c.meta - c.totalMovimentado > 0 ? c.meta - c.totalMovimentado : 0) }}</span>
       </div>
       <div class="stat-card">
         <span class="stat-label">Progresso</span>

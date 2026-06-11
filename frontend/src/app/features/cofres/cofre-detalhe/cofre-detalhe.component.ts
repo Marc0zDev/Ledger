@@ -59,13 +59,15 @@ export class CofreDetalheComponent implements OnInit {
     data: [new Date().toISOString().substring(0, 10), Validators.required],
   });
 
+  private cofreId!: string;
+
   ngOnInit(): void {
-    const id = this.route.snapshot.paramMap.get('id')!;
-    this.carregar(id);
+    this.cofreId = this.route.snapshot.paramMap.get('id')!;
+    this.carregar();
   }
 
-  private carregar(id: string): void {
-    this.cofreService.obterComDetalhes(id).subscribe({
+  private carregar(): void {
+    this.cofreService.obterComDetalhes(this.cofreId).subscribe({
       next: (data) => {
         this.cofre.set(data);
         this.participantes.set(data.participantes ?? []);
@@ -76,6 +78,12 @@ export class CofreDetalheComponent implements OnInit {
         this.erro.set('Não foi possível carregar o cofre.');
         this.loading.set(false);
       },
+    });
+  }
+
+  private recarregarCofre(): void {
+    this.cofreService.obterComDetalhes(this.cofreId).subscribe({
+      next: (data) => this.cofre.set(data),
     });
   }
 
@@ -145,11 +153,8 @@ export class CofreDetalheComponent implements OnInit {
       data: v.data!,
     }).subscribe({
       next: (mov) => {
-        // Actualizar saldo localmente
-        const delta = v.tipo === 'Entrada' ? v.valor! : -v.valor!;
-        const c = this.cofre()!;
-        this.cofre.set({ ...c, totalMovimentado: c.totalMovimentado + delta });
-        this.recarregarMovimentacoes(1); // volta à página 1 com dados frescos do servidor
+        this.recarregarCofre();        // re-busca totalMovimentado correto do servidor
+        this.recarregarMovimentacoes(1);
         this.formMovimentacao.reset({
           descricao: '', valor: 0, tipo: 'Entrada',
           data: new Date().toISOString().substring(0, 10),
