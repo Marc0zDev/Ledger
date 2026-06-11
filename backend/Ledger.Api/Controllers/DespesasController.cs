@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using Ledger.Application.Commands.Despesa;
+using Ledger.Application.DTOs.Cofre;
 using Ledger.Application.DTOs.Despesa;
 using Ledger.Application.Queries.Despesa;
 using Ledger.Domain.Enums;
@@ -10,7 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Ledger.Api.Controllers;
 
 /// <summary>
-/// Templates de despesa — definições recorrentes ou fixas que geram lançamentos mensais.
+/// Contas fixas — definições recorrentes que geram lançamentos mensais automaticamente.
 /// </summary>
 [ApiController]
 [Route("api/despesas")]
@@ -26,12 +27,15 @@ public class DespesasController : ControllerBase
             ?? User.FindFirstValue("sub")
             ?? throw new UnauthorizedAccessException());
 
-    /// <summary>Lista todos os templates do usuário.</summary>
+    /// <summary>Lista contas fixas do usuário com paginação.</summary>
     [HttpGet]
-    public async Task<IActionResult> Listar(CancellationToken ct)
+    public async Task<IActionResult> Listar(
+        [FromQuery] int page     = 1,
+        [FromQuery] int pageSize = 10,
+        CancellationToken ct = default)
     {
-        var despesas = await _mediator.Send(new ListarDespesasQuery(UsuarioId), ct);
-        return Ok(despesas);
+        var result = await _mediator.Send(new ListarDespesasQuery(UsuarioId, page, pageSize), ct);
+        return Ok(result);
     }
 
     [HttpGet("{id:guid}")]

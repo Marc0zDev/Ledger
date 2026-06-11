@@ -28,7 +28,8 @@ public class MovimentacaoRepository : BaseRepository<MovimentacaoDomain, Movimen
         var query = DbSet
             .Include(m => m.Usuario)
             .Where(m => m.CofreId == cofreId)
-            .OrderByDescending(m => m.Data);
+            .OrderByDescending(m => m.Data)
+            .ThenByDescending(m => m.CreatedAt);
 
         var total  = await query.CountAsync(ct);
         var models = await query

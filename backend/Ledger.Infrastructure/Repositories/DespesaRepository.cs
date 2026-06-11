@@ -22,6 +22,24 @@ public class DespesaRepository : BaseRepository<DespesaDomain, DespesaModel>, ID
         return Mapper.Map<IEnumerable<DespesaDomain>>(models);
     }
 
+    public async Task<(IEnumerable<DespesaDomain> Items, int Total)> GetPagedByUsuarioIdAsync(
+        Guid usuarioId, int page, int pageSize, CancellationToken ct = default)
+    {
+        var query = DbSet
+            .Include(d => d.Categoria)
+            .Where(d => d.UsuarioId == usuarioId)
+            .OrderBy(d => d.Tipo)
+            .ThenBy(d => d.Nome);
+
+        var total  = await query.CountAsync(ct);
+        var models = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(ct);
+
+        return (Mapper.Map<IEnumerable<DespesaDomain>>(models), total);
+    }
+
     public async Task<IEnumerable<DespesaDomain>> GetAtivosAsync(Guid usuarioId, CancellationToken ct = default)
     {
         var models = await DbSet

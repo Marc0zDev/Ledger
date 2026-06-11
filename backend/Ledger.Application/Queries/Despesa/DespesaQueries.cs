@@ -1,14 +1,16 @@
 using AutoMapper;
+using Ledger.Application.DTOs.Cofre;
 using Ledger.Application.DTOs.Despesa;
 using Ledger.Domain.Interfaces;
 using MediatR;
 
 namespace Ledger.Application.Queries.Despesa;
 
-// ── Listar templates do usuário ───────────────────────────────────────────────
-public record ListarDespesasQuery(Guid UsuarioId) : IRequest<IEnumerable<DespesaResponse>>;
+// ── Listar contas fixas do usuário (paginado) ─────────────────────────────────
+public record ListarDespesasQuery(Guid UsuarioId, int Page = 1, int PageSize = 10)
+    : IRequest<PagedResult<DespesaResponse>>;
 
-public class ListarDespesasQueryHandler : IRequestHandler<ListarDespesasQuery, IEnumerable<DespesaResponse>>
+public class ListarDespesasQueryHandler : IRequestHandler<ListarDespesasQuery, PagedResult<DespesaResponse>>
 {
     private readonly IDespesaRepository  _despesaRepo;
     private readonly ICategoriaRepository _categoriaRepo;
@@ -22,13 +24,15 @@ public class ListarDespesasQueryHandler : IRequestHandler<ListarDespesasQuery, I
         _mapper        = mapper;
     }
 
-    public async Task<IEnumerable<DespesaResponse>> Handle(ListarDespesasQuery query, CancellationToken ct)
+    public async Task<PagedResult<DespesaResponse>> Handle(ListarDespesasQuery query, CancellationToken ct)
     {
-        var despesas   = await _despesaRepo.GetByUsuarioIdAsync(query.UsuarioId, ct);
+        var (despesas, total) = await _despesaRepo.GetPagedByUsuarioIdAsync(
+            query.UsuarioId, query.Page, query.PageSize, ct);
+
         var categorias = (await _categoriaRepo.GetByUsuarioIdAsync(query.UsuarioId, ct))
                           .ToDictionary(c => c.Id);
 
-        return despesas.Select(d =>
+        var items = despesas.Select(d =>
         {
             var r = _mapper.Map<DespesaResponse>(d);
             if (categorias.TryGetValue(d.CategoriaId, out var cat))
@@ -38,7 +42,15 @@ public class ListarDespesasQueryHandler : IRequestHandler<ListarDespesasQuery, I
                 r.CategoriaCor   = cat.Cor;
             }
             return r;
-        });
+        }).ToList();
+
+        return new PagedResult<DespesaResponse>
+        {
+            Items      = items,
+            Page       = query.Page,
+            PageSize   = query.PageSize,
+            Total      = total,
+        };
     }
 }
 
