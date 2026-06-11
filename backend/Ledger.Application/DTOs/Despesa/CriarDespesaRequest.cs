@@ -1,20 +1,11 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿namespace Ledger.Application.DTOs.Despesa;
 
-namespace Ledger.Application.DTOs.Despesa;
-
+/// <summary>Cria um template de despesa.</summary>
 public class CriarDespesaRequest
 {
-    [Required]
-    [MaxLength(200)]
-    public string   Descricao      { get; set; } = string.Empty;
-
-    [Range(0.01, double.MaxValue)]
-    public decimal  Valor          { get; set; }
-
-    public DateTime DataVencimento { get; set; }
-
-    /// <summary>Categoria da despesa (padrão: 99 = Outro).</summary>
-    public int Categoria   { get; set; } = 99;
-
-    public bool Recorrente { get; set; } = false;
+    public string  Nome           { get; set; } = string.Empty;
+    public int     Tipo           { get; set; } = 3; // Avulsa default
+    public decimal ValorPlanejado { get; set; }
+    public Guid    CategoriaId    { get; set; }
+    public int?    DiaVencimento  { get; set; }
 }
