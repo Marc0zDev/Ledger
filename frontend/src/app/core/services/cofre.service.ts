@@ -5,7 +5,7 @@ import { environment } from '../../../environments/environment';
 import {
   CofreResponse, CriarCofreRequest, AtualizarCofreRequest,
   AdicionarParticipanteRequest, ParticipanteResponse,
-  RegistrarDespesaRequest, DespesaResponse,
+  RegistrarDespesaRequest, CofreDespesaResponse,
 } from '../models/cofre.model';
 
 @Injectable({ providedIn: 'root' })
@@ -55,12 +55,12 @@ export class CofreService {
 
   // ── Despesas ─────────────────────────────────────────────────────────
 
-  listarDespesas(cofreId: string): Observable<DespesaResponse[]> {
-    return this.http.get<DespesaResponse[]>(`${environment.apiUrl}/api/despesas/cofre/${cofreId}`);
+  listarDespesas(cofreId: string): Observable<CofreDespesaResponse[]> {
+    return this.http.get<CofreDespesaResponse[]>(`${environment.apiUrl}/api/despesas/cofre/${cofreId}`);
   }
 
-  registrarDespesa(cofreId: string, request: RegistrarDespesaRequest): Observable<DespesaResponse> {
-    return this.http.post<DespesaResponse>(`${environment.apiUrl}/api/despesas`, { ...request, cofreId });
+  registrarDespesa(cofreId: string, request: RegistrarDespesaRequest): Observable<CofreDespesaResponse> {
+    return this.http.post<CofreDespesaResponse>(`${environment.apiUrl}/api/despesas`, { ...request, cofreId });
   }
 
   removerDespesa(cofreId: string, despesaId: string): Observable<void> {

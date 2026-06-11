@@ -53,7 +53,93 @@ export interface ParticipanteResponse {
   createdAt: string;
 }
 
-// ── Despesa ──────────────────────────────────────────────────────────────
+// ── Categoria ────────────────────────────────────────────────────────────
+
+export interface CategoriaResponse {
+  id: string;
+  nome: string;
+  icone?: string;
+  cor?: string;
+  isSystem: boolean;
+}
+
+// ── Despesa (template) ────────────────────────────────────────────────────
+
+export type TipoDespesa = 1 | 2 | 3; // Fixa=1, Variavel=2, Avulsa=3
+
+export interface CriarDespesaRequest {
+  nome: string;
+  tipo: TipoDespesa;
+  valorPlanejado: number;
+  categoriaId: string;
+  diaVencimento?: number;
+}
+
+export interface AtualizarDespesaRequest {
+  nome: string;
+  tipo: TipoDespesa;
+  valorPlanejado: number;
+  categoriaId: string;
+  diaVencimento?: number;
+}
+
+export interface DespesaResponse {
+  id: string;
+  nome: string;
+  tipo: string;
+  valorPlanejado: number;
+  diaVencimento?: number;
+  ativa: boolean;
+  categoriaId: string;
+  categoriaNome: string;
+  categoriaIcone?: string;
+  categoriaCor?: string;
+  usuarioId: string;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+// ── DespesaPeriodo ────────────────────────────────────────────────────────
+
+export interface CriarDespesaPeriodoRequest {
+  despesaId?: string;
+  categoriaId: string;
+  descricao: string;
+  valorPlanejado: number;
+  competencia: string;
+}
+
+export interface AtualizarDespesaPeriodoRequest {
+  descricao: string;
+  valorPlanejado: number;
+  categoriaId: string;
+}
+
+export interface PagarDespesaPeriodoRequest {
+  dataPagamento?: string;
+  valorRealizado?: number;
+}
+
+export interface DespesaPeriodoResponse {
+  id: string;
+  despesaId?: string;
+  descricao: string;
+  categoriaId: string;
+  categoriaNome: string;
+  categoriaIcone?: string;
+  categoriaCor?: string;
+  usuarioId: string;
+  valorPlanejado: number;
+  valorRealizado: number;
+  paga: boolean;
+  pagaEm?: string;
+  boletoUrl?: string;
+  competencia: string;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+// ── Cofre Despesa (movimentações de cofre – legacy) ───────────────────────
 
 export interface RegistrarDespesaRequest {
   descricao: string;
@@ -63,15 +149,7 @@ export interface RegistrarDespesaRequest {
   recorrente?: boolean;
 }
 
-export interface AtualizarDespesaRequest {
-  descricao: string;
-  valor: number;
-  dataVencimento: string;
-  categoria?: number;
-  recorrente?: boolean;
-}
-
-export interface DespesaResponse {
+export interface CofreDespesaResponse {
   id: string;
   descricao: string;
   valor: number;
