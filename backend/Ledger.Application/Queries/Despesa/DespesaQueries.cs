@@ -5,67 +5,73 @@ using MediatR;
 
 namespace Ledger.Application.Queries.Despesa;
 
-// ── Listar por Usuário ────────────────────────────────────────────────────────
+// ── Listar templates do usuário ───────────────────────────────────────────────
 public record ListarDespesasQuery(Guid UsuarioId) : IRequest<IEnumerable<DespesaResponse>>;
 
 public class ListarDespesasQueryHandler : IRequestHandler<ListarDespesasQuery, IEnumerable<DespesaResponse>>
 {
-    private readonly IDespesaRepository _despesaRepository;
-    private readonly IMapper            _mapper;
+    private readonly IDespesaRepository  _despesaRepo;
+    private readonly ICategoriaRepository _categoriaRepo;
+    private readonly IMapper             _mapper;
 
-    public ListarDespesasQueryHandler(IDespesaRepository despesaRepository, IMapper mapper)
+    public ListarDespesasQueryHandler(IDespesaRepository despesaRepo,
+        ICategoriaRepository categoriaRepo, IMapper mapper)
     {
-        _despesaRepository = despesaRepository;
-        _mapper            = mapper;
+        _despesaRepo   = despesaRepo;
+        _categoriaRepo = categoriaRepo;
+        _mapper        = mapper;
     }
 
     public async Task<IEnumerable<DespesaResponse>> Handle(ListarDespesasQuery query, CancellationToken ct)
     {
-        var despesas = await _despesaRepository.GetByUsuarioIdAsync(query.UsuarioId, ct);
-        return _mapper.Map<IEnumerable<DespesaResponse>>(despesas);
+        var despesas   = await _despesaRepo.GetByUsuarioIdAsync(query.UsuarioId, ct);
+        var categorias = (await _categoriaRepo.GetByUsuarioIdAsync(query.UsuarioId, ct))
+                          .ToDictionary(c => c.Id);
+
+        return despesas.Select(d =>
+        {
+            var r = _mapper.Map<DespesaResponse>(d);
+            if (categorias.TryGetValue(d.CategoriaId, out var cat))
+            {
+                r.CategoriaNome  = cat.Nome;
+                r.CategoriaIcone = cat.Icone;
+                r.CategoriaCor   = cat.Cor;
+            }
+            return r;
+        });
     }
 }
 
-// ── Pendentes (próximas a vencer) ─────────────────────────────────────────────
-public record ListarDespesasPendentesQuery(Guid UsuarioId, DateTime? VencimentoAte = null)
-    : IRequest<IEnumerable<DespesaResponse>>;
-
-public class ListarDespesasPendentesQueryHandler
-    : IRequestHandler<ListarDespesasPendentesQuery, IEnumerable<DespesaResponse>>
-{
-    private readonly IDespesaRepository _despesaRepository;
-    private readonly IMapper            _mapper;
-
-    public ListarDespesasPendentesQueryHandler(IDespesaRepository despesaRepository, IMapper mapper)
-    {
-        _despesaRepository = despesaRepository;
-        _mapper            = mapper;
-    }
-
-    public async Task<IEnumerable<DespesaResponse>> Handle(ListarDespesasPendentesQuery query, CancellationToken ct)
-    {
-        var despesas = await _despesaRepository.GetPendentesAsync(query.UsuarioId, query.VencimentoAte, ct);
-        return _mapper.Map<IEnumerable<DespesaResponse>>(despesas);
-    }
-}
-
-// ── Obter por Id ─────────────────────────────────────────────────────────────
+// ── Obter template por Id ─────────────────────────────────────────────────────
 public record ObterDespesaQuery(Guid Id) : IRequest<DespesaResponse?>;
 
 public class ObterDespesaQueryHandler : IRequestHandler<ObterDespesaQuery, DespesaResponse?>
 {
-    private readonly IDespesaRepository _despesaRepository;
-    private readonly IMapper            _mapper;
+    private readonly IDespesaRepository  _despesaRepo;
+    private readonly ICategoriaRepository _categoriaRepo;
+    private readonly IMapper             _mapper;
 
-    public ObterDespesaQueryHandler(IDespesaRepository despesaRepository, IMapper mapper)
+    public ObterDespesaQueryHandler(IDespesaRepository despesaRepo,
+        ICategoriaRepository categoriaRepo, IMapper mapper)
     {
-        _despesaRepository = despesaRepository;
-        _mapper            = mapper;
+        _despesaRepo   = despesaRepo;
+        _categoriaRepo = categoriaRepo;
+        _mapper        = mapper;
     }
 
     public async Task<DespesaResponse?> Handle(ObterDespesaQuery query, CancellationToken ct)
     {
-        var despesa = await _despesaRepository.GetByIdAsync(query.Id, ct);
-        return despesa is null ? null : _mapper.Map<DespesaResponse>(despesa);
+        var despesa = await _despesaRepo.GetByIdAsync(query.Id, ct);
+        if (despesa is null) return null;
+
+        var r = _mapper.Map<DespesaResponse>(despesa);
+        var cat = await _categoriaRepo.GetByIdAsync(despesa.CategoriaId, ct);
+        if (cat is not null)
+        {
+            r.CategoriaNome  = cat.Nome;
+            r.CategoriaIcone = cat.Icone;
+            r.CategoriaCor   = cat.Cor;
+        }
+        return r;
     }
 }

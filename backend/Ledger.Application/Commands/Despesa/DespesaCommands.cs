@@ -7,49 +7,27 @@ using MediatR;
 
 namespace Ledger.Application.Commands.Despesa;
 
-// ── PagarDespesa ──────────────────────────────────────────────────────────────
-public record PagarDespesaCommand(Guid Id, DateTime? DataPagamento = null) : IRequest<DespesaResponse?>;
-
-public class PagarDespesaCommandHandler : IRequestHandler<PagarDespesaCommand, DespesaResponse?>
-{
-    private readonly IDespesaRepository _despesaRepository;
-    private readonly IMapper            _mapper;
-
-    public PagarDespesaCommandHandler(IDespesaRepository despesaRepository, IMapper mapper)
-    {
-        _despesaRepository = despesaRepository;
-        _mapper            = mapper;
-    }
-
-    public async Task<DespesaResponse?> Handle(PagarDespesaCommand cmd, CancellationToken ct)
-    {
-        var despesa = await _despesaRepository.GetByIdAsync(cmd.Id, ct);
-        if (despesa is null) return null;
-
-        despesa.Pagar(cmd.DataPagamento);
-        await _despesaRepository.UpdateAsync(despesa, ct);
-        return _mapper.Map<DespesaResponse>(despesa);
-    }
-}
-
-// ── AtualizarDespesa ──────────────────────────────────────────────────────────
+// ── AtualizarDespesa (template) ───────────────────────────────────────────────
 public record AtualizarDespesaCommand(
-    Guid             Id,
-    string           Descricao,
-    decimal          Valor,
-    DateTime         DataVencimento,
-    CategoriaDespesa Categoria,
-    bool             Recorrente) : IRequest<DespesaResponse?>;
+    Guid       Id,
+    string     Nome,
+    TipoDespesa Tipo,
+    decimal    ValorPlanejado,
+    Guid       CategoriaId,
+    int?       DiaVencimento) : IRequest<DespesaResponse?>;
 
 public class AtualizarDespesaCommandHandler : IRequestHandler<AtualizarDespesaCommand, DespesaResponse?>
 {
-    private readonly IDespesaRepository _despesaRepository;
-    private readonly IMapper            _mapper;
+    private readonly IDespesaRepository  _despesaRepository;
+    private readonly ICategoriaRepository _categoriaRepository;
+    private readonly IMapper             _mapper;
 
-    public AtualizarDespesaCommandHandler(IDespesaRepository despesaRepository, IMapper mapper)
+    public AtualizarDespesaCommandHandler(IDespesaRepository despesaRepository,
+        ICategoriaRepository categoriaRepository, IMapper mapper)
     {
-        _despesaRepository = despesaRepository;
-        _mapper            = mapper;
+        _despesaRepository   = despesaRepository;
+        _categoriaRepository = categoriaRepository;
+        _mapper              = mapper;
     }
 
     public async Task<DespesaResponse?> Handle(AtualizarDespesaCommand cmd, CancellationToken ct)
@@ -57,38 +35,40 @@ public class AtualizarDespesaCommandHandler : IRequestHandler<AtualizarDespesaCo
         var despesa = await _despesaRepository.GetByIdAsync(cmd.Id, ct);
         if (despesa is null) return null;
 
-        despesa.Atualizar(cmd.Descricao, cmd.Valor, cmd.DataVencimento, cmd.Categoria, cmd.Recorrente);
+        var categoria = await _categoriaRepository.GetByIdAsync(cmd.CategoriaId, ct)
+            ?? throw new DomainValidationException(["Categoria não encontrada."]);
+
+        despesa.Atualizar(cmd.Nome, cmd.Tipo, cmd.ValorPlanejado, cmd.CategoriaId, cmd.DiaVencimento);
 
         if (!despesa.IsValid)
             throw new DomainValidationException(despesa.Notifications.Select(n => n.Message));
 
         await _despesaRepository.UpdateAsync(despesa, ct);
-        return _mapper.Map<DespesaResponse>(despesa);
+
+        var response = _mapper.Map<DespesaResponse>(despesa);
+        response.CategoriaNome  = categoria.Nome;
+        response.CategoriaIcone = categoria.Icone;
+        response.CategoriaCor   = categoria.Cor;
+        return response;
     }
 }
 
-// ── AnexarBoleto ──────────────────────────────────────────────────────────────
-public record AnexarBoletoCommand(Guid Id, string Path) : IRequest<DespesaResponse?>;
+// ── DesativarDespesa ──────────────────────────────────────────────────────────
+public record DesativarDespesaCommand(Guid Id) : IRequest<bool>;
 
-public class AnexarBoletoCommandHandler : IRequestHandler<AnexarBoletoCommand, DespesaResponse?>
+public class DesativarDespesaCommandHandler : IRequestHandler<DesativarDespesaCommand, bool>
 {
     private readonly IDespesaRepository _despesaRepository;
-    private readonly IMapper            _mapper;
 
-    public AnexarBoletoCommandHandler(IDespesaRepository despesaRepository, IMapper mapper)
-    {
-        _despesaRepository = despesaRepository;
-        _mapper            = mapper;
-    }
+    public DesativarDespesaCommandHandler(IDespesaRepository despesaRepository)
+        => _despesaRepository = despesaRepository;
 
-    public async Task<DespesaResponse?> Handle(AnexarBoletoCommand cmd, CancellationToken ct)
+    public async Task<bool> Handle(DesativarDespesaCommand cmd, CancellationToken ct)
     {
         var despesa = await _despesaRepository.GetByIdAsync(cmd.Id, ct);
-        if (despesa is null) return null;
-
-        despesa.AnexarBoleto(cmd.Path);
+        if (despesa is null) return false;
+        despesa.Desativar();
         await _despesaRepository.UpdateAsync(despesa, ct);
-        return _mapper.Map<DespesaResponse>(despesa);
+        return true;
     }
 }
-
