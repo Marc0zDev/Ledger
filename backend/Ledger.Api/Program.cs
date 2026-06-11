@@ -53,7 +53,9 @@ builder.Services.AddAutoMapper(
 builder.Services.AddScoped<ICofreRepository, CofreRepository>();
 builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
 builder.Services.AddScoped<IParticipanteRepository, ParticipanteRepository>();
+builder.Services.AddScoped<ICategoriaRepository, CategoriaRepository>();
 builder.Services.AddScoped<IDespesaRepository, DespesaRepository>();
+builder.Services.AddScoped<IDespesaPeriodoRepository, DespesaPeriodoRepository>();
 builder.Services.AddScoped<IMovimentacaoRepository, MovimentacaoRepository>();
 builder.Services.AddScoped<IConviteRepository, ConviteRepository>();
 
