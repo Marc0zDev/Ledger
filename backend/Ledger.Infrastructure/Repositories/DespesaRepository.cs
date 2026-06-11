@@ -14,24 +14,20 @@ public class DespesaRepository : BaseRepository<DespesaDomain, DespesaModel>, ID
     public async Task<IEnumerable<DespesaDomain>> GetByUsuarioIdAsync(Guid usuarioId, CancellationToken ct = default)
     {
         var models = await DbSet
+            .Include(d => d.Categoria)
             .Where(d => d.UsuarioId == usuarioId)
-            .OrderByDescending(d => d.DataVencimento)
+            .OrderBy(d => d.Nome)
             .ToListAsync(ct);
 
         return Mapper.Map<IEnumerable<DespesaDomain>>(models);
     }
 
-    public async Task<IEnumerable<DespesaDomain>> GetPendentesAsync(
-        Guid usuarioId, DateTime? vencimentoAte = null, CancellationToken ct = default)
+    public async Task<IEnumerable<DespesaDomain>> GetAtivosAsync(Guid usuarioId, CancellationToken ct = default)
     {
-        var query = DbSet
-            .Where(d => d.UsuarioId == usuarioId && !d.Paga);
-
-        if (vencimentoAte.HasValue)
-            query = query.Where(d => d.DataVencimento <= vencimentoAte.Value);
-
-        var models = await query
-            .OrderBy(d => d.DataVencimento)
+        var models = await DbSet
+            .Where(d => d.UsuarioId == usuarioId && d.Ativa)
+            .OrderBy(d => d.Tipo)
+            .ThenBy(d => d.Nome)
             .ToListAsync(ct);
 
         return Mapper.Map<IEnumerable<DespesaDomain>>(models);

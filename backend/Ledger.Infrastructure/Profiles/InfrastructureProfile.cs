@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using Ledger.Domain.Entities;
 using Ledger.Domain.Enums;
 using Ledger.Infrastructure.Data.Models;
@@ -8,9 +8,8 @@ public class InfrastructureProfile : Profile
 {
     public InfrastructureProfile()
     {
-        // ── Model → Domain (via Reconstituir) ────────────────────────────
+        // -- Model ? Domain (via Reconstituir) ----------------------------
 
-        // ApplicationUser (Identity) → UsuarioDomain (projeção de domínio)
         CreateMap<ApplicationUser, UsuarioDomain>()
             .ConstructUsing(src => UsuarioDomain.Reconstituir(
                 src.Id, src.Nome, src.Email!, src.CreatedAt, src.UpdatedAt))
@@ -23,12 +22,24 @@ public class InfrastructureProfile : Profile
                 src.CreatedAt, src.UpdatedAt))
             .ForAllMembers(opt => opt.Ignore());
 
+        CreateMap<CategoriaModel, CategoriaDomain>()
+            .ConstructUsing(src => CategoriaDomain.Reconstituir(
+                src.Id, src.UsuarioId, src.Nome, src.Icone, src.Cor,
+                src.CreatedAt, src.UpdatedAt))
+            .ForAllMembers(opt => opt.Ignore());
+
         CreateMap<DespesaModel, DespesaDomain>()
             .ConstructUsing(src => DespesaDomain.Reconstituir(
-                src.Id, src.Descricao, src.Valor,
-                src.DataVencimento, src.DataPagamento, src.Paga, src.BoletoPath,
-                src.UsuarioId, (CategoriaDespesa)src.Categoria, src.Recorrente,
+                src.Id, src.Nome, (TipoDespesa)src.Tipo, src.ValorPlanejado,
+                src.DiaVencimento, src.Ativa, src.CategoriaId, src.UsuarioId,
                 src.CreatedAt, src.UpdatedAt))
+            .ForAllMembers(opt => opt.Ignore());
+
+        CreateMap<DespesaPeriodoModel, DespesaPeriodoDomain>()
+            .ConstructUsing(src => DespesaPeriodoDomain.Reconstituir(
+                src.Id, src.DespesaId, src.CategoriaId, src.UsuarioId, src.Descricao,
+                src.ValorPlanejado, src.ValorRealizado, src.PagaEm, src.BoletoPath,
+                src.Competencia, src.CreatedAt, src.UpdatedAt))
             .ForAllMembers(opt => opt.Ignore());
 
         CreateMap<MovimentacaoModel, MovimentacaoDomain>()
@@ -47,20 +58,21 @@ public class InfrastructureProfile : Profile
                 ctx.Mapper.Map<IEnumerable<MovimentacaoDomain>>(src.Movimentacoes)))
             .ForAllMembers(opt => opt.Ignore());
 
-        // ── Domain → Model (apenas escalares; coleções gerenciadas pelo EF) ─
+        // -- Domain ? Model ------------------------------------------------
 
         CreateMap<ParticipanteDomain, ParticipanteModel>()
             .ForMember(m => m.Cofre,   opt => opt.Ignore())
             .ForMember(m => m.Usuario, opt => opt.Ignore());
 
+        CreateMap<CategoriaDomain, CategoriaModel>();
+
         CreateMap<DespesaDomain, DespesaModel>()
-            .ForMember(m => m.Paga,           opt => opt.MapFrom(d => d.Paga))
-            .ForMember(m => m.DataVencimento,  opt => opt.MapFrom(d => d.DataVencimento))
-            .ForMember(m => m.DataPagamento,   opt => opt.MapFrom(d => d.DataPagamento))
-            .ForMember(m => m.BoletoPath,      opt => opt.MapFrom(d => d.BoletoPath))
-            .ForMember(m => m.UsuarioId,       opt => opt.MapFrom(d => d.UsuarioId))
-            .ForMember(m => m.Categoria,       opt => opt.MapFrom(d => (int)d.Categoria))
-            .ForMember(m => m.Recorrente,      opt => opt.MapFrom(d => d.Recorrente));
+            .ForMember(m => m.Tipo,     opt => opt.MapFrom(d => (int)d.Tipo))
+            .ForMember(m => m.Categoria, opt => opt.Ignore());
+
+        CreateMap<DespesaPeriodoDomain, DespesaPeriodoModel>()
+            .ForMember(m => m.Despesa,   opt => opt.Ignore())
+            .ForMember(m => m.Categoria, opt => opt.Ignore());
 
         CreateMap<MovimentacaoDomain, MovimentacaoModel>()
             .ForMember(m => m.Tipo,  opt => opt.MapFrom(d => (int)d.Tipo))
@@ -72,7 +84,7 @@ public class InfrastructureProfile : Profile
             .ForMember(m => m.Participantes, opt => opt.Ignore())
             .ForMember(m => m.Movimentacoes, opt => opt.Ignore());
 
-        // ── Convite ───────────────────────────────────────────────────────
+        // -- Convite -------------------------------------------------------
 
         CreateMap<ConviteModel, ConviteDomain>()
             .ConstructUsing(src => ConviteDomain.Reconstituir(
