@@ -6,6 +6,7 @@ import {
   DespesaResponse,
   CriarDespesaRequest,
   AtualizarDespesaRequest,
+  PagedResult,
 } from '../models/cofre.model';
 
 @Injectable({ providedIn: 'root' })
@@ -13,8 +14,8 @@ export class DespesaService {
   private readonly http = inject(HttpClient);
   private readonly base = `${environment.apiUrl}/api/despesas`;
 
-  listar(): Observable<DespesaResponse[]> {
-    return this.http.get<DespesaResponse[]>(this.base);
+  listar(page = 1, pageSize = 10): Observable<PagedResult<DespesaResponse>> {
+    return this.http.get<PagedResult<DespesaResponse>>(this.base, { params: { page, pageSize } });
   }
 
   obter(id: string): Observable<DespesaResponse> {
