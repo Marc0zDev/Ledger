@@ -3,15 +3,16 @@ namespace Ledger.Infrastructure.Data.Models;
 public class DespesaModel
 {
     public Guid      Id             { get; set; }
-    public string    Descricao      { get; set; } = string.Empty;
-    public decimal   Valor          { get; set; }
-    public DateTime  DataVencimento { get; set; }
-    public DateTime? DataPagamento  { get; set; }
-    public bool      Paga           { get; set; }
-    public string?   BoletoPath     { get; set; }
+    public string    Nome           { get; set; } = string.Empty;
+    public int       Tipo           { get; set; }   // TipoDespesa enum
+    public decimal   ValorPlanejado { get; set; }
+    public int?      DiaVencimento  { get; set; }
+    public bool      Ativa          { get; set; } = true;
+    public Guid      CategoriaId    { get; set; }
     public Guid      UsuarioId      { get; set; }
-    public int       Categoria      { get; set; }
-    public bool      Recorrente     { get; set; }
     public DateTime  CreatedAt      { get; set; }
     public DateTime? UpdatedAt      { get; set; }
+
+    // Navigation
+    public CategoriaModel? Categoria { get; set; }
 }
