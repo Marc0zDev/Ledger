@@ -22,12 +22,16 @@ public class MovimentacoesController : ControllerBase
             ?? User.FindFirstValue("sub")
             ?? throw new UnauthorizedAccessException());
 
-    /// <summary>Lista todas as movimentações de um cofre.</summary>
+    /// <summary>Lista movimentações de um cofre com paginação.</summary>
     [HttpGet]
-    public async Task<IActionResult> Listar(Guid cofreId, CancellationToken ct)
+    public async Task<IActionResult> Listar(
+        Guid cofreId,
+        [FromQuery] int page     = 1,
+        [FromQuery] int pageSize = 5,
+        CancellationToken ct = default)
     {
-        var movs = await _mediator.Send(new ListarMovimentacoesQuery(cofreId), ct);
-        return Ok(movs);
+        var result = await _mediator.Send(new ListarMovimentacoesQuery(cofreId, page, pageSize), ct);
+        return Ok(result);
     }
 
     /// <summary>Registra uma nova movimentação (entrada ou saída) no cofre.</summary>

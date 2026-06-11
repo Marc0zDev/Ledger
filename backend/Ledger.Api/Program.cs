@@ -110,6 +110,8 @@ if (app.Environment.IsDevelopment())
     app.MapScalarApiReference(options => options.WithTitle("Ledger API"));
 }
 
+app.UseCors("AngularApp");
+
 // Handler global para erros de validação de domínio → 422
 app.UseExceptionHandler(errApp => errApp.Run(async ctx =>
 {
@@ -128,7 +130,6 @@ app.UseExceptionHandler(errApp => errApp.Run(async ctx =>
     }
 }));
 
-app.UseCors("AngularApp");
 app.UseStaticFiles(); // serve wwwroot/boletos/*.pdf
 app.UseAuthentication();
 app.UseAuthorization();
