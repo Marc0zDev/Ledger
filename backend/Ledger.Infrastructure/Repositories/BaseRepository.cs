@@ -45,7 +45,16 @@ public abstract class BaseRepository<TDomain, TModel> : IRepository<TDomain>
 
     public virtual async Task UpdateAsync(TDomain entity, CancellationToken ct = default)
     {
-        DbSet.Update(Mapper.Map<TModel>(entity));
+        var newModel = Mapper.Map<TModel>(entity);
+
+        // Se o contexto já está rastreando uma instância com o mesmo Id
+        // (carregada pelo GetByIdAsync), desanexe antes de atualizar.
+        var tracked = Context.ChangeTracker.Entries<TModel>()
+            .FirstOrDefault(e => (Guid)e.Property("Id").CurrentValue! == entity.Id);
+        if (tracked is not null)
+            tracked.State = EntityState.Detached;
+
+        DbSet.Update(newModel);
         await Context.SaveChangesAsync(ct);
     }
 
