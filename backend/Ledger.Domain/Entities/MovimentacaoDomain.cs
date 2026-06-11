@@ -15,6 +15,7 @@ public class MovimentacaoDomain : BaseDomain
     public DateTime          Data       { get; private set; }
     public Guid              CofreId    { get; private set; }
     public Guid              UsuarioId  { get; private set; }
+    public string?           UsuarioNome { get; private set; }
 
     private MovimentacaoDomain() { }
 
@@ -45,8 +46,8 @@ public class MovimentacaoDomain : BaseDomain
     public static MovimentacaoDomain Criar(string descricao, decimal valor, TipoMovimentacao tipo, DateTime data, Guid cofreId, Guid usuarioId)
         => new(descricao, valor, tipo, data, cofreId, usuarioId);
 
-    public static MovimentacaoDomain Reconstituir(Guid id, string descricao, decimal valor, TipoMovimentacao tipo, DateTime data, Guid cofreId, Guid usuarioId, DateTime createdAt, DateTime? updatedAt)
-        => new(id, descricao, valor, tipo, data, cofreId, usuarioId, createdAt, updatedAt);
+    public static MovimentacaoDomain Reconstituir(Guid id, string descricao, decimal valor, TipoMovimentacao tipo, DateTime data, Guid cofreId, Guid usuarioId, DateTime createdAt, DateTime? updatedAt, string? usuarioNome = null)
+        => new(id, descricao, valor, tipo, data, cofreId, usuarioId, createdAt, updatedAt) { UsuarioNome = usuarioNome };
 
     protected override void Validate()
     {
