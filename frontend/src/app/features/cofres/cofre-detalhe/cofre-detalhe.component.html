@@ -121,52 +121,6 @@
           }
         </section>
 
-        <!-- Despesas -->
-        <section class="section-card">
-          <div class="section-header">
-            <h2 class="section-title">
-              <i class="pi pi-receipt"></i>
-              Despesas
-            </h2>
-            <div class="section-actions">
-              <span class="section-count">{{ despesas().length }}</span>
-              <button class="btn-add" (click)="showFormDespesa.set(!showFormDespesa())" [class.active]="showFormDespesa()">
-                <i class="pi" [class.pi-plus]="!showFormDespesa()" [class.pi-times]="showFormDespesa()"></i>
-              </button>
-            </div>
-          </div>
-
-          @if (showFormDespesa()) {
-            <form [formGroup]="formDespesa" (ngSubmit)="registrarDespesa()" class="inline-form">
-              <input formControlName="descricao" type="text" placeholder="Descrição" class="form-input" />
-              <input formControlName="valor" type="number" step="0.01" min="0.01" placeholder="Valor (R$)" class="form-input" />
-              <input formControlName="dataVencimento" type="date" class="form-input" />
-              @if (errosDespesa().length > 0) {
-                <p class="form-erro">{{ errosDespesa()[0] }}</p>
-              }
-              <div class="form-actions">
-                <button type="button" class="btn-cancel" (click)="showFormDespesa.set(false)">Cancelar</button>
-                <button type="submit" class="btn-save" [disabled]="formDespesa.invalid || savingDespesa()">
-                  {{ savingDespesa() ? 'Salvando...' : 'Registrar' }}
-                </button>
-              </div>
-            </form>
-          }
-
-          @if (despesas().length === 0 && !showFormDespesa()) {
-            <p class="empty-msg">Nenhuma despesa registrada.</p>
-          }
-          @for (d of despesas(); track d.id) {
-            <div class="despesa-item">
-              <div class="d-info">
-                <span class="d-desc">{{ d.descricao }}</span>
-                <span class="d-data">{{ formatarData(d.dataVencimento) }}</span>
-              </div>
-              <span class="d-valor">{{ formatarMoeda(d.valor) }}</span>
-            </div>
-          }
-        </section>
-
       </div>
   }
 

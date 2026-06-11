@@ -3,7 +3,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { CofreService } from '../../../core/services/cofre.service';
 import { UsuarioService } from '../../../core/services/usuario.service';
-import { CofreResponse, ParticipanteResponse, DespesaResponse, UsuarioResponse } from '../../../core/models/cofre.model';
+import { CofreResponse, ParticipanteResponse, UsuarioResponse } from '../../../core/models/cofre.model';
 
 @Component({
   selector: 'app-cofre-detalhe',
@@ -20,19 +20,15 @@ export class CofreDetalheComponent implements OnInit {
 
   cofre = signal<CofreResponse | null>(null);
   participantes = signal<ParticipanteResponse[]>([]);
-  despesas = signal<DespesaResponse[]>([]);
   loading = signal(true);
   erro = signal<string | null>(null);
 
   // Painéis
   showFormParticipante = signal(false);
-  showFormDespesa = signal(false);
 
   // Estado dos forms
   savingParticipante = signal(false);
-  savingDespesa = signal(false);
   errosParticipante = signal<string[]>([]);
-  errosDespesa = signal<string[]>([]);
 
   // Usuário encontrado pelo email (lookup)
   usuarioEncontrado = signal<UsuarioResponse | null>(null);
@@ -40,12 +36,6 @@ export class CofreDetalheComponent implements OnInit {
 
   formParticipante = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
-  });
-
-  formDespesa = this.fb.group({
-    descricao:      ['', [Validators.required, Validators.maxLength(200)]],
-    valor:          [null as number | null, [Validators.required, Validators.min(0.01)]],
-    dataVencimento: [new Date().toISOString().substring(0, 10), Validators.required],
   });
 
   ngOnInit(): void {
@@ -65,24 +55,11 @@ export class CofreDetalheComponent implements OnInit {
         this.loading.set(false);
       },
     });
-    this.cofreService.listarDespesas(id).subscribe({
-      next: (list) => this.despesas.set(list),
-    });
   }
 
   private recarregarParticipantes(): void {
     this.cofreService.listarParticipantes(this.cofre()!.id).subscribe({
       next: (list) => this.participantes.set(list),
-    });
-  }
-
-  private recarregarDespesas(): void {
-    const id = this.cofre()!.id;
-    this.cofreService.listarDespesas(id).subscribe({
-      next: (list) => this.despesas.set(list),
-    });
-    this.cofreService.obterComDetalhes(id).subscribe({
-      next: (c) => this.cofre.set(c),
     });
   }
 
@@ -116,29 +93,6 @@ export class CofreDetalheComponent implements OnInit {
       error: (err) => {
         this.errosParticipante.set(err?.error?.errors ?? ['Erro ao adicionar participante.']);
         this.savingParticipante.set(false);
-      },
-    });
-  }
-
-  registrarDespesa(): void {
-    if (this.formDespesa.invalid || this.savingDespesa()) return;
-    this.errosDespesa.set([]);
-    this.savingDespesa.set(true);
-    const { descricao, valor, dataVencimento } = this.formDespesa.getRawValue();
-    this.cofreService.registrarDespesa(this.cofre()!.id, {
-      descricao: descricao!,
-      valor: valor!,
-      dataVencimento: new Date(dataVencimento!).toISOString(),
-    }).subscribe({
-      next: () => {
-        this.recarregarDespesas();
-        this.formDespesa.reset({ dataVencimento: new Date().toISOString().substring(0, 10) });
-        this.showFormDespesa.set(false);
-        this.savingDespesa.set(false);
-      },
-      error: (err) => {
-        this.errosDespesa.set(err?.error?.errors ?? ['Erro ao registrar despesa.']);
-        this.savingDespesa.set(false);
       },
     });
   }
