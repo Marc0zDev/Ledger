@@ -8,6 +8,7 @@ public class CofreModel
     public decimal  Meta               { get; set; }
     public int      Status             { get; set; }
     public int      Categoria          { get; set; }
+    public int      Visibilidade       { get; set; } = 1; // Privado
     public Guid     CriadoPorUsuarioId { get; set; }
     public DateTime  CreatedAt         { get; set; }
     public DateTime? UpdatedAt         { get; set; }

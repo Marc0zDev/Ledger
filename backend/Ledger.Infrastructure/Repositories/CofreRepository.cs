@@ -17,6 +17,7 @@ public class CofreRepository : BaseRepository<CofreDomain, CofreModel>, ICofreRe
             .Include(c => c.Participantes)
                 .ThenInclude(p => p.Usuario)
             .Include(c => c.Movimentacoes)
+                .ThenInclude(m => m.Usuario)
             .FirstOrDefaultAsync(c => c.Id == id, ct);
 
         return model is null ? null : Mapper.Map<CofreDomain>(model);

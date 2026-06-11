@@ -12,5 +12,6 @@ public class MovimentacaoModel
     public DateTime  CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
 
-    public CofreModel? Cofre { get; set; }
+    public CofreModel? Cofre    { get; set; }
+    public ApplicationUser? Usuario { get; set; }
 }

@@ -34,6 +34,10 @@ public class CofreConfiguration : IEntityTypeConfiguration<CofreModel>
                .HasColumnName("categoria")
                .HasDefaultValue(99);
 
+        builder.Property(c => c.Visibilidade)
+               .HasColumnName("visibilidade")
+               .HasDefaultValue(1); // Privado
+
         builder.Property(c => c.CriadoPorUsuarioId)
                .HasColumnName("criado_por_usuario_id");
 

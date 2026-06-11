@@ -1,8 +1,7 @@
 using AutoMapper;
 using Ledger.Domain.Entities;
 using Ledger.Domain.Enums;
-using Ledger.Infrastructure.Data.Models;
-namespace Ledger.Infrastructure.Profiles;
+using Ledger.Infrastructure.Data.Models;namespace Ledger.Infrastructure.Profiles;
 
 public class InfrastructureProfile : Profile
 {
@@ -18,6 +17,7 @@ public class InfrastructureProfile : Profile
         CreateMap<ParticipanteModel, ParticipanteDomain>()
             .ConstructUsing((src, ctx) => ParticipanteDomain.Reconstituir(
                 src.Id, src.CofreId, src.UsuarioId,
+                (RoleParticipante)src.Role,
                 src.Usuario != null ? ctx.Mapper.Map<UsuarioDomain>(src.Usuario) : null,
                 src.CreatedAt, src.UpdatedAt))
             .ForAllMembers(opt => opt.Ignore());
@@ -46,13 +46,15 @@ public class InfrastructureProfile : Profile
             .ConstructUsing(src => MovimentacaoDomain.Reconstituir(
                 src.Id, src.Descricao, src.Valor, (TipoMovimentacao)src.Tipo,
                 src.Data, src.CofreId, src.UsuarioId,
-                src.CreatedAt, src.UpdatedAt))
+                src.CreatedAt, src.UpdatedAt,
+                src.Usuario != null ? src.Usuario.Nome : null))
             .ForAllMembers(opt => opt.Ignore());
 
         CreateMap<CofreModel, CofreDomain>()
             .ConstructUsing((src, ctx) => CofreDomain.Reconstituir(
                 src.Id, src.Nome, src.Meta, src.Descricao,
                 (CofreStatus)src.Status, (CategoriaCofre)src.Categoria,
+                (VisibilidadeCofre)src.Visibilidade,
                 src.CriadoPorUsuarioId, src.CreatedAt, src.UpdatedAt,
                 ctx.Mapper.Map<IEnumerable<ParticipanteDomain>>(src.Participantes),
                 ctx.Mapper.Map<IEnumerable<MovimentacaoDomain>>(src.Movimentacoes)))
@@ -61,6 +63,7 @@ public class InfrastructureProfile : Profile
         // -- Domain ? Model ------------------------------------------------
 
         CreateMap<ParticipanteDomain, ParticipanteModel>()
+            .ForMember(m => m.Role,    opt => opt.MapFrom(d => (int)d.Role))
             .ForMember(m => m.Cofre,   opt => opt.Ignore())
             .ForMember(m => m.Usuario, opt => opt.Ignore());
 
@@ -81,6 +84,7 @@ public class InfrastructureProfile : Profile
         CreateMap<CofreDomain, CofreModel>()
             .ForMember(m => m.Status,        opt => opt.MapFrom(d => (int)d.Status))
             .ForMember(m => m.Categoria,     opt => opt.MapFrom(d => (int)d.Categoria))
+            .ForMember(m => m.Visibilidade,  opt => opt.MapFrom(d => (int)d.Visibilidade))
             .ForMember(m => m.Participantes, opt => opt.Ignore())
             .ForMember(m => m.Movimentacoes, opt => opt.Ignore());
 

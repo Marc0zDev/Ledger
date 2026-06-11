@@ -49,5 +49,11 @@ public class MovimentacaoConfiguration : IEntityTypeConfiguration<MovimentacaoMo
                .WithMany(c => c.Movimentacoes)
                .HasForeignKey(m => m.CofreId)
                .OnDelete(DeleteBehavior.Cascade);
+
+        // FK cross-schema: movimentacao → auth.usuarios
+        builder.HasOne(m => m.Usuario)
+               .WithMany()
+               .HasForeignKey(m => m.UsuarioId)
+               .OnDelete(DeleteBehavior.Restrict);
     }
 }

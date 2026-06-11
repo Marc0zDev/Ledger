@@ -14,10 +14,28 @@ public class MovimentacaoRepository : BaseRepository<MovimentacaoDomain, Movimen
     public async Task<IEnumerable<MovimentacaoDomain>> GetByCofreIdAsync(Guid cofreId, CancellationToken ct = default)
     {
         var models = await DbSet
+            .Include(m => m.Usuario)
             .Where(m => m.CofreId == cofreId)
             .OrderByDescending(m => m.Data)
             .ToListAsync(ct);
 
         return Mapper.Map<IEnumerable<MovimentacaoDomain>>(models);
+    }
+
+    public async Task<(IEnumerable<MovimentacaoDomain> Items, int Total)> GetPagedByCofreIdAsync(
+        Guid cofreId, int page, int pageSize, CancellationToken ct = default)
+    {
+        var query = DbSet
+            .Include(m => m.Usuario)
+            .Where(m => m.CofreId == cofreId)
+            .OrderByDescending(m => m.Data);
+
+        var total  = await query.CountAsync(ct);
+        var models = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(ct);
+
+        return (Mapper.Map<IEnumerable<MovimentacaoDomain>>(models), total);
     }
 }
