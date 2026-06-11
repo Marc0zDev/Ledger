@@ -4,127 +4,94 @@ using Ledger.Domain.Enums;
 namespace Ledger.Domain.Entities;
 
 /// <summary>
-/// Despesa pessoal do usuário — controle de contas mensais.
+/// Template de despesa: define uma despesa recorrente ou variável que é clonada
+/// automaticamente a cada período mensal. Despesas avulsas também podem ser criadas aqui
+/// para depois serem lançadas pontualmente.
 /// </summary>
 public class DespesaDomain : BaseDomain
 {
-    public string            Descricao       { get; private set; } = string.Empty;
-    public decimal           Valor           { get; private set; }
-    public DateTime          DataVencimento  { get; private set; }
-    public DateTime?         DataPagamento   { get; private set; }
-    public bool              Paga            { get; private set; }
-    public string?           BoletoPath      { get; private set; }
-    public Guid              UsuarioId       { get; private set; }
-    public CategoriaDespesa  Categoria       { get; private set; }
-    public bool              Recorrente      { get; private set; }
+    public string      Nome           { get; private set; } = string.Empty;
+    public TipoDespesa Tipo           { get; private set; }
+    public decimal     ValorPlanejado { get; private set; }
+    public int?        DiaVencimento  { get; private set; }
+    public bool        Ativa          { get; private set; } = true;
+    public Guid        CategoriaId    { get; private set; }
+    public Guid        UsuarioId      { get; private set; }
 
-    // ── Construtores ─────────────────────────────────────────────────────────
+    private DespesaDomain() { }
 
-    private DespesaDomain(
-        string           descricao,
-        decimal          valor,
-        DateTime         dataVencimento,
-        Guid             usuarioId,
-        CategoriaDespesa categoria,
-        bool             recorrente)
+    private DespesaDomain(string nome, TipoDespesa tipo, decimal valorPlanejado,
+        Guid categoriaId, Guid usuarioId, int? diaVencimento)
     {
-        Descricao      = descricao;
-        Valor          = valor;
-        DataVencimento = dataVencimento;
+        Nome           = nome;
+        Tipo           = tipo;
+        ValorPlanejado = valorPlanejado;
+        CategoriaId    = categoriaId;
         UsuarioId      = usuarioId;
-        Categoria      = categoria;
-        Recorrente     = recorrente;
-        Paga           = false;
+        DiaVencimento  = diaVencimento;
+        Ativa          = true;
         Validate();
     }
 
-    private DespesaDomain(
-        Guid             id,
-        string           descricao,
-        decimal          valor,
-        DateTime         dataVencimento,
-        DateTime?        dataPagamento,
-        bool             paga,
-        string?          boletoPath,
-        Guid             usuarioId,
-        CategoriaDespesa categoria,
-        bool             recorrente,
-        DateTime         createdAt,
-        DateTime?        updatedAt)
+    private DespesaDomain(Guid id, string nome, TipoDespesa tipo, decimal valorPlanejado,
+        int? diaVencimento, bool ativa, Guid categoriaId, Guid usuarioId,
+        DateTime createdAt, DateTime? updatedAt)
     {
         Id             = id;
-        Descricao      = descricao;
-        Valor          = valor;
-        DataVencimento = dataVencimento;
-        DataPagamento  = dataPagamento;
-        Paga           = paga;
-        BoletoPath     = boletoPath;
+        Nome           = nome;
+        Tipo           = tipo;
+        ValorPlanejado = valorPlanejado;
+        DiaVencimento  = diaVencimento;
+        Ativa          = ativa;
+        CategoriaId    = categoriaId;
         UsuarioId      = usuarioId;
-        Categoria      = categoria;
-        Recorrente     = recorrente;
         CreatedAt      = createdAt;
         UpdatedAt      = updatedAt;
     }
 
-    // ── Factory methods ───────────────────────────────────────────────────────
+    // ── Factory ───────────────────────────────────────────────────────────────
 
-    public static DespesaDomain Criar(
-        string           descricao,
-        decimal          valor,
-        DateTime         dataVencimento,
-        Guid             usuarioId,
-        CategoriaDespesa categoria  = CategoriaDespesa.Outro,
-        bool             recorrente = false)
-        => new(descricao, valor, dataVencimento, usuarioId, categoria, recorrente);
+    public static DespesaDomain Criar(string nome, TipoDespesa tipo, decimal valorPlanejado,
+        Guid categoriaId, Guid usuarioId, int? diaVencimento = null)
+        => new(nome, tipo, valorPlanejado, categoriaId, usuarioId, diaVencimento);
 
-    public static DespesaDomain Reconstituir(
-        Guid             id,
-        string           descricao,
-        decimal          valor,
-        DateTime         dataVencimento,
-        DateTime?        dataPagamento,
-        bool             paga,
-        string?          boletoPath,
-        Guid             usuarioId,
-        CategoriaDespesa categoria,
-        bool             recorrente,
-        DateTime         createdAt,
-        DateTime?        updatedAt)
-        => new(id, descricao, valor, dataVencimento, dataPagamento, paga, boletoPath, usuarioId, categoria, recorrente, createdAt, updatedAt);
+    public static DespesaDomain Reconstituir(Guid id, string nome, TipoDespesa tipo, decimal valorPlanejado,
+        int? diaVencimento, bool ativa, Guid categoriaId, Guid usuarioId,
+        DateTime createdAt, DateTime? updatedAt)
+        => new(id, nome, tipo, valorPlanejado, diaVencimento, ativa, categoriaId, usuarioId, createdAt, updatedAt);
 
-    // ── Comportamentos ────────────────────────────────────────────────────────
+    // ── Comportamento ─────────────────────────────────────────────────────────
 
-    public void Atualizar(string descricao, decimal valor, DateTime dataVencimento, CategoriaDespesa categoria, bool recorrente)
+    public void Atualizar(string nome, TipoDespesa tipo, decimal valorPlanejado,
+        Guid categoriaId, int? diaVencimento)
     {
-        Descricao      = descricao;
-        Valor          = valor;
-        DataVencimento = dataVencimento;
-        Categoria      = categoria;
-        Recorrente     = recorrente;
+        Nome           = nome;
+        Tipo           = tipo;
+        ValorPlanejado = valorPlanejado;
+        CategoriaId    = categoriaId;
+        DiaVencimento  = diaVencimento;
+        UpdatedAt      = DateTime.UtcNow;
         Validate();
-        if (IsValid) MarkAsUpdated();
     }
 
-    public void Pagar(DateTime? dataPagamento = null)
-    {
-        Paga          = true;
-        DataPagamento = dataPagamento ?? DateTime.UtcNow;
-        MarkAsUpdated();
-    }
-
-    public void AnexarBoleto(string path)
-    {
-        BoletoPath = path;
-        MarkAsUpdated();
-    }
+    public void Ativar()    { Ativa = true;  UpdatedAt = DateTime.UtcNow; }
+    public void Desativar() { Ativa = false; UpdatedAt = DateTime.UtcNow; }
 
     // ── Validação ─────────────────────────────────────────────────────────────
 
     protected override void Validate()
     {
-        RuleFor(!string.IsNullOrWhiteSpace(Descricao), nameof(Descricao), "A descrição da despesa é obrigatória.");
-        RuleFor(Valor > 0,                              nameof(Valor),     "O valor da despesa deve ser maior que zero.");
-        RuleFor(UsuarioId != Guid.Empty,                nameof(UsuarioId), "A despesa deve estar associada a um usuário.");
-        RuleFor(DataVencimento != default,              nameof(DataVencimento), "A data de vencimento é obrigatória.");
+        if (string.IsNullOrWhiteSpace(Nome))
+            AddNotification(nameof(Nome), "Nome da despesa é obrigatório.");
+        if (Nome?.Length > 200)
+            AddNotification(nameof(Nome), "Nome deve ter no máximo 200 caracteres.");
+        if (ValorPlanejado < 0)
+            AddNotification(nameof(ValorPlanejado), "Valor planejado não pode ser negativo.");
+        if (CategoriaId == Guid.Empty)
+            AddNotification(nameof(CategoriaId), "Categoria é obrigatória.");
+        if (UsuarioId == Guid.Empty)
+            AddNotification(nameof(UsuarioId), "UsuarioId é obrigatório.");
+        if (DiaVencimento.HasValue && (DiaVencimento < 1 || DiaVencimento > 31))
+            AddNotification(nameof(DiaVencimento), "Dia de vencimento deve ser entre 1 e 31.");
     }
 }
