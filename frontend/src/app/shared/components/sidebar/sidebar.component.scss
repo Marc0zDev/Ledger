@@ -100,11 +100,18 @@
   overflow: hidden;
   transition: background 0.15s, color 0.15s;
 
-  i {
-    font-size: 1rem;
-    width: 18px;
+  i, .nav-icon {
+    font-size: 1.375rem;
+    width: 22px;
     text-align: center;
     flex-shrink: 0;
+  }
+
+  .nav-icon {
+    font-family: 'Material Symbols Outlined';
+    line-height: 1;
+    font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' -25, 'opsz' 24;
+    color: inherit;
   }
 
   &:hover {
@@ -118,8 +125,6 @@
     background: var(--gold-subtle);
     color: #A8742A;
     color: var(--gold);
-
-    i { color: #A8742A; color: var(--gold); }
   }
 }
 
@@ -178,3 +183,4 @@
 
   i { font-size: 0.75rem; }
 }
+
