@@ -128,7 +128,8 @@ export class DespesasComponent implements OnInit {
         },
         {
           icon: 'pi-receipt', severity: 'info', event: 'verComprovante', label: 'Ver comprovante',
-          visible: (r) => !!(r as DespesaPeriodoResponse).comprovanteId,
+          visible:  (r) => !!(r as DespesaPeriodoResponse).paga,
+          disabled: (r) => !(r as DespesaPeriodoResponse).comprovanteId,
         },
         { icon: 'pi-pencil', severity: 'secondary', event: 'editar', label: 'Editar' },
         {
