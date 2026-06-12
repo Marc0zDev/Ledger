@@ -6,6 +6,8 @@ import { DespesaService } from '../../../core/services/despesa.service';
 import { DespesaPeriodoService } from '../../../core/services/despesa-periodo.service';
 import { ArquivoService } from '../../../core/services/arquivo.service';
 import { CategoriaService } from '../../../core/services/categoria.service';
+import { NotificationService } from '../../../core/services/notification.service';
+import { FileViewerService } from '../../../core/services/file-viewer.service';
 import { ArquivoResponse } from '../../../core/models/arquivo.model';
 import {
   DespesaResponse,
@@ -36,6 +38,8 @@ export class DespesasComponent implements OnInit {
   private readonly periodoService       = inject(DespesaPeriodoService);
   private readonly arquivoService       = inject(ArquivoService);
   private readonly categoriaService     = inject(CategoriaService);
+  private readonly notify               = inject(NotificationService);
+  private readonly fileViewer           = inject(FileViewerService);
   private readonly fb                   = inject(FormBuilder);
 
   readonly TIPOS: { valor: TipoDespesa; label: string }[] = [
@@ -53,14 +57,11 @@ export class DespesasComponent implements OnInit {
   abaAtiva      = signal<Aba>('periodo');
   showForm      = signal(false);
   saving        = signal(false);
-  erros         = signal<string[]>([]);
-  infoMsg       = signal<string | null>(null);
   editandoPeriodo  = signal<DespesaPeriodoResponse | null>(null);
   editandoTemplate = signal<DespesaResponse | null>(null);
   pagandoId     = signal<string | null>(null);
   deletandoId   = signal<string | null>(null);
   uploadingArquivoId  = signal<string | null>(null);
-  visualizandoArquivo = signal(false);
   arquivosAnexados    = signal<Record<string, ArquivoResponse>>({});
   gerando       = signal(false);
 
@@ -119,6 +120,16 @@ export class DespesasComponent implements OnInit {
           icon: 'pi-eye', severity: 'info', event: 'verArquivoPeriodo', label: 'Visualizar arquivo',
           visible: (r) => this.periodoTemArquivo(r as DespesaPeriodoResponse),
         },
+        {
+          icon: 'pi-receipt', severity: 'secondary', event: 'uploadComprovante', label: 'Anexar comprovante',
+          isFileUpload: true,
+          visible:  (r) => !!(r as DespesaPeriodoResponse).paga && !(r as DespesaPeriodoResponse).comprovanteId,
+          disabled: (r) => this.uploadingArquivoId() === (r as DespesaPeriodoResponse).id + '-comprovante',
+        },
+        {
+          icon: 'pi-receipt', severity: 'info', event: 'verComprovante', label: 'Ver comprovante',
+          visible: (r) => !!(r as DespesaPeriodoResponse).comprovanteId,
+        },
         { icon: 'pi-pencil', severity: 'secondary', event: 'editar', label: 'Editar' },
         {
           icon: 'pi-trash', severity: 'danger', event: 'deletar', label: 'Excluir',
@@ -174,6 +185,8 @@ export class DespesasComponent implements OnInit {
       case 'verBoleto':   window.open(this.boletoUrl(d.boletoUrl!), '_blank', 'noopener'); break;
       case 'uploadArquivo': if (file) this.anexarArquivoPeriodo(d, file); break;
       case 'verArquivoPeriodo': this.verArquivoPeriodo(d); break;
+      case 'uploadComprovante': if (file) this.anexarComprovante(d, file); break;
+      case 'verComprovante': if (d.comprovanteId) this.abrirArquivo(d.comprovanteId); break;
       case 'editar':      this.abrirFormPeriodo(d); break;
       case 'deletar':     this.deletarPeriodo(d.id); break;
     }
@@ -261,7 +274,7 @@ export class DespesasComponent implements OnInit {
 
   // ── Período: ações ────────────────────────────────────────────────────────
   abrirFormPeriodo(periodo?: DespesaPeriodoResponse): void {
-    this.erros.set([]);
+
     if (periodo) {
       this.editandoPeriodo.set(periodo);
       this.formPeriodo.setValue({
@@ -283,13 +296,12 @@ export class DespesasComponent implements OnInit {
     this.showForm.set(false);
     this.editandoPeriodo.set(null);
     this.editandoTemplate.set(null);
-    this.erros.set([]);
   }
 
   salvarPeriodo(): void {
     if (this.formPeriodo.invalid || this.saving()) return;
     this.saving.set(true);
-    this.erros.set([]);
+
 
     const { descricao, valorPlanejado, categoriaId, despesaId } = this.formPeriodo.getRawValue();
     const id = this.editandoPeriodo()?.id;
@@ -300,7 +312,11 @@ export class DespesasComponent implements OnInit {
 
     req$.subscribe({
       next: () => { this.fecharForm(); this.carregarPeriodo(); this.saving.set(false); },
-      error: (err) => { this.erros.set(err?.error?.errors ?? ['Erro ao salvar.']); this.saving.set(false); },
+      error: (err) => {
+        const msg = err?.error?.errors?.[0] ?? 'Erro ao salvar.';
+        this.notify.error(msg);
+        this.saving.set(false);
+      },
     });
   }
 
@@ -328,12 +344,17 @@ export class DespesasComponent implements OnInit {
     this.periodoService.gerarPeriodo(this.competencia()).subscribe({
       next: (novos) => {
         if (novos.length === 0) {
-          this.erros.set(['Nenhum template ativo encontrado ou período já gerado.']);
+          this.notify.warn('Nenhum template ativo encontrado ou período já gerado.');
+        } else {
+          this.notify.success(`${novos.length} lançamento(s) gerado(s) com sucesso.`);
         }
         this.carregarPeriodo();
         this.gerando.set(false);
       },
-      error: (err) => { this.erros.set(err?.error?.errors ?? ['Erro ao gerar período.']); this.gerando.set(false); },
+      error: (err) => {
+        this.notify.error(err?.error?.errors?.[0] ?? 'Erro ao gerar período.');
+        this.gerando.set(false);
+      },
     });
   }
 
@@ -351,7 +372,7 @@ export class DespesasComponent implements OnInit {
   anexarArquivoPeriodo(periodo: DespesaPeriodoResponse, file: File): void {
     const despesaId = periodo.despesaId;
     if (!despesaId) {
-      this.erros.set(['Não é possível anexar arquivo a uma despesa avulsa sem template vinculado.']);
+      this.notify.warn('Não é possível anexar arquivo a uma despesa avulsa sem template vinculado.');
       return;
     }
     this.enviarArquivo(despesaId, file, periodo.id, (arquivo) => {
@@ -370,8 +391,6 @@ export class DespesasComponent implements OnInit {
     onSuccess?: (arquivo: ArquivoResponse) => void,
   ): void {
     if (this.uploadingArquivoId()) return;
-    this.erros.set([]);
-    this.infoMsg.set(null);
     this.uploadingArquivoId.set(trackKey);
 
     this.arquivoService.registrarArquivo(despesaId, file).subscribe({
@@ -382,12 +401,12 @@ export class DespesasComponent implements OnInit {
           [despesaId]: arquivo,
         }));
         onSuccess?.(arquivo);
-        this.infoMsg.set(`Arquivo "${arquivo.nome}" anexado com sucesso.`);
+        this.notify.success(`Arquivo "${arquivo.nome}" anexado com sucesso.`);
         this.uploadingArquivoId.set(null);
       },
       error: (err) => {
         const msg = err?.error?.title ?? err?.error?.message ?? err?.error?.errors?.[0];
-        this.erros.set([msg ?? 'Erro ao anexar arquivo.']);
+        this.notify.error(msg ?? 'Erro ao anexar arquivo.');
         this.uploadingArquivoId.set(null);
       },
     });
@@ -418,19 +437,7 @@ export class DespesasComponent implements OnInit {
   }
 
   private abrirArquivo(arquivoId: string): void {
-    if (this.visualizandoArquivo()) return;
-    this.erros.set([]);
-    this.infoMsg.set(null);
-    this.visualizandoArquivo.set(true);
-
-    this.arquivoService.visualizar(arquivoId).subscribe({
-      next: () => this.visualizandoArquivo.set(false),
-      error: (err) => {
-        const msg = err?.error?.title ?? err?.error?.message ?? err?.error?.errors?.[0];
-        this.erros.set([msg ?? 'Não foi possível abrir o arquivo.']);
-        this.visualizandoArquivo.set(false);
-      },
-    });
+    this.fileViewer.open(arquivoId);
   }
 
   templateTemArquivo(template: DespesaResponse): boolean {
@@ -443,7 +450,7 @@ export class DespesasComponent implements OnInit {
 
   // ── Templates: ações ──────────────────────────────────────────────────────
   abrirFormTemplate(template?: DespesaResponse): void {
-    this.erros.set([]);
+
     if (template) {
       this.editandoTemplate.set(template);
       this.formTemplate.setValue({
@@ -465,7 +472,7 @@ export class DespesasComponent implements OnInit {
   salvarTemplate(): void {
     if (this.formTemplate.invalid || this.saving()) return;
     this.saving.set(true);
-    this.erros.set([]);
+
 
     const { nome, tipo, valorPlanejado, categoriaId, diaVencimento } = this.formTemplate.getRawValue();
     const payload = { nome: nome!, tipo: tipo!, valorPlanejado: valorPlanejado!, categoriaId: categoriaId!, diaVencimento: diaVencimento ?? undefined };
@@ -477,7 +484,10 @@ export class DespesasComponent implements OnInit {
 
     req$.subscribe({
       next: () => { this.fecharForm(); this.carregarTemplates(1); this.saving.set(false); },
-      error: (err) => { this.erros.set(err?.error?.errors ?? ['Erro ao salvar conta fixa.']); this.saving.set(false); },
+      error: (err) => {
+        this.notify.error(err?.error?.errors?.[0] ?? 'Erro ao salvar conta fixa.');
+        this.saving.set(false);
+      },
     });
   }
 
@@ -491,6 +501,45 @@ export class DespesasComponent implements OnInit {
     this.despesaService.deletar(id).subscribe({
       next: () => { this.carregarTemplates(this.tmPage()); this.deletandoId.set(null); },
       error: () => this.deletandoId.set(null),
+    });
+  }
+
+  anexarComprovante(periodo: DespesaPeriodoResponse, file: File): void {
+    const key = periodo.id + '-comprovante';
+    if (this.uploadingArquivoId()) return;
+    this.uploadingArquivoId.set(key);
+    this.periodoService.uploadComprovante(periodo.id, file).subscribe({
+      next: (updated) => {
+        this.periodos.update(list => list.map(p => p.id === updated.id ? updated : p));
+        this.notify.success('Comprovante anexado com sucesso.');
+        this.uploadingArquivoId.set(null);
+      },
+      error: (err) => {
+        this.notify.error(err?.error?.errors?.[0] ?? 'Erro ao anexar comprovante.');
+        this.uploadingArquivoId.set(null);
+      },
+    });
+  }
+
+  gerarando = signal(false);
+
+  gerarRelatorio(): void {
+    if (this.gerarando()) return;
+    this.gerarando.set(true);
+    this.periodoService.gerarRelatorioMensal(this.competencia()).subscribe({
+      next: (blob) => {
+        const url  = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href  = url;
+        link.download = `relatorio-${this.competencia().substring(0, 7)}.pdf`;
+        link.click();
+        URL.revokeObjectURL(url);
+        this.gerarando.set(false);
+      },
+      error: () => {
+        this.notify.error('Erro ao gerar relatório. Tente novamente.');
+        this.gerarando.set(false);
+      },
     });
   }
 

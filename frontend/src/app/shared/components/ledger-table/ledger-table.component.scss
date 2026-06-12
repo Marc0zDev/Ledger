@@ -63,10 +63,26 @@
     padding-right: 0.25rem;
   }
 
-  .p-datatable-tbody .p-button {
-    width: 1.6rem;
-    height: 1.6rem;
+  .kebab-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
     padding: 0;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    transition: background 0.12s, color 0.12s;
+
+    .ms { font-size: 18px; }
+
+    &:hover {
+      background: var(--border);
+      color: var(--ink);
+    }
   }
 }
 

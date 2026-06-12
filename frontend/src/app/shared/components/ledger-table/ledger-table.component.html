@@ -46,14 +46,9 @@
 
               @case ('actions') {
                 <div class="actions-menu-cell">
-                  <p-button
-                    icon="pi pi-ellipsis-h"
-                    [text]="true"
-                    [rounded]="true"
-                    severity="secondary"
-                    size="small"
-                    (onClick)="openRowMenu($event, rowMenu, row, col)"
-                  />
+                  <button class="kebab-btn" (click)="openRowMenu($event, rowMenu, row, col)">
+                    <span class="ms">more_horiz</span>
+                  </button>
                 </div>
               }
 

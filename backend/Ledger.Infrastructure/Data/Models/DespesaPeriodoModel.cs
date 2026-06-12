@@ -11,6 +11,7 @@ public class DespesaPeriodoModel
     public decimal   ValorRealizado { get; set; }
     public DateTime? PagaEm         { get; set; }
     public string?   BoletoPath     { get; set; }
+    public Guid?     ComprovanteId  { get; set; }
     public DateTime  Competencia    { get; set; }
     public DateTime  CreatedAt      { get; set; }
     public DateTime? UpdatedAt      { get; set; }

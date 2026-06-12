@@ -96,6 +96,27 @@ public class DespesasPeriodoController : ControllerBase
         return result is null ? NotFound() : Ok(result);
     }
 
+    /// <summary>Faz upload do comprovante de pagamento para o lançamento.</summary>
+    [HttpPost("{id:guid}/comprovante")]
+    [RequestSizeLimit(10 * 1024 * 1024)]
+    public async Task<IActionResult> UploadComprovante(Guid id, IFormFile arquivo, CancellationToken ct)
+    {
+        if (arquivo is null || arquivo.Length == 0) return BadRequest("Arquivo não enviado.");
+
+        var permitidos = new[] { "application/pdf", "image/jpeg", "image/png", "image/webp" };
+        if (!permitidos.Contains(arquivo.ContentType.ToLowerInvariant()))
+            return BadRequest("Apenas PDF ou imagens (JPEG, PNG, WEBP) são aceitos.");
+
+        using var ms    = new MemoryStream();
+        await arquivo.CopyToAsync(ms, ct);
+        var bytes     = ms.ToArray();
+        var extensao  = Path.GetExtension(arquivo.FileName).TrimStart('.').ToLowerInvariant();
+
+        var result = await _mediator.Send(
+            new AnexarComprovantePeriodoCommand(id, arquivo.FileName, arquivo.ContentType, extensao, bytes), ct);
+        return result is null ? NotFound() : Ok(result);
+    }
+
     /// <summary>Remove um lançamento.</summary>
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Remover(Guid id, CancellationToken ct)

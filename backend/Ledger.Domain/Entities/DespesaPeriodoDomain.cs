@@ -30,6 +30,9 @@ public class DespesaPeriodoDomain : BaseDomain
     /// <summary>Caminho do PDF do boleto (opcional).</summary>
     public string?   BoletoPath     { get; private set; }
 
+    /// <summary>Arquivo de comprovante de pagamento (opcional).</summary>
+    public Guid?     ComprovanteId  { get; private set; }
+
     /// <summary>Primeiro dia do mês/ano ao qual este lançamento pertence (UTC).</summary>
     public DateTime  Competencia    { get; private set; }
 
@@ -63,6 +66,7 @@ public class DespesaPeriodoDomain : BaseDomain
         decimal   valorRealizado,
         DateTime? pagaEm,
         string?   boletoPath,
+        Guid?     comprovanteId,
         DateTime  competencia,
         DateTime  createdAt,
         DateTime? updatedAt)
@@ -76,6 +80,7 @@ public class DespesaPeriodoDomain : BaseDomain
         ValorRealizado = valorRealizado;
         PagaEm         = pagaEm;
         BoletoPath     = boletoPath;
+        ComprovanteId  = comprovanteId;
         Competencia    = competencia;
         CreatedAt      = createdAt;
         UpdatedAt      = updatedAt;
@@ -102,11 +107,12 @@ public class DespesaPeriodoDomain : BaseDomain
         decimal   valorRealizado,
         DateTime? pagaEm,
         string?   boletoPath,
+        Guid?     comprovanteId,
         DateTime  competencia,
         DateTime  createdAt,
         DateTime? updatedAt)
         => new(id, despesaId, categoriaId, usuarioId, descricao, valorPlanejado,
-               valorRealizado, pagaEm, boletoPath, competencia, createdAt, updatedAt);
+               valorRealizado, pagaEm, boletoPath, comprovanteId, competencia, createdAt, updatedAt);
 
     // ── Comportamento ─────────────────────────────────────────────────────────
 
@@ -130,6 +136,12 @@ public class DespesaPeriodoDomain : BaseDomain
     {
         BoletoPath = path;
         UpdatedAt  = DateTime.UtcNow;
+    }
+
+    public void AnexarComprovante(Guid arquivoId)
+    {
+        ComprovanteId = arquivoId;
+        UpdatedAt     = DateTime.UtcNow;
     }
 
     protected override void Validate()

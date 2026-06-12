@@ -21,6 +21,7 @@ public class DespesaPeriodoConfiguration : IEntityTypeConfiguration<DespesaPerio
         builder.Property(d => d.ValorRealizado).HasColumnName("valor_realizado").HasPrecision(18, 2).HasDefaultValue(0m);
         builder.Property(d => d.PagaEm).HasColumnName("paga_em").HasColumnType("timestamp with time zone");
         builder.Property(d => d.BoletoPath).HasColumnName("boleto_path").HasMaxLength(500);
+        builder.Property(d => d.ComprovanteId).HasColumnName("comprovante_id");
         builder.Property(d => d.Competencia).HasColumnName("competencia").HasColumnType("timestamp with time zone");
         builder.Property(d => d.CreatedAt).HasColumnName("created_at").HasColumnType("timestamp with time zone");
         builder.Property(d => d.UpdatedAt).HasColumnName("updated_at").HasColumnType("timestamp with time zone");

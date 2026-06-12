@@ -163,6 +163,7 @@ export interface DespesaPeriodoResponse {
   paga: boolean;
   pagaEm?: string;
   boletoUrl?: string;
+  comprovanteId?: string;
   competencia: string;
   createdAt: string;
   updatedAt?: string;

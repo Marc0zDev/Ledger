@@ -39,7 +39,7 @@ public class InfrastructureProfile : Profile
             .ConstructUsing(src => DespesaPeriodoDomain.Reconstituir(
                 src.Id, src.DespesaId, src.CategoriaId, src.UsuarioId, src.Descricao,
                 src.ValorPlanejado, src.ValorRealizado, src.PagaEm, src.BoletoPath,
-                src.Competencia, src.CreatedAt, src.UpdatedAt))
+                src.ComprovanteId, src.Competencia, src.CreatedAt, src.UpdatedAt))
             .ForAllMembers(opt => opt.Ignore());
 
         CreateMap<MovimentacaoModel, MovimentacaoDomain>()

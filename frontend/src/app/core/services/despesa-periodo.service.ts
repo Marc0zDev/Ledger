@@ -37,8 +37,14 @@ export class DespesaPeriodoService {
 
   uploadBoleto(id: string, file: File): Observable<DespesaPeriodoResponse> {
     const form = new FormData();
-    form.append('boleto', file);
+    form.append('arquivo', file);
     return this.http.post<DespesaPeriodoResponse>(`${this.base}/${id}/boleto`, form);
+  }
+
+  uploadComprovante(id: string, file: File): Observable<DespesaPeriodoResponse> {
+    const form = new FormData();
+    form.append('arquivo', file);
+    return this.http.post<DespesaPeriodoResponse>(`${this.base}/${id}/comprovante`, form);
   }
 
   deletar(id: string): Observable<void> {
@@ -48,5 +54,10 @@ export class DespesaPeriodoService {
   gerarPeriodo(competencia: string): Observable<DespesaPeriodoResponse[]> {
     const params = new HttpParams().set('competencia', competencia);
     return this.http.post<DespesaPeriodoResponse[]>(`${this.base}/gerar`, null, { params });
+  }
+
+  gerarRelatorioMensal(competencia: string): Observable<Blob> {
+    const params = new HttpParams().set('competencia', competencia);
+    return this.http.get(`${environment.apiUrl}/api/relatorio/mensal`, { params, responseType: 'blob' });
   }
 }

@@ -62,6 +62,7 @@ builder.Services.AddScoped<IArquivoRepository, ArquivoRepository>();
 // Infrastructure Services
 builder.Services.AddScoped<IIdentityService, IdentityService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddSingleton<IBrowserService, BrowserService>();
 
 // JWT Authentication (desabilita cookie do Identity — API pura)
 builder.Services.AddAuthentication(options =>
