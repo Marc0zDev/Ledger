@@ -19,6 +19,7 @@ public class DespesaConfiguration : IEntityTypeConfiguration<DespesaModel>
         builder.Property(d => d.DiaVencimento).HasColumnName("dia_vencimento");
         builder.Property(d => d.Ativa).HasColumnName("ativa").HasDefaultValue(true);
         builder.Property(d => d.CategoriaId).HasColumnName("categoria_id").IsRequired();
+        builder.Property(d => d.ArquivoId).HasColumnName("arquivo_id").IsRequired(false);
         builder.Property(d => d.UsuarioId).HasColumnName("usuario_id").IsRequired();
         builder.Property(d => d.CreatedAt).HasColumnName("created_at").HasColumnType("timestamp with time zone");
         builder.Property(d => d.UpdatedAt).HasColumnName("updated_at").HasColumnType("timestamp with time zone");
@@ -27,6 +28,11 @@ public class DespesaConfiguration : IEntityTypeConfiguration<DespesaModel>
                .WithMany()
                .HasForeignKey(d => d.CategoriaId)
                .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(d => d.Arquivo)
+               .WithMany()
+               .HasForeignKey(d => d.ArquivoId)
+               .OnDelete(DeleteBehavior.SetNull);
 
         builder.HasIndex(d => d.UsuarioId);
         builder.HasIndex(d => new { d.UsuarioId, d.Ativa });

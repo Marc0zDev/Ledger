@@ -14,13 +14,15 @@ public class ListarDespesasPeriodoQueryHandler
 {
     private readonly IDespesaPeriodoRepository _repo;
     private readonly ICategoriaRepository      _categoriaRepo;
+    private readonly IDespesaRepository        _despesaRepo;
     private readonly IMapper                   _mapper;
 
     public ListarDespesasPeriodoQueryHandler(IDespesaPeriodoRepository repo,
-        ICategoriaRepository categoriaRepo, IMapper mapper)
+        ICategoriaRepository categoriaRepo, IDespesaRepository despesaRepo, IMapper mapper)
     {
         _repo          = repo;
         _categoriaRepo = categoriaRepo;
+        _despesaRepo   = despesaRepo;
         _mapper        = mapper;
     }
 
@@ -31,6 +33,13 @@ public class ListarDespesasPeriodoQueryHandler
         var categorias  = (await _categoriaRepo.GetByUsuarioIdAsync(query.UsuarioId, ct))
                            .ToDictionary(c => c.Id);
 
+        var despesaIds = lancamentos
+            .Where(l => l.DespesaId.HasValue)
+            .Select(l => l.DespesaId!.Value)
+            .Distinct();
+
+        var arquivoPorDespesa = await _despesaRepo.GetArquivoIdsByIdsAsync(despesaIds, ct);
+
         return lancamentos.Select(l =>
         {
             var r = _mapper.Map<DespesaPeriodoResponse>(l);
@@ -40,6 +49,8 @@ public class ListarDespesasPeriodoQueryHandler
                 r.CategoriaIcone = cat.Icone;
                 r.CategoriaCor   = cat.Cor;
             }
+            if (l.DespesaId.HasValue && arquivoPorDespesa.TryGetValue(l.DespesaId.Value, out var arquivoId))
+                r.ArquivoId = arquivoId;
             return r;
         });
     }

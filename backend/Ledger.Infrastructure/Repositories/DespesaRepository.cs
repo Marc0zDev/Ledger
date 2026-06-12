@@ -50,4 +50,19 @@ public class DespesaRepository : BaseRepository<DespesaDomain, DespesaModel>, ID
 
         return Mapper.Map<IEnumerable<DespesaDomain>>(models);
     }
+
+    public async Task<bool> UsuarioPossuiArquivoAsync(Guid arquivoId, Guid usuarioId, CancellationToken ct = default)
+        => await DbSet.AnyAsync(d => d.ArquivoId == arquivoId && d.UsuarioId == usuarioId, ct);
+
+    public async Task<Dictionary<Guid, Guid?>> GetArquivoIdsByIdsAsync(
+        IEnumerable<Guid> despesaIds, CancellationToken ct = default)
+    {
+        var ids = despesaIds.Distinct().ToList();
+        if (ids.Count == 0) return new Dictionary<Guid, Guid?>();
+
+        return await DbSet
+            .Where(d => ids.Contains(d.Id))
+            .Select(d => new { d.Id, d.ArquivoId })
+            .ToDictionaryAsync(x => x.Id, x => x.ArquivoId, ct);
+    }
 }

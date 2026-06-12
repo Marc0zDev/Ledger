@@ -195,6 +195,13 @@
   margin: 0;
 }
 
+.form-info {
+  width: 100%;
+  font-size: 0.8rem;
+  color: var(--text-secondary, #64748b);
+  margin: 0 0 0.75rem;
+}
+
 .form-actions {
   width: 100%;
   display: flex;

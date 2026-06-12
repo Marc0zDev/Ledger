@@ -5,6 +5,7 @@ public class DespesaPeriodoResponse
 {
     public Guid      Id             { get; set; }
     public Guid?     DespesaId      { get; set; }
+    public Guid?     ArquivoId      { get; set; }
     public string    Descricao      { get; set; } = string.Empty;
     public Guid      CategoriaId    { get; set; }
     public string    CategoriaNome  { get; set; } = string.Empty;

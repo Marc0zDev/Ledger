@@ -13,4 +13,10 @@ public interface IDespesaRepository : IRepository<DespesaDomain>
 
     /// <summary>Lista apenas contas fixas ativas para geração automática de período.</summary>
     Task<IEnumerable<DespesaDomain>> GetAtivosAsync(Guid usuarioId, CancellationToken ct = default);
+
+    /// <summary>Verifica se o arquivo pertence a uma despesa do usuário.</summary>
+    Task<bool> UsuarioPossuiArquivoAsync(Guid arquivoId, Guid usuarioId, CancellationToken ct = default);
+
+    /// <summary>Retorna ArquivoId por template de despesa.</summary>
+    Task<Dictionary<Guid, Guid?>> GetArquivoIdsByIdsAsync(IEnumerable<Guid> despesaIds, CancellationToken ct = default);
 }

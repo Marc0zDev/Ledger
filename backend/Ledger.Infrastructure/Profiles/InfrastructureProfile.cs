@@ -31,7 +31,7 @@ public class InfrastructureProfile : Profile
         CreateMap<DespesaModel, DespesaDomain>()
             .ConstructUsing(src => DespesaDomain.Reconstituir(
                 src.Id, src.Nome, (TipoDespesa)src.Tipo, src.ValorPlanejado,
-                src.DiaVencimento, src.Ativa, src.CategoriaId, src.UsuarioId,
+                src.DiaVencimento, src.Ativa, src.ArquivoId, src.CategoriaId, src.UsuarioId,
                 src.CreatedAt, src.UpdatedAt))
             .ForAllMembers(opt => opt.Ignore());
 
@@ -58,6 +58,12 @@ public class InfrastructureProfile : Profile
                 src.CriadoPorUsuarioId, src.CreatedAt, src.UpdatedAt,
                 ctx.Mapper.Map<IEnumerable<ParticipanteDomain>>(src.Participantes),
                 ctx.Mapper.Map<IEnumerable<MovimentacaoDomain>>(src.Movimentacoes)))
+            .ForAllMembers(opt => opt.Ignore());
+
+        CreateMap<ArquivoModel, ArquivoDomain>()
+            .ConstructUsing(src => ArquivoDomain.Reconstituir(
+                src.Id, src.Nome, src.Extensao, src.ContentType, src.ArquivoByte,
+                src.DataCriacao, src.DataAlteracao))
             .ForAllMembers(opt => opt.Ignore());
 
         // -- Domain ? Model ------------------------------------------------
@@ -87,6 +93,10 @@ public class InfrastructureProfile : Profile
             .ForMember(m => m.Visibilidade,  opt => opt.MapFrom(d => (int)d.Visibilidade))
             .ForMember(m => m.Participantes, opt => opt.Ignore())
             .ForMember(m => m.Movimentacoes, opt => opt.Ignore());
+
+        CreateMap<ArquivoDomain, ArquivoModel>()
+            .ForMember(m => m.DataCriacao,  opt => opt.MapFrom(d => d.CreatedAt))
+            .ForMember(m => m.DataAlteracao, opt => opt.MapFrom(d => d.UpdatedAt ?? d.CreatedAt));
 
         // -- Convite -------------------------------------------------------
 

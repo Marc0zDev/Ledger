@@ -10,13 +10,15 @@ public class LedgerDbContext : IdentityDbContext<ApplicationUser, IdentityRole<G
     public LedgerDbContext(DbContextOptions<LedgerDbContext> options) : base(options) { }
 
     // ── Ledger tables ─────────────────────────────────────────────────────
-    public DbSet<CofreModel>         Cofres          => Set<CofreModel>();
-    public DbSet<ParticipanteModel>  Participantes   => Set<ParticipanteModel>();
-    public DbSet<CategoriaModel>     Categorias      => Set<CategoriaModel>();
-    public DbSet<DespesaModel>       Despesas        => Set<DespesaModel>();
+    public DbSet<CofreModel> Cofres => Set<CofreModel>();
+    public DbSet<ParticipanteModel> Participantes => Set<ParticipanteModel>();
+    public DbSet<CategoriaModel> Categorias => Set<CategoriaModel>();
+    public DbSet<DespesaModel> Despesas => Set<DespesaModel>();
     public DbSet<DespesaPeriodoModel> DespesasPeriodo => Set<DespesaPeriodoModel>();
     public DbSet<MovimentacaoModel>  Movimentacoes   => Set<MovimentacaoModel>();
-    public DbSet<ConviteModel>       Convites        => Set<ConviteModel>();
+    public DbSet<ConviteModel> Convites => Set<ConviteModel>();
+    public DbSet<ArquivoModel> Arquivos => Set<ArquivoModel>();
+
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

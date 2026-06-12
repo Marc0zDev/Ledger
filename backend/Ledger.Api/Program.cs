@@ -58,6 +58,7 @@ builder.Services.AddScoped<IDespesaRepository, DespesaRepository>();
 builder.Services.AddScoped<IDespesaPeriodoRepository, DespesaPeriodoRepository>();
 builder.Services.AddScoped<IMovimentacaoRepository, MovimentacaoRepository>();
 builder.Services.AddScoped<IConviteRepository, ConviteRepository>();
+builder.Services.AddScoped<IArquivoRepository, ArquivoRepository>();
 
 // Infrastructure Services
 builder.Services.AddScoped<IIdentityService, IdentityService>();

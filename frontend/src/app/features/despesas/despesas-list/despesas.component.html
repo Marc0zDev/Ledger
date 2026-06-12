@@ -63,9 +63,12 @@
       </div>
     </div>
 
-    <!-- Erros -->
+    <!-- Erros / info -->
     @if (erros().length > 0) {
       <p class="form-erro">{{ erros()[0] }}</p>
+    }
+    @if (infoMsg()) {
+      <p class="form-info">{{ infoMsg() }}</p>
     }
 
     <!-- Form inline para período -->
@@ -127,6 +130,13 @@
 
   <!-- ── CONTAS FIXAS ── -->
   @if (abaAtiva() === 'templates') {
+
+    @if (erros().length > 0) {
+      <p class="form-erro">{{ erros()[0] }}</p>
+    }
+    @if (infoMsg()) {
+      <p class="form-info">{{ infoMsg() }}</p>
+    }
 
     <!-- Form inline -->
     @if (showForm() && abaAtiva() === 'templates') {

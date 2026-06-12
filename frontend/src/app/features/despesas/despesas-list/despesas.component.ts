@@ -4,7 +4,9 @@ import {
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { DespesaService } from '../../../core/services/despesa.service';
 import { DespesaPeriodoService } from '../../../core/services/despesa-periodo.service';
+import { ArquivoService } from '../../../core/services/arquivo.service';
 import { CategoriaService } from '../../../core/services/categoria.service';
+import { ArquivoResponse } from '../../../core/models/arquivo.model';
 import {
   DespesaResponse,
   DespesaPeriodoResponse,
@@ -32,6 +34,7 @@ function primeiroDiaMes(d: Date): string {
 export class DespesasComponent implements OnInit {
   private readonly despesaService       = inject(DespesaService);
   private readonly periodoService       = inject(DespesaPeriodoService);
+  private readonly arquivoService       = inject(ArquivoService);
   private readonly categoriaService     = inject(CategoriaService);
   private readonly fb                   = inject(FormBuilder);
 
@@ -51,10 +54,14 @@ export class DespesasComponent implements OnInit {
   showForm      = signal(false);
   saving        = signal(false);
   erros         = signal<string[]>([]);
+  infoMsg       = signal<string | null>(null);
   editandoPeriodo  = signal<DespesaPeriodoResponse | null>(null);
   editandoTemplate = signal<DespesaResponse | null>(null);
   pagandoId     = signal<string | null>(null);
   deletandoId   = signal<string | null>(null);
+  uploadingArquivoId  = signal<string | null>(null);
+  visualizandoArquivo = signal(false);
+  arquivosAnexados    = signal<Record<string, ArquivoResponse>>({});
   gerando       = signal(false);
 
   // Paginação de contas fixas
@@ -82,16 +89,16 @@ export class DespesasComponent implements OnInit {
 
   // ── Colunas da tabela ────────────────────────────────────────────────────
   periodoColumns: LedgerColumn[] = [
-    { title: 'Descrição', field: 'descricao', width: '32%' },
-    { title: 'Categoria', field: 'categoriaNome', width: '20%' },
-    { title: 'Valor', field: 'valorPlanejado', type: 'currency', width: '15%', align: 'right' },
+    { title: 'Descrição', field: 'descricao', width: '20' },
+    { title: 'Categoria', field: 'categoriaNome', width: '20' },
+    { title: 'Valor', field: 'valorPlanejado', type: 'currency', width: '20%', align: 'right' },
     {
-      title: 'Status', type: 'tag', width: '12%',
+      title: 'Status', type: 'tag', width: '20%',
       tagLabel:    (_, row) => this.statusLabel(row as DespesaPeriodoResponse),
       tagSeverity: (_, row) => this.statusSeverity(row as DespesaPeriodoResponse),
     },
     {
-      title: '', type: 'actions', width: '21%',
+      title: '', type: 'actions', width: '20%',
       actions: [
         {
           icon: 'pi-check', severity: 'success', event: 'pagar', label: 'Marcar como pago',
@@ -103,9 +110,14 @@ export class DespesasComponent implements OnInit {
           visible: (r) => !!(r as DespesaPeriodoResponse).boletoUrl,
         },
         {
-          icon: 'pi-upload', severity: 'secondary', event: 'uploadBoleto', label: 'Anexar boleto',
-          isFileUpload: true, accept: 'application/pdf',
-          visible: (r) => !(r as DespesaPeriodoResponse).boletoUrl && !(r as DespesaPeriodoResponse).paga,
+          icon: 'pi-upload', severity: 'secondary', event: 'uploadArquivo', label: 'Anexar arquivo',
+          isFileUpload: true,
+          visible:  (r) => !this.periodoTemArquivo(r as DespesaPeriodoResponse) && !(r as DespesaPeriodoResponse).paga,
+          disabled: (r) => this.uploadingArquivoId() === (r as DespesaPeriodoResponse).id,
+        },
+        {
+          icon: 'pi-eye', severity: 'info', event: 'verArquivoPeriodo', label: 'Visualizar arquivo',
+          visible: (r) => this.periodoTemArquivo(r as DespesaPeriodoResponse),
         },
         { icon: 'pi-pencil', severity: 'secondary', event: 'editar', label: 'Editar' },
         {
@@ -132,8 +144,18 @@ export class DespesasComponent implements OnInit {
       tagSeverity: (v) => v ? 'success' : 'secondary',
     },
     {
-      title: '', type: 'actions', width: '7%',
+      title: '', type: 'actions', width: '12%',
       actions: [
+        {
+          icon: 'pi-upload', severity: 'secondary', event: 'uploadArquivo', label: 'Anexar arquivo',
+          isFileUpload: true,
+          visible:  (r) => !this.templateTemArquivo(r as DespesaResponse),
+          disabled: (r) => this.uploadingArquivoId() === (r as DespesaResponse).id,
+        },
+        {
+          icon: 'pi-eye', severity: 'info', event: 'verArquivo', label: 'Visualizar arquivo',
+          visible: (r) => this.templateTemArquivo(r as DespesaResponse),
+        },
         { icon: 'pi-pencil', severity: 'secondary', event: 'editar',    label: 'Editar' },
         { icon: 'pi-pause',  severity: 'secondary', event: 'desativar', label: 'Desativar', visible: (r) => !!(r as DespesaResponse).ativa },
         {
@@ -150,15 +172,18 @@ export class DespesasComponent implements OnInit {
     switch (event) {
       case 'pagar':       this.pagar(d); break;
       case 'verBoleto':   window.open(this.boletoUrl(d.boletoUrl!), '_blank', 'noopener'); break;
-      case 'uploadBoleto': if (file) this.periodoService.uploadBoleto(d.id, file).subscribe({ next: (u) => this.periodos.update(l => l.map(x => x.id === u.id ? u : x)) }); break;
+      case 'uploadArquivo': if (file) this.anexarArquivoPeriodo(d, file); break;
+      case 'verArquivoPeriodo': this.verArquivoPeriodo(d); break;
       case 'editar':      this.abrirFormPeriodo(d); break;
       case 'deletar':     this.deletarPeriodo(d.id); break;
     }
   }
 
-  onCfAction({ event, row }: RowActionEvent): void {
+  onCfAction({ event, row, file }: RowActionEvent): void {
     const t = row as DespesaResponse;
     switch (event) {
+      case 'uploadArquivo': if (file) this.anexarArquivoTemplate(t, file); break;
+      case 'verArquivo':    this.verArquivo(t); break;
       case 'editar':    this.abrirFormTemplate(t); break;
       case 'desativar': this.desativarTemplate(t.id); break;
       case 'deletar':   this.deletarTemplate(t.id); break;
@@ -297,14 +322,6 @@ export class DespesasComponent implements OnInit {
     });
   }
 
-  onBoletoChange(event: Event, periodo: DespesaPeriodoResponse): void {
-    const file = (event.target as HTMLInputElement).files?.[0];
-    if (!file) return;
-    this.periodoService.uploadBoleto(periodo.id, file).subscribe({
-      next: (updated) => this.periodos.update(list => list.map(d => d.id === updated.id ? updated : d)),
-    });
-  }
-
   gerarPeriodo(): void {
     if (this.gerando()) return;
     this.gerando.set(true);
@@ -318,6 +335,110 @@ export class DespesasComponent implements OnInit {
       },
       error: (err) => { this.erros.set(err?.error?.errors ?? ['Erro ao gerar período.']); this.gerando.set(false); },
     });
+  }
+
+  anexarArquivoTemplate(template: DespesaResponse, file: File): void {
+    this.enviarArquivo(template.id, file, template.id, (arquivo) => {
+      this.templates.update((list) =>
+        list.map((t) => t.id === template.id ? { ...t, arquivoId: arquivo.id } : t),
+      );
+      this.periodos.update((list) =>
+        list.map((p) => p.despesaId === template.id ? { ...p, arquivoId: arquivo.id } : p),
+      );
+    });
+  }
+
+  anexarArquivoPeriodo(periodo: DespesaPeriodoResponse, file: File): void {
+    const despesaId = periodo.despesaId;
+    if (!despesaId) {
+      this.erros.set(['Não é possível anexar arquivo a uma despesa avulsa sem template vinculado.']);
+      return;
+    }
+    this.enviarArquivo(despesaId, file, periodo.id, (arquivo) => {
+      this.periodos.update((list) =>
+        list.map((p) => p.id === periodo.id || p.despesaId === despesaId
+          ? { ...p, arquivoId: arquivo.id }
+          : p),
+      );
+    });
+  }
+
+  private enviarArquivo(
+    despesaId: string,
+    file: File,
+    trackKey: string,
+    onSuccess?: (arquivo: ArquivoResponse) => void,
+  ): void {
+    if (this.uploadingArquivoId()) return;
+    this.erros.set([]);
+    this.infoMsg.set(null);
+    this.uploadingArquivoId.set(trackKey);
+
+    this.arquivoService.registrarArquivo(despesaId, file).subscribe({
+      next: (arquivo) => {
+        this.arquivosAnexados.update((map) => ({
+          ...map,
+          [trackKey]: arquivo,
+          [despesaId]: arquivo,
+        }));
+        onSuccess?.(arquivo);
+        this.infoMsg.set(`Arquivo "${arquivo.nome}" anexado com sucesso.`);
+        this.uploadingArquivoId.set(null);
+      },
+      error: (err) => {
+        const msg = err?.error?.title ?? err?.error?.message ?? err?.error?.errors?.[0];
+        this.erros.set([msg ?? 'Erro ao anexar arquivo.']);
+        this.uploadingArquivoId.set(null);
+      },
+    });
+  }
+
+  verArquivo(template: DespesaResponse): void {
+    const arquivoId = this.resolverArquivoIdTemplate(template);
+    if (arquivoId) this.abrirArquivo(arquivoId);
+  }
+
+  verArquivoPeriodo(periodo: DespesaPeriodoResponse): void {
+    const arquivoId = this.resolverArquivoIdPeriodo(periodo);
+    if (arquivoId) this.abrirArquivo(arquivoId);
+  }
+
+  private resolverArquivoIdTemplate(template: DespesaResponse): string | undefined {
+    return template.arquivoId
+      ?? this.arquivosAnexados()[template.id]?.id;
+  }
+
+  private resolverArquivoIdPeriodo(periodo: DespesaPeriodoResponse): string | undefined {
+    return periodo.arquivoId
+      ?? this.arquivosAnexados()[periodo.id]?.id
+      ?? (periodo.despesaId ? this.arquivosAnexados()[periodo.despesaId]?.id : undefined)
+      ?? (periodo.despesaId
+        ? this.templates().find((t) => t.id === periodo.despesaId)?.arquivoId
+        : undefined);
+  }
+
+  private abrirArquivo(arquivoId: string): void {
+    if (this.visualizandoArquivo()) return;
+    this.erros.set([]);
+    this.infoMsg.set(null);
+    this.visualizandoArquivo.set(true);
+
+    this.arquivoService.visualizar(arquivoId).subscribe({
+      next: () => this.visualizandoArquivo.set(false),
+      error: (err) => {
+        const msg = err?.error?.title ?? err?.error?.message ?? err?.error?.errors?.[0];
+        this.erros.set([msg ?? 'Não foi possível abrir o arquivo.']);
+        this.visualizandoArquivo.set(false);
+      },
+    });
+  }
+
+  templateTemArquivo(template: DespesaResponse): boolean {
+    return !!this.resolverArquivoIdTemplate(template);
+  }
+
+  periodoTemArquivo(periodo: DespesaPeriodoResponse): boolean {
+    return !!this.resolverArquivoIdPeriodo(periodo);
   }
 
   // ── Templates: ações ──────────────────────────────────────────────────────

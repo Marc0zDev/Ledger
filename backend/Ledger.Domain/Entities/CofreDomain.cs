@@ -176,7 +176,7 @@ public class CofreDomain : BaseDomain
     protected override void Validate()
     {
         RuleFor(!string.IsNullOrWhiteSpace(Nome), nameof(Nome), "O nome do cofre é obrigatório.");
-        RuleFor(Meta > 0,                          nameof(Meta), "A meta financeira do cofre deve ser maior que zero.");
+        RuleFor(Meta > 0, nameof(Meta), "A meta financeira do cofre deve ser maior que zero.");
     }
 }
 

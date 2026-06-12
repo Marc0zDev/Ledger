@@ -117,6 +117,7 @@ export interface DespesaResponse {
   valorPlanejado: number;
   diaVencimento?: number;
   ativa: boolean;
+  arquivoId?: string;
   categoriaId: string;
   categoriaNome: string;
   categoriaIcone?: string;
@@ -150,6 +151,7 @@ export interface PagarDespesaPeriodoRequest {
 export interface DespesaPeriodoResponse {
   id: string;
   despesaId?: string;
+  arquivoId?: string;
   descricao: string;
   categoriaId: string;
   categoriaNome: string;

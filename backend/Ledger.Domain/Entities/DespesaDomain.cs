@@ -15,6 +15,7 @@ public class DespesaDomain : BaseDomain
     public decimal     ValorPlanejado { get; private set; }
     public int?        DiaVencimento  { get; private set; }
     public bool        Ativa          { get; private set; } = true;
+    public Guid?       ArquivoId      { get; private set; }
     public Guid        CategoriaId    { get; private set; }
     public Guid        UsuarioId      { get; private set; }
 
@@ -34,7 +35,7 @@ public class DespesaDomain : BaseDomain
     }
 
     private DespesaDomain(Guid id, string nome, TipoDespesa tipo, decimal valorPlanejado,
-        int? diaVencimento, bool ativa, Guid categoriaId, Guid usuarioId,
+        int? diaVencimento, bool ativa, Guid? arquivoId, Guid categoriaId, Guid usuarioId,
         DateTime createdAt, DateTime? updatedAt)
     {
         Id             = id;
@@ -43,6 +44,7 @@ public class DespesaDomain : BaseDomain
         ValorPlanejado = valorPlanejado;
         DiaVencimento  = diaVencimento;
         Ativa          = ativa;
+        ArquivoId      = arquivoId;
         CategoriaId    = categoriaId;
         UsuarioId      = usuarioId;
         CreatedAt      = createdAt;
@@ -56,9 +58,9 @@ public class DespesaDomain : BaseDomain
         => new(nome, tipo, valorPlanejado, categoriaId, usuarioId, diaVencimento);
 
     public static DespesaDomain Reconstituir(Guid id, string nome, TipoDespesa tipo, decimal valorPlanejado,
-        int? diaVencimento, bool ativa, Guid categoriaId, Guid usuarioId,
+        int? diaVencimento, bool ativa, Guid? arquivoId, Guid categoriaId, Guid usuarioId,
         DateTime createdAt, DateTime? updatedAt)
-        => new(id, nome, tipo, valorPlanejado, diaVencimento, ativa, categoriaId, usuarioId, createdAt, updatedAt);
+        => new(id, nome, tipo, valorPlanejado, diaVencimento, ativa, arquivoId, categoriaId, usuarioId, createdAt, updatedAt);
 
     // ── Comportamento ─────────────────────────────────────────────────────────
 
@@ -76,6 +78,15 @@ public class DespesaDomain : BaseDomain
 
     public void Ativar()    { Ativa = true;  UpdatedAt = DateTime.UtcNow; }
     public void Desativar() { Ativa = false; UpdatedAt = DateTime.UtcNow; }
+
+    public void AdicionarArquivo(Guid idarquivo) 
+    { 
+        if(idarquivo == null || idarquivo == Guid.Empty)
+            AddNotification(nameof(ArquivoId), "Id do arquivo é obrigatório.");
+        
+        ArquivoId = idarquivo;
+        UpdatedAt = DateTime.UtcNow;
+    }
 
     // ── Validação ─────────────────────────────────────────────────────────────
 

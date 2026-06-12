@@ -1,5 +1,7 @@
 using System.Security.Claims;
+using Ledger.Application.Commands.Arquivo;
 using Ledger.Application.Commands.Despesa;
+using Ledger.Application.DTOs.Arquivo;
 using Ledger.Application.DTOs.Cofre;
 using Ledger.Application.DTOs.Despesa;
 using Ledger.Application.Queries.Despesa;
@@ -64,6 +66,23 @@ public class DespesasController : ControllerBase
             new AtualizarDespesaCommand(id, request.Nome, (TipoDespesa)request.Tipo,
                 request.ValorPlanejado, request.CategoriaId, request.DiaVencimento), ct);
         return despesa is null ? NotFound() : Ok(despesa);
+    }
+
+    [HttpPost("arquivo")]
+    public async Task<IActionResult> AdionarBoleto([FromBody] ArquivoRequest request, CancellationToken ct)
+    {
+        var arquivoResponse = await _mediator.Send
+        (
+            new RegistrarArquivoCommand(
+                request.DespesaID, 
+                request.Nome, 
+                request.Content, 
+                request.ArquivoByte, 
+                request.Extensao
+                ), 
+            ct
+        );
+        return arquivoResponse is null ? NotFound() : Ok(arquivoResponse);
     }
 
     /// <summary>Desativa um template (para de gerar lançamentos mensais).</summary>

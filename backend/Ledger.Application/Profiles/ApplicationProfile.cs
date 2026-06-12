@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Ledger.Application.DTOs.Arquivo;
 using Ledger.Application.DTOs.Categoria;
 using Ledger.Application.DTOs.Cofre;
 using Ledger.Application.DTOs.Despesa;
@@ -46,6 +47,9 @@ public class ApplicationProfile : Profile
             .ForMember(r => r.Categoria,    opt => opt.MapFrom(d => d.Categoria.ToString()))
             .ForMember(r => r.Visibilidade, opt => opt.MapFrom(d => d.Visibilidade.ToString()))
             .ForMember(r => r.Movimentacoes, opt => opt.MapFrom(d => d.Movimentacoes));
+
+        CreateMap<ArquivoDomain, ArquivoResponse>()
+            .ForMember(r => r.DataUpload, opt => opt.MapFrom(d => d.CreatedAt));
     }
 }
 

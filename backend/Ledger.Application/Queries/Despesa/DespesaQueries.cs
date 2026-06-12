@@ -1,5 +1,5 @@
 using AutoMapper;
-using Ledger.Application.DTOs.Cofre;
+using Ledger.Application.DTOs;
 using Ledger.Application.DTOs.Despesa;
 using Ledger.Domain.Interfaces;
 using MediatR;
