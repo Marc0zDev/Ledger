@@ -2,7 +2,6 @@
 using Ledger.Application.Events;
 using Ledger.Application.Interfaces;
 using Ledger.Application.Profiles;
-using Ledger.Application.Services;
 using Ledger.Domain.Exceptions;
 using Ledger.Domain.Interfaces;
 using Ledger.Infrastructure.Data;
@@ -63,14 +62,6 @@ builder.Services.AddScoped<IArquivoRepository, ArquivoRepository>();
 // Infrastructure Services
 builder.Services.AddScoped<IIdentityService, IdentityService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
-
-// Application Services
-builder.Services.AddScoped<ICofreService, CofreService>();
-builder.Services.AddScoped<IUsuarioService, UsuarioService>();
-builder.Services.AddScoped<IParticipanteService, ParticipanteService>();
-builder.Services.AddScoped<IDespesaService, DespesaService>();
-builder.Services.AddScoped<IMovimentacaoService, MovimentacaoService>();
-builder.Services.AddScoped<IAuthService, AuthService>();
 
 // JWT Authentication (desabilita cookie do Identity — API pura)
 builder.Services.AddAuthentication(options =>
