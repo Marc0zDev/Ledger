@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Ledger.Infrastructure.Migrations
 {
     [DbContext(typeof(LedgerDbContext))]
-    [Migration("20260612154124_AddComprovanteIdToDespesaPeriodo")]
-    partial class AddComprovanteIdToDespesaPeriodo
+    [Migration("20260612162631_AddComprovanteIdToDespesaPeriodo2")]
+    partial class AddComprovanteIdToDespesaPeriodo2
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -454,6 +454,10 @@ namespace Ledger.Infrastructure.Migrations
                     b.Property<DateTime>("Competencia")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("competencia");
+
+                    b.Property<Guid?>("ComprovanteId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("comprovante_id");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")

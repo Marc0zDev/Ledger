@@ -452,6 +452,10 @@ namespace Ledger.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("competencia");
 
+                    b.Property<Guid?>("ComprovanteId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("comprovante_id");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
