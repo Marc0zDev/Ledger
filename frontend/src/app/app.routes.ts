@@ -44,6 +44,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'receitas',
+        loadComponent: () =>
+          import('./features/receita/receita-list/receita-list').then(
+            (m) => m.ReceitaList
+          ),
+      },
+      {
         path: 'convites/aceitar',
         loadComponent: () =>
           import('./features/convites/convite-aceitar/convite-aceitar.component').then(
