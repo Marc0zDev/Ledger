@@ -103,14 +103,27 @@ public class InfrastructureProfile : Profile
         CreateMap<ReceitaModel, ReceitaDomain>()
             .ConstructUsing(src => ReceitaDomain.Reconstituir(
                 src.Id, src.Nome, src.Valor, src.Descricao, src.ArquivoId,
-                src.DataRecebimento, src.UsuarioId, src.DataCriacao, src.DataAtualizacao ?? src.DataCriacao))
+                src.DataRecebimento, src.Competencia, src.ReceitaTemplateId,
+                src.UsuarioId, src.CreatedAt, src.UpdatedAt))
             .ForAllMembers(opt => opt.Ignore());
 
         CreateMap<ReceitaDomain, ReceitaModel>()
-            .ForMember(m => m.DataCriacao,    opt => opt.MapFrom(d => d.CreatedAt))
-            .ForMember(m => m.DataAtualizacao, opt => opt.MapFrom(d => d.UpdatedAt))
-            .ForMember(m => m.Arquivo,        opt => opt.Ignore())
-            .ForMember(m => m.Usuario,        opt => opt.Ignore());
+            .ForMember(m => m.CreatedAt,        opt => opt.MapFrom(d => d.CreatedAt))
+            .ForMember(m => m.UpdatedAt,        opt => opt.MapFrom(d => d.UpdatedAt))
+            .ForMember(m => m.Arquivo,          opt => opt.Ignore())
+            .ForMember(m => m.Usuario,          opt => opt.Ignore())
+            .ForMember(m => m.Template,         opt => opt.Ignore());
+
+        CreateMap<ReceitaTemplateModel, ReceitaTemplateDomain>()
+            .ConstructUsing(src => ReceitaTemplateDomain.Reconstituir(
+                src.Id, src.Nome, src.Valor, src.Descricao,
+                src.UsuarioId, src.Ativa, src.CreatedAt, src.UpdatedAt))
+            .ForAllMembers(opt => opt.Ignore());
+
+        CreateMap<ReceitaTemplateDomain, ReceitaTemplateModel>()
+            .ForMember(m => m.CreatedAt, opt => opt.MapFrom(d => d.CreatedAt))
+            .ForMember(m => m.UpdatedAt, opt => opt.MapFrom(d => d.UpdatedAt))
+            .ForMember(m => m.Usuario,   opt => opt.Ignore());
 
         CreateMap<ConviteModel, ConviteDomain>()
             .ConstructUsing(src => ConviteDomain.Reconstituir(

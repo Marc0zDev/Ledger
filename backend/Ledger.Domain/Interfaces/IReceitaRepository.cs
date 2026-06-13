@@ -1,15 +1,10 @@
-﻿using Ledger.Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Ledger.Domain.Entities;
 
-namespace Ledger.Domain.Interfaces
+namespace Ledger.Domain.Interfaces;
+
+public interface IReceitaRepository : IRepository<ReceitaDomain>
 {
-    public interface IReceitaRepository : IRepository<ReceitaDomain>
-    {
-         ReceitaDomain? GetComDetalhes(Guid id);
-         IEnumerable<ReceitaDomain> GetByUsuarioId(Guid usuarioId);
-    }
+    Task<IEnumerable<ReceitaDomain>> GetByUsuarioIdAsync(Guid usuarioId, CancellationToken ct);
+    Task<IEnumerable<ReceitaDomain>> GetByCompetenciaAsync(Guid usuarioId, DateTime competencia, CancellationToken ct);
+    Task<bool> ExisteParaTemplateNoMesAsync(Guid templateId, DateTime competencia, CancellationToken ct);
 }

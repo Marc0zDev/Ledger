@@ -6,75 +6,179 @@
       <h1 class="page-title">Receitas</h1>
       <p class="page-subtitle">Suas entradas e rendimentos mensais</p>
     </div>
-    <div class="header-actions">
-      <button class="btn-novo" (click)="abrirForm()">
-        <i class="pi pi-plus"></i> Nova receita
-      </button>
+  </div>
+
+  <!-- Abas -->
+  <div class="tabs">
+    <button class="tab-btn" [class.active]="activeTab() === 'receitas'" (click)="mudarAba('receitas')">
+      Receitas do mês
+    </button>
+    <button class="tab-btn" [class.active]="activeTab() === 'fixas'" (click)="mudarAba('fixas')">
+      Receitas fixas
+    </button>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════════════════ -->
+  <!-- Aba Receitas do Mês                                                       -->
+  <!-- ════════════════════════════════════════════════════════════════════════ -->
+  @if (activeTab() === 'receitas') {
+
+    <!-- Barra de ações do mês -->
+    <div class="mes-bar">
+      <div class="mes-nav">
+        <button class="mes-nav-btn" (click)="mesAnterior()"><i class="pi pi-chevron-left"></i></button>
+        <span class="mes-label">{{ competenciaLabel() }}</span>
+        <button class="mes-nav-btn" (click)="mesSeguinte()"><i class="pi pi-chevron-right"></i></button>
+      </div>
+      <div class="mes-actions">
+        <button class="btn-secondary" (click)="gerarDoMes()" [disabled]="gerando()">
+          <i class="pi pi-sync"></i>
+          {{ gerando() ? 'Gerando...' : 'Gerar fixas do mês' }}
+        </button>
+        <button class="btn-primary" (click)="abrirForm()">
+          <i class="pi pi-plus"></i> Nova receita
+        </button>
+      </div>
     </div>
-  </div>
 
-  <!-- Navegação de mês -->
-  <div class="mes-nav">
-    <button class="mes-nav-btn" (click)="mesAnterior()"><i class="pi pi-chevron-left"></i></button>
-    <span class="mes-label">{{ competenciaLabel() }}</span>
-    <button class="mes-nav-btn" (click)="mesSeguinte()"><i class="pi pi-chevron-right"></i></button>
-  </div>
-
-  <!-- Resumo -->
-  <div class="summary-row">
-    <div class="summary-card">
-      <span class="summary-label">Total recebido</span>
-      <span class="summary-value">{{ formatarMoeda(totalMes()) }}</span>
-      <span class="summary-count">{{ receitasMes().length }} entrada{{ receitasMes().length !== 1 ? 's' : '' }}</span>
+    <!-- Resumo -->
+    <div class="summary-row">
+      <div class="summary-card">
+        <span class="summary-label">Total recebido</span>
+        <span class="summary-value">{{ formatarMoeda(totalMes()) }}</span>
+        <span class="summary-count">{{ receitas().length }} entrada{{ receitas().length !== 1 ? 's' : '' }}</span>
+      </div>
     </div>
-  </div>
 
-  <!-- Form inline -->
-  @if (showForm()) {
-    <div class="form-panel">
-      <h3 class="form-panel-title">Nova receita</h3>
-      <form [formGroup]="form" (ngSubmit)="salvar()" class="form-grid">
-        <input formControlName="nome" type="text" placeholder="Nome" class="form-field form-field--wide" />
-        <input formControlName="valor" type="number" step="0.01" min="0.01" placeholder="Valor (R$)" class="form-field" />
-        <input formControlName="dataRecebimento" type="date" class="form-field" />
-        <input formControlName="descricao" type="text" placeholder="Descrição (opcional)" class="form-field form-field--wide" />
-        <div class="form-actions">
-          <button type="button" class="btn-cancel" (click)="fecharForm()">Cancelar</button>
-          <button type="submit" class="btn-save" [disabled]="form.invalid || saving()">
-            {{ saving() ? 'Salvando...' : 'Registrar' }}
+    <!-- Form nova receita -->
+    @if (showForm()) {
+      <div class="form-panel">
+        <h3 class="form-panel-title">Nova receita</h3>
+        <form [formGroup]="form" (ngSubmit)="salvar()" class="form-grid">
+          <div class="form-group form-group--wide">
+            <label class="form-label">Nome</label>
+            <input formControlName="nome" type="text" placeholder="Ex: Salário" class="form-field" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Valor (R$)</label>
+            <input formControlName="valor" type="number" step="0.01" min="0.01" class="form-field" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Data de recebimento</label>
+            <input formControlName="dataRecebimento" type="date" class="form-field" />
+          </div>
+          <div class="form-group form-group--wide">
+            <label class="form-label">Descrição (opcional)</label>
+            <input formControlName="descricao" type="text" class="form-field" />
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn-ghost" (click)="fecharForm()">Cancelar</button>
+            <button type="submit" class="btn-primary" [disabled]="form.invalid || saving()">
+              {{ saving() ? 'Salvando...' : 'Registrar' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    }
+
+    @if (loading()) {
+      <div class="state-center">
+        <div class="spinner"></div>
+        <span class="state-label">Carregando...</span>
+      </div>
+    }
+
+    @if (!loading() && receitas().length === 0) {
+      <div class="state-center">
+        <i class="pi pi-wallet state-icon"></i>
+        <p class="state-title">Nenhuma receita neste mês</p>
+        <p class="state-desc">Registre suas entradas ou gere as receitas fixas para este mês.</p>
+        <div class="state-actions">
+          <button class="btn-secondary" (click)="gerarDoMes()">
+            <i class="pi pi-sync"></i> Gerar fixas do mês
+          </button>
+          <button class="btn-primary" (click)="abrirForm()">
+            <i class="pi pi-plus"></i> Nova receita
           </button>
         </div>
-      </form>
-    </div>
+      </div>
+    }
+
+    @if (!loading() && receitas().length > 0) {
+      <app-ledger-table
+        [dataSource]="receitas()"
+        [options]="colunasReceitas"
+        (rowAction)="onActionReceita($event)"
+      />
+    }
   }
 
-  <!-- Loading -->
-  @if (loading()) {
-    <div class="state-center">
-      <div class="spinner"></div>
-      <span class="state-label">Carregando...</span>
-    </div>
-  }
+  <!-- ════════════════════════════════════════════════════════════════════════ -->
+  <!-- Aba Receitas Fixas                                                        -->
+  <!-- ════════════════════════════════════════════════════════════════════════ -->
+  @if (activeTab() === 'fixas') {
 
-  <!-- Vazio -->
-  @if (!loading() && receitasMes().length === 0) {
-    <div class="state-center">
-      <i class="pi pi-wallet state-icon"></i>
-      <p class="state-title">Nenhuma receita neste mês</p>
-      <p class="state-desc">Registre suas entradas e rendimentos para acompanhar seu fluxo financeiro.</p>
-      <button class="btn-novo" (click)="abrirForm()">
-        <i class="pi pi-plus"></i> Nova receita
+    <div class="fixas-bar">
+      <p class="fixas-desc">
+        Receitas fixas são modelos que se repetem todo mês. Use "Gerar fixas do mês" para criá-las automaticamente na aba de receitas.
+      </p>
+      <button class="btn-primary" (click)="abrirTemplateForm()">
+        <i class="pi pi-plus"></i> Nova receita fixa
       </button>
     </div>
-  }
 
-  <!-- Tabela -->
-  @if (!loading() && receitasMes().length > 0) {
-    <app-ledger-table
-      [dataSource]="receitasMes()"
-      [options]="colunas"
-      (rowAction)="onAction($event)"
-    />
+    <!-- Form template -->
+    @if (showTemplateForm()) {
+      <div class="form-panel">
+        <h3 class="form-panel-title">{{ editingTemplateId() ? 'Editar receita fixa' : 'Nova receita fixa' }}</h3>
+        <form [formGroup]="templateForm" (ngSubmit)="salvarTemplate()" class="form-grid">
+          <div class="form-group form-group--wide">
+            <label class="form-label">Nome</label>
+            <input formControlName="nome" type="text" placeholder="Ex: Salário" class="form-field" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Valor (R$)</label>
+            <input formControlName="valor" type="number" step="0.01" min="0.01" class="form-field" />
+          </div>
+          <div class="form-group form-group--wide">
+            <label class="form-label">Descrição (opcional)</label>
+            <input formControlName="descricao" type="text" class="form-field" />
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn-ghost" (click)="fecharTemplateForm()">Cancelar</button>
+            <button type="submit" class="btn-primary" [disabled]="templateForm.invalid || savingTemplate()">
+              {{ savingTemplate() ? 'Salvando...' : (editingTemplateId() ? 'Atualizar' : 'Criar') }}
+            </button>
+          </div>
+        </form>
+      </div>
+    }
+
+    @if (loadingTemplates()) {
+      <div class="state-center">
+        <div class="spinner"></div>
+        <span class="state-label">Carregando...</span>
+      </div>
+    }
+
+    @if (!loadingTemplates() && templates().length === 0) {
+      <div class="state-center">
+        <i class="pi pi-calendar state-icon"></i>
+        <p class="state-title">Nenhuma receita fixa cadastrada</p>
+        <p class="state-desc">Cadastre receitas que se repetem todo mês, como salário e aluguéis.</p>
+        <button class="btn-primary" (click)="abrirTemplateForm()">
+          <i class="pi pi-plus"></i> Nova receita fixa
+        </button>
+      </div>
+    }
+
+    @if (!loadingTemplates() && templates().length > 0) {
+      <app-ledger-table
+        [dataSource]="templates()"
+        [options]="colunasTemplates"
+        (rowAction)="onActionTemplate($event)"
+      />
+    }
   }
 
 </div>

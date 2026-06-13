@@ -1,14 +1,11 @@
 namespace Ledger.Application.DTOs.Receita;
 
-public class ReceitaResponse
+public class ReceitaTemplateResponse
 {
     public Guid Id { get; set; }
     public string Nome { get; set; } = string.Empty;
     public decimal Valor { get; set; }
     public string? Descricao { get; set; }
-    public Guid? ArquivoId { get; set; }
-    public DateTime DataRecebimento { get; set; }
-    public DateTime Competencia { get; set; }
-    public Guid? ReceitaTemplateId { get; set; }
+    public bool Ativa { get; set; }
     public DateTime CreatedAt { get; set; }
 }

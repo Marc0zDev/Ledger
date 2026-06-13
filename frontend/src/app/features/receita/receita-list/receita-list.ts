@@ -3,11 +3,11 @@ import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { ReceitaService } from '../../../core/services/receita.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { NotificationService } from '../../../core/services/notification.service';
-import { ReceitaResponse } from '../../../core/models/receita.model';
+import { ReceitaResponse, ReceitaTemplateResponse } from '../../../core/models/receita.model';
 import { LedgerTableComponent, LedgerColumn, RowActionEvent } from '../../../shared/components/ledger-table/ledger-table.component';
 
-function primeiroDiaMes(d: Date): string {
-  return new Date(Date.UTC(d.getFullYear(), d.getMonth(), 1)).toISOString().substring(0, 10);
+function primeiroDiaMes(d: Date): Date {
+  return new Date(Date.UTC(d.getFullYear(), d.getMonth(), 1));
 }
 
 @Component({
@@ -23,81 +23,101 @@ export class ReceitaList implements OnInit {
   private readonly notify         = inject(NotificationService);
   private readonly fb             = inject(FormBuilder);
 
-  // ── Estado ───────────────────────────────────────────────────────────────
+  // ── Abas ─────────────────────────────────────────────────────────────────
+  activeTab = signal<'receitas' | 'fixas'>('receitas');
+
+  // ── Estado receitas ───────────────────────────────────────────────────────
   receitas    = signal<ReceitaResponse[]>([]);
-  competencia = signal<string>(primeiroDiaMes(new Date()));
-  loading     = signal(true);
+  competencia = signal<Date>(primeiroDiaMes(new Date()));
+  loading     = signal(false);
   showForm    = signal(false);
   saving      = signal(false);
+  gerando     = signal(false);
+
+  // ── Estado templates ──────────────────────────────────────────────────────
+  templates         = signal<ReceitaTemplateResponse[]>([]);
+  loadingTemplates  = signal(false);
+  showTemplateForm  = signal(false);
+  savingTemplate    = signal(false);
+  editingTemplateId = signal<string | null>(null);
 
   // ── Computed ─────────────────────────────────────────────────────────────
-  competenciaLabel = computed(() => {
-    const [ano, mes] = this.competencia().split('-');
-    return new Date(+ano, +mes - 1, 1).toLocaleString('pt-BR', { month: 'long', year: 'numeric' });
-  });
-
-  receitasMes = computed(() => {
-    const [ano, mes] = this.competencia().split('-').map(Number);
-    return this.receitas().filter(r => {
-      const d = new Date(r.dataRecebimento);
-      return d.getUTCFullYear() === ano && d.getUTCMonth() + 1 === mes;
-    });
-  });
-
-  totalMes = computed(() =>
-    this.receitasMes().reduce((acc, r) => acc + r.valor, 0)
+  competenciaLabel = computed(() =>
+    this.competencia().toLocaleString('pt-BR', { month: 'long', year: 'numeric', timeZone: 'UTC' })
   );
 
-  // ── Form ─────────────────────────────────────────────────────────────────
+  totalMes = computed(() => this.receitas().reduce((acc, r) => acc + r.valor, 0));
+
+  // ── Forms ─────────────────────────────────────────────────────────────────
   form = this.fb.nonNullable.group({
-    nome:             ['', [Validators.required, Validators.maxLength(100)]],
-    valor:            [0,  [Validators.required, Validators.min(0.01)]],
-    descricao:        [''],
-    dataRecebimento:  ['', Validators.required],
+    nome:            ['', [Validators.required, Validators.maxLength(100)]],
+    valor:           [0,  [Validators.required, Validators.min(0.01)]],
+    descricao:       [''],
+    dataRecebimento: ['', Validators.required],
   });
 
-  // ── Tabela ────────────────────────────────────────────────────────────────
-  readonly colunas: LedgerColumn[] = [
+  templateForm = this.fb.nonNullable.group({
+    nome:      ['', [Validators.required, Validators.maxLength(100)]],
+    valor:     [0,  [Validators.required, Validators.min(0.01)]],
+    descricao: [''],
+  });
+
+  // ── Colunas ───────────────────────────────────────────────────────────────
+  readonly colunasReceitas: LedgerColumn[] = [
     { field: 'nome',            title: 'Nome' },
-    { field: 'valor',           title: 'Valor',            type: 'currency' },
-    { field: 'dataRecebimento', title: 'Data recebimento', type: 'date' },
+    { field: 'valor',           title: 'Valor',    type: 'currency' },
+    { field: 'dataRecebimento', title: 'Recebido', type: 'date' },
     { field: 'descricao',       title: 'Descrição' },
     {
-      field: 'id',
-      title: '',
-      type: 'actions',
+      field: 'id', title: '', type: 'actions',
+      actions: [{ icon: 'pi-trash', severity: 'danger', event: 'deletar', label: 'Excluir' }],
+    },
+  ];
+
+  readonly colunasTemplates: LedgerColumn[] = [
+    { field: 'nome',      title: 'Nome' },
+    { field: 'valor',     title: 'Valor', type: 'currency' },
+    { field: 'descricao', title: 'Descrição' },
+    {
+      field: 'id', title: '', type: 'actions',
       actions: [
-        { icon: 'pi-trash', severity: 'danger', event: 'deletar', label: 'Excluir' },
+        { icon: 'pi-pencil', event: 'editar',  label: 'Editar' },
+        { icon: 'pi-trash',  severity: 'danger', event: 'deletar', label: 'Excluir' },
       ],
     },
   ];
 
   ngOnInit(): void {
-    this.carregar();
+    this.carregarReceitas();
+    this.carregarTemplates();
   }
 
-  private carregar(): void {
+  // ── Abas ─────────────────────────────────────────────────────────────────
+  mudarAba(tab: 'receitas' | 'fixas'): void {
+    this.activeTab.set(tab);
+  }
+
+  // ── Receitas ──────────────────────────────────────────────────────────────
+  carregarReceitas(): void {
     this.loading.set(true);
-    this.receitaService.listar().subscribe({
-      next: (data) => { this.receitas.set(data); this.loading.set(false); },
-      error: () => { this.notify.error('Erro ao carregar receitas.'); this.loading.set(false); },
+    this.receitaService.listar(this.competencia()).subscribe({
+      next:  (data) => { this.receitas.set(data); this.loading.set(false); },
+      error: ()     => { this.notify.error('Erro ao carregar receitas.'); this.loading.set(false); },
     });
   }
 
-  // ── Navegação de mês ──────────────────────────────────────────────────────
   mesAnterior(): void {
-    const [ano, mes] = this.competencia().split('-').map(Number);
-    const d = new Date(Date.UTC(ano, mes - 2, 1));
-    this.competencia.set(d.toISOString().substring(0, 10));
+    const d = this.competencia();
+    this.competencia.set(primeiroDiaMes(new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() - 1, 1))));
+    this.carregarReceitas();
   }
 
   mesSeguinte(): void {
-    const [ano, mes] = this.competencia().split('-').map(Number);
-    const d = new Date(Date.UTC(ano, mes, 1));
-    this.competencia.set(d.toISOString().substring(0, 10));
+    const d = this.competencia();
+    this.competencia.set(primeiroDiaMes(new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 1))));
+    this.carregarReceitas();
   }
 
-  // ── Form ─────────────────────────────────────────────────────────────────
   abrirForm(): void {
     this.form.reset({ dataRecebimento: new Date().toISOString().substring(0, 10) });
     this.showForm.set(true);
@@ -118,7 +138,7 @@ export class ReceitaList implements OnInit {
       next: () => {
         this.notify.success('Receita registrada com sucesso.');
         this.fecharForm();
-        this.carregar();
+        this.carregarReceitas();
         this.saving.set(false);
       },
       error: () => {
@@ -128,15 +148,107 @@ export class ReceitaList implements OnInit {
     });
   }
 
-  // ── Ações da tabela ───────────────────────────────────────────────────────
-  onAction(event: RowActionEvent): void {
+  gerarDoMes(): void {
+    if (this.gerando()) return;
+    this.gerando.set(true);
+    this.receitaService.gerarDoMes(this.competencia()).subscribe({
+      next: (criadas) => {
+        if (criadas.length === 0) {
+          this.notify.info('Todas as receitas fixas já foram geradas para este mês.');
+        } else {
+          this.notify.success(`${criadas.length} receita(s) gerada(s) com sucesso.`);
+          this.carregarReceitas();
+        }
+        this.gerando.set(false);
+      },
+      error: () => {
+        this.notify.error('Erro ao gerar receitas do mês.');
+        this.gerando.set(false);
+      },
+    });
+  }
+
+  onActionReceita(event: RowActionEvent): void {
     const r = event.row as ReceitaResponse;
     if (event.event === 'deletar') {
-      this.notify.warn('Exclusão ainda não implementada no servidor.');
+      this.receitaService.deletar(r.id).subscribe({
+        next: () => {
+          this.notify.success('Receita excluída.');
+          this.carregarReceitas();
+        },
+        error: () => this.notify.error('Erro ao excluir receita.'),
+      });
     }
   }
 
-  // ── Helpers ───────────────────────────────────────────────────────────────
+  // ── Templates ─────────────────────────────────────────────────────────────
+  carregarTemplates(): void {
+    this.loadingTemplates.set(true);
+    this.receitaService.listarTemplates().subscribe({
+      next:  (data) => { this.templates.set(data); this.loadingTemplates.set(false); },
+      error: ()     => { this.notify.error('Erro ao carregar receitas fixas.'); this.loadingTemplates.set(false); },
+    });
+  }
+
+  abrirTemplateForm(template?: ReceitaTemplateResponse): void {
+    if (template) {
+      this.editingTemplateId.set(template.id);
+      this.templateForm.setValue({ nome: template.nome, valor: template.valor, descricao: template.descricao ?? '' });
+    } else {
+      this.editingTemplateId.set(null);
+      this.templateForm.reset();
+    }
+    this.showTemplateForm.set(true);
+  }
+
+  fecharTemplateForm(): void {
+    this.showTemplateForm.set(false);
+    this.templateForm.reset();
+    this.editingTemplateId.set(null);
+  }
+
+  salvarTemplate(): void {
+    if (this.templateForm.invalid || this.savingTemplate()) return;
+    this.savingTemplate.set(true);
+    const { nome, valor, descricao } = this.templateForm.getRawValue();
+    const editId = this.editingTemplateId();
+    const usuarioId = this.auth.currentUser()!.usuarioId;
+
+    const req$ = editId
+      ? this.receitaService.atualizarTemplate(editId, { nome, valor, descricao })
+      : this.receitaService.criarTemplate({ usuarioId, nome, valor, descricao });
+
+    req$.subscribe({
+      next: () => {
+        this.notify.success(editId ? 'Receita fixa atualizada.' : 'Receita fixa criada.');
+        this.fecharTemplateForm();
+        this.carregarTemplates();
+        this.savingTemplate.set(false);
+      },
+      error: () => {
+        this.notify.error('Erro ao salvar receita fixa.');
+        this.savingTemplate.set(false);
+      },
+    });
+  }
+
+  onActionTemplate(event: RowActionEvent): void {
+    const t = event.row as ReceitaTemplateResponse;
+    if (event.event === 'editar') {
+      this.abrirTemplateForm(t);
+      this.mudarAba('fixas');
+    }
+    if (event.event === 'deletar') {
+      this.receitaService.deletarTemplate(t.id).subscribe({
+        next: () => {
+          this.notify.success('Receita fixa excluída.');
+          this.carregarTemplates();
+        },
+        error: () => this.notify.error('Erro ao excluir receita fixa.'),
+      });
+    }
+  }
+
   formatarMoeda(v: number): string {
     return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   }

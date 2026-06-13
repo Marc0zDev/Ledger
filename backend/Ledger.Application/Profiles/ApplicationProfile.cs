@@ -53,7 +53,10 @@ public class ApplicationProfile : Profile
             .ForMember(r => r.DataUpload, opt => opt.MapFrom(d => d.CreatedAt));
 
         CreateMap<ReceitaDomain, ReceitaResponse>()
-            .ForMember(r => r.DataCriacao, opt => opt.MapFrom(d => d.CreatedAt));
+            .ForMember(r => r.CreatedAt, opt => opt.MapFrom(d => d.CreatedAt));
+
+        CreateMap<ReceitaTemplateDomain, ReceitaTemplateResponse>()
+            .ForMember(r => r.CreatedAt, opt => opt.MapFrom(d => d.CreatedAt));
     }
 }
 
