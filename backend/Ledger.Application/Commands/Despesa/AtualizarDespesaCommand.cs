@@ -7,20 +7,21 @@ using MediatR;
 
 namespace Ledger.Application.Commands.Despesa;
 
-// ── AtualizarDespesa (template) ───────────────────────────────────────────────
+// ── Command ───────────────────────────────────────────────────────────────────
 public record AtualizarDespesaCommand(
-    Guid       Id,
-    string     Nome,
+    Guid        Id,
+    string      Nome,
     TipoDespesa Tipo,
-    decimal    ValorPlanejado,
-    Guid       CategoriaId,
-    int?       DiaVencimento) : IRequest<DespesaResponse?>;
+    decimal     ValorPlanejado,
+    Guid        CategoriaId,
+    int?        DiaVencimento) : IRequest<DespesaResponse?>;
 
+// ── Handler ───────────────────────────────────────────────────────────────────
 public class AtualizarDespesaCommandHandler : IRequestHandler<AtualizarDespesaCommand, DespesaResponse?>
 {
-    private readonly IDespesaRepository  _despesaRepository;
+    private readonly IDespesaRepository   _despesaRepository;
     private readonly ICategoriaRepository _categoriaRepository;
-    private readonly IMapper             _mapper;
+    private readonly IMapper              _mapper;
 
     public AtualizarDespesaCommandHandler(IDespesaRepository despesaRepository,
         ICategoriaRepository categoriaRepository, IMapper mapper)
@@ -50,25 +51,5 @@ public class AtualizarDespesaCommandHandler : IRequestHandler<AtualizarDespesaCo
         response.CategoriaIcone = categoria.Icone;
         response.CategoriaCor   = categoria.Cor;
         return response;
-    }
-}
-
-// ── DesativarDespesa ──────────────────────────────────────────────────────────
-public record DesativarDespesaCommand(Guid Id) : IRequest<bool>;
-
-public class DesativarDespesaCommandHandler : IRequestHandler<DesativarDespesaCommand, bool>
-{
-    private readonly IDespesaRepository _despesaRepository;
-
-    public DesativarDespesaCommandHandler(IDespesaRepository despesaRepository)
-        => _despesaRepository = despesaRepository;
-
-    public async Task<bool> Handle(DesativarDespesaCommand cmd, CancellationToken ct)
-    {
-        var despesa = await _despesaRepository.GetByIdAsync(cmd.Id, ct);
-        if (despesa is null) return false;
-        despesa.Desativar();
-        await _despesaRepository.UpdateAsync(despesa, ct);
-        return true;
     }
 }

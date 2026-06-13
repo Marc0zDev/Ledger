@@ -5,10 +5,11 @@ using MediatR;
 
 namespace Ledger.Application.Queries.DespesaPeriodo;
 
-// ── Listar lançamentos por competência ────────────────────────────────────────
+// ── Query ─────────────────────────────────────────────────────────────────────
 public record ListarDespesasPeriodoQuery(Guid UsuarioId, DateTime Competencia)
     : IRequest<IEnumerable<DespesaPeriodoResponse>>;
 
+// ── Handler ───────────────────────────────────────────────────────────────────
 public class ListarDespesasPeriodoQueryHandler
     : IRequestHandler<ListarDespesasPeriodoQuery, IEnumerable<DespesaPeriodoResponse>>
 {
@@ -53,39 +54,5 @@ public class ListarDespesasPeriodoQueryHandler
                 r.ArquivoId = arquivoId;
             return r;
         });
-    }
-}
-
-// ── Obter lançamento por Id ───────────────────────────────────────────────────
-public record ObterDespesaPeriodoQuery(Guid Id) : IRequest<DespesaPeriodoResponse?>;
-
-public class ObterDespesaPeriodoQueryHandler : IRequestHandler<ObterDespesaPeriodoQuery, DespesaPeriodoResponse?>
-{
-    private readonly IDespesaPeriodoRepository _repo;
-    private readonly ICategoriaRepository      _categoriaRepo;
-    private readonly IMapper                   _mapper;
-
-    public ObterDespesaPeriodoQueryHandler(IDespesaPeriodoRepository repo,
-        ICategoriaRepository categoriaRepo, IMapper mapper)
-    {
-        _repo          = repo;
-        _categoriaRepo = categoriaRepo;
-        _mapper        = mapper;
-    }
-
-    public async Task<DespesaPeriodoResponse?> Handle(ObterDespesaPeriodoQuery query, CancellationToken ct)
-    {
-        var l = await _repo.GetByIdAsync(query.Id, ct);
-        if (l is null) return null;
-
-        var r   = _mapper.Map<DespesaPeriodoResponse>(l);
-        var cat = await _categoriaRepo.GetByIdAsync(l.CategoriaId, ct);
-        if (cat is not null)
-        {
-            r.CategoriaNome  = cat.Nome;
-            r.CategoriaIcone = cat.Icone;
-            r.CategoriaCor   = cat.Cor;
-        }
-        return r;
     }
 }
