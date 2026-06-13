@@ -54,7 +54,8 @@ public class DespesasController : ControllerBase
         var despesa = await _mediator.Send(
             new RegistrarDespesaCommand(
                 request.Nome, (TipoDespesa)request.Tipo, request.ValorPlanejado,
-                request.CategoriaId, UsuarioId, request.DiaVencimento), ct);
+                request.CategoriaId, UsuarioId, request.DataInicio, request.DataFim,
+                request.DiaVencimento), ct);
         return CreatedAtAction(nameof(ObterPorId), new { id = despesa.Id }, despesa);
     }
 
@@ -64,7 +65,8 @@ public class DespesasController : ControllerBase
     {
         var despesa = await _mediator.Send(
             new AtualizarDespesaCommand(id, request.Nome, (TipoDespesa)request.Tipo,
-                request.ValorPlanejado, request.CategoriaId, request.DiaVencimento), ct);
+                request.ValorPlanejado, request.CategoriaId, request.DataInicio,
+                request.DataFim, request.DiaVencimento), ct);
         return despesa is null ? NotFound() : Ok(despesa);
     }
 

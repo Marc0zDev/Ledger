@@ -16,6 +16,8 @@ export interface ReceitaTemplateResponse {
   valor: number;
   descricao?: string;
   ativa: boolean;
+  dataInicio: string;
+  dataFim?: string;
   createdAt: string;
 }
 
@@ -34,12 +36,16 @@ export interface CriarReceitaTemplateRequest {
   nome: string;
   valor: number;
   descricao?: string;
+  dataInicio: string;
+  dataFim?: string;
 }
 
 export interface AtualizarReceitaTemplateRequest {
   nome: string;
   valor: number;
   descricao?: string;
+  dataInicio: string;
+  dataFim?: string;
 }
 
 export interface GerarReceitasMesRequest {

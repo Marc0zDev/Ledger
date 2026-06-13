@@ -18,11 +18,13 @@ public class DespesaDomain : BaseDomain
     public Guid?       ArquivoId      { get; private set; }
     public Guid        CategoriaId    { get; private set; }
     public Guid        UsuarioId      { get; private set; }
+    public DateTime    DataInicio     { get; private set; }
+    public DateTime?   DataFim        { get; private set; }
 
     private DespesaDomain() { }
 
     private DespesaDomain(string nome, TipoDespesa tipo, decimal valorPlanejado,
-        Guid categoriaId, Guid usuarioId, int? diaVencimento)
+        Guid categoriaId, Guid usuarioId, int? diaVencimento, DateTime dataInicio, DateTime? dataFim)
     {
         Nome           = nome;
         Tipo           = tipo;
@@ -30,13 +32,15 @@ public class DespesaDomain : BaseDomain
         CategoriaId    = categoriaId;
         UsuarioId      = usuarioId;
         DiaVencimento  = diaVencimento;
+        DataInicio     = dataInicio;
+        DataFim        = dataFim;
         Ativa          = true;
         Validate();
     }
 
     private DespesaDomain(Guid id, string nome, TipoDespesa tipo, decimal valorPlanejado,
         int? diaVencimento, bool ativa, Guid? arquivoId, Guid categoriaId, Guid usuarioId,
-        DateTime createdAt, DateTime? updatedAt)
+        DateTime dataInicio, DateTime? dataFim, DateTime createdAt, DateTime? updatedAt)
     {
         Id             = id;
         Nome           = nome;
@@ -47,6 +51,8 @@ public class DespesaDomain : BaseDomain
         ArquivoId      = arquivoId;
         CategoriaId    = categoriaId;
         UsuarioId      = usuarioId;
+        DataInicio     = dataInicio;
+        DataFim        = dataFim;
         CreatedAt      = createdAt;
         UpdatedAt      = updatedAt;
     }
@@ -54,24 +60,26 @@ public class DespesaDomain : BaseDomain
     // ── Factory ───────────────────────────────────────────────────────────────
 
     public static DespesaDomain Criar(string nome, TipoDespesa tipo, decimal valorPlanejado,
-        Guid categoriaId, Guid usuarioId, int? diaVencimento = null)
-        => new(nome, tipo, valorPlanejado, categoriaId, usuarioId, diaVencimento);
+        Guid categoriaId, Guid usuarioId, DateTime dataInicio, DateTime? dataFim = null, int? diaVencimento = null)
+        => new(nome, tipo, valorPlanejado, categoriaId, usuarioId, diaVencimento, dataInicio, dataFim);
 
     public static DespesaDomain Reconstituir(Guid id, string nome, TipoDespesa tipo, decimal valorPlanejado,
         int? diaVencimento, bool ativa, Guid? arquivoId, Guid categoriaId, Guid usuarioId,
-        DateTime createdAt, DateTime? updatedAt)
-        => new(id, nome, tipo, valorPlanejado, diaVencimento, ativa, arquivoId, categoriaId, usuarioId, createdAt, updatedAt);
+        DateTime dataInicio, DateTime? dataFim, DateTime createdAt, DateTime? updatedAt)
+        => new(id, nome, tipo, valorPlanejado, diaVencimento, ativa, arquivoId, categoriaId, usuarioId, dataInicio, dataFim, createdAt, updatedAt);
 
     // ── Comportamento ─────────────────────────────────────────────────────────
 
     public void Atualizar(string nome, TipoDespesa tipo, decimal valorPlanejado,
-        Guid categoriaId, int? diaVencimento)
+        Guid categoriaId, DateTime dataInicio, DateTime? dataFim, int? diaVencimento)
     {
         Nome           = nome;
         Tipo           = tipo;
         ValorPlanejado = valorPlanejado;
         CategoriaId    = categoriaId;
         DiaVencimento  = diaVencimento;
+        DataInicio     = dataInicio;
+        DataFim        = dataFim;
         UpdatedAt      = DateTime.UtcNow;
         Validate();
     }
@@ -104,5 +112,9 @@ public class DespesaDomain : BaseDomain
             AddNotification(nameof(UsuarioId), "UsuarioId é obrigatório.");
         if (DiaVencimento.HasValue && (DiaVencimento < 1 || DiaVencimento > 31))
             AddNotification(nameof(DiaVencimento), "Dia de vencimento deve ser entre 1 e 31.");
+        if (DataInicio == default)
+            AddNotification(nameof(DataInicio), "Data de início é obrigatória.");
+        if (DataFim.HasValue && DataFim.Value < DataInicio)
+            AddNotification(nameof(DataFim), "Data de fim não pode ser anterior à data de início.");
     }
 }

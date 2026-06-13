@@ -7,7 +7,7 @@ import { ReceitaResponse, ReceitaTemplateResponse } from '../../../core/models/r
 import { LedgerTableComponent, LedgerColumn, RowActionEvent } from '../../../shared/components/ledger-table/ledger-table.component';
 
 function primeiroDiaMes(d: Date): Date {
-  return new Date(Date.UTC(d.getFullYear(), d.getMonth(), 1));
+  return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1));
 }
 
 @Component({
@@ -57,9 +57,11 @@ export class ReceitaList implements OnInit {
   });
 
   templateForm = this.fb.nonNullable.group({
-    nome:      ['', [Validators.required, Validators.maxLength(100)]],
-    valor:     [0,  [Validators.required, Validators.min(0.01)]],
-    descricao: [''],
+    nome:       ['', [Validators.required, Validators.maxLength(100)]],
+    valor:      [0,  [Validators.required, Validators.min(0.01)]],
+    descricao:  [''],
+    dataInicio: ['', Validators.required],
+    dataFim:    [''],
   });
 
   // ── Colunas ───────────────────────────────────────────────────────────────
@@ -75,9 +77,11 @@ export class ReceitaList implements OnInit {
   ];
 
   readonly colunasTemplates: LedgerColumn[] = [
-    { field: 'nome',      title: 'Nome' },
-    { field: 'valor',     title: 'Valor', type: 'currency' },
-    { field: 'descricao', title: 'Descrição' },
+    { field: 'nome',       title: 'Nome' },
+    { field: 'valor',      title: 'Valor',  type: 'currency' },
+    { field: 'dataInicio', title: 'Início', type: 'date' },
+    { field: 'dataFim',    title: 'Fim',    type: 'date' },
+    { field: 'descricao',  title: 'Descrição' },
     {
       field: 'id', title: '', type: 'actions',
       actions: [
@@ -193,10 +197,16 @@ export class ReceitaList implements OnInit {
   abrirTemplateForm(template?: ReceitaTemplateResponse): void {
     if (template) {
       this.editingTemplateId.set(template.id);
-      this.templateForm.setValue({ nome: template.nome, valor: template.valor, descricao: template.descricao ?? '' });
+      this.templateForm.setValue({
+        nome:       template.nome,
+        valor:      template.valor,
+        descricao:  template.descricao ?? '',
+        dataInicio: template.dataInicio.substring(0, 10),
+        dataFim:    template.dataFim ? template.dataFim.substring(0, 10) : '',
+      });
     } else {
       this.editingTemplateId.set(null);
-      this.templateForm.reset();
+      this.templateForm.reset({ dataInicio: new Date().toISOString().substring(0, 10) });
     }
     this.showTemplateForm.set(true);
   }
@@ -210,13 +220,13 @@ export class ReceitaList implements OnInit {
   salvarTemplate(): void {
     if (this.templateForm.invalid || this.savingTemplate()) return;
     this.savingTemplate.set(true);
-    const { nome, valor, descricao } = this.templateForm.getRawValue();
+    const { nome, valor, descricao, dataInicio, dataFim } = this.templateForm.getRawValue();
     const editId = this.editingTemplateId();
     const usuarioId = this.auth.currentUser()!.usuarioId;
 
     const req$ = editId
-      ? this.receitaService.atualizarTemplate(editId, { nome, valor, descricao })
-      : this.receitaService.criarTemplate({ usuarioId, nome, valor, descricao });
+      ? this.receitaService.atualizarTemplate(editId, { nome, valor, descricao, dataInicio, dataFim: dataFim || undefined })
+      : this.receitaService.criarTemplate({ usuarioId, nome, valor, descricao, dataInicio, dataFim: dataFim || undefined });
 
     req$.subscribe({
       next: () => {

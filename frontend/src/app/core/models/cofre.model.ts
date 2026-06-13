@@ -99,6 +99,8 @@ export interface CriarDespesaRequest {
   tipo: TipoDespesa;
   valorPlanejado: number;
   categoriaId: string;
+  dataInicio: string;
+  dataFim?: string;
   diaVencimento?: number;
 }
 
@@ -107,6 +109,8 @@ export interface AtualizarDespesaRequest {
   tipo: TipoDespesa;
   valorPlanejado: number;
   categoriaId: string;
+  dataInicio: string;
+  dataFim?: string;
   diaVencimento?: number;
 }
 
@@ -117,6 +121,8 @@ export interface DespesaResponse {
   valorPlanejado: number;
   diaVencimento?: number;
   ativa: boolean;
+  dataInicio: string;
+  dataFim?: string;
   arquivoId?: string;
   categoriaId: string;
   categoriaNome: string;

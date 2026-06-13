@@ -15,6 +15,8 @@ public class ReceitaTemplateConfiguration : IEntityTypeConfiguration<ReceitaTemp
         builder.Property(r => r.Valor).IsRequired();
         builder.Property(r => r.Descricao).HasMaxLength(500);
         builder.Property(r => r.Ativa).IsRequired();
+        builder.Property(r => r.DataInicio).IsRequired().HasColumnName("data_inicio").HasColumnType("timestamp with time zone");
+        builder.Property(r => r.DataFim).HasColumnName("data_fim").HasColumnType("timestamp with time zone");
         builder.Property(r => r.CreatedAt).IsRequired();
 
         builder.Property(r => r.UsuarioId).IsRequired().HasColumnName("usuario_id");

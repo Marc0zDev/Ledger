@@ -144,6 +144,8 @@
               <option [value]="cat.id">{{ cat.nome }}</option>
             }
           </select>
+          <input formControlName="dataInicio" type="date" class="form-field" title="Data início" />
+          <input formControlName="dataFim"    type="date" class="form-field" title="Data fim (opcional)" />
           <input formControlName="diaVencimento" type="number" min="1" max="31" placeholder="Dia vencimento (opcional)" class="form-field" />
 
           <div class="form-actions">

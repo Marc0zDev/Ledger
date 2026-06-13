@@ -141,15 +141,15 @@ export class DespesasComponent implements OnInit {
   ];
 
   cfColumns: LedgerColumn[] = [
-    { title: 'Nome',       field: 'nome',           width: '28%' },
-    { title: 'Categoria',  field: 'categoriaNome',   width: '20%' },
+    { title: 'Nome',      field: 'nome',          width: '22%' },
+    { title: 'Categoria', field: 'categoriaNome', width: '16%' },
     {
-      title: 'Tipo', field: 'tipo', type: 'tag', width: '10%',
+      title: 'Tipo', field: 'tipo', type: 'tag', width: '9%',
       tagSeverity: (v) => this.tipoSeverity(v as string),
     },
-    { title: 'Vencimento', field: 'diaVencimento',   width: '11%',
-      tagLabel: (v) => v ? `dia ${v}` : '—' },
-    { title: 'Valor', field: 'valorPlanejado', type: 'currency', width: '14%', align: 'right' },
+    { title: 'Início',  field: 'dataInicio', type: 'date', width: '10%' },
+    { title: 'Fim',     field: 'dataFim',    type: 'date', width: '10%' },
+    { title: 'Valor', field: 'valorPlanejado', type: 'currency', width: '12%', align: 'right' },
     {
       title: 'Status', field: 'ativa', type: 'tag', width: '10%',
       tagLabel:    (v) => v ? 'Ativo' : 'Inativo',
@@ -217,6 +217,8 @@ export class DespesasComponent implements OnInit {
     tipo:           [3 as TipoDespesa, Validators.required],
     valorPlanejado: [null as number | null, [Validators.required, Validators.min(0.01)]],
     categoriaId:    ['', Validators.required],
+    dataInicio:     ['', Validators.required],
+    dataFim:        [null as string | null],
     diaVencimento:  [null as number | null, [Validators.min(1), Validators.max(31)]],
   });
 
@@ -459,12 +461,17 @@ export class DespesasComponent implements OnInit {
         tipo:           (template.tipo === 'Fixa' ? 1 : template.tipo === 'Variavel' ? 2 : 3) as TipoDespesa,
         valorPlanejado: template.valorPlanejado,
         categoriaId:    template.categoriaId,
+        dataInicio:     template.dataInicio.substring(0, 10),
+        dataFim:        template.dataFim ? template.dataFim.substring(0, 10) : null,
         diaVencimento:  template.diaVencimento ?? null,
       });
     } else {
       this.editandoTemplate.set(null);
       const defaultCat = this.categorias()[0]?.id ?? '';
-      this.formTemplate.reset({ tipo: 3, categoriaId: defaultCat });
+      this.formTemplate.reset({
+        tipo: 3, categoriaId: defaultCat,
+        dataInicio: new Date().toISOString().substring(0, 10),
+      });
     }
     this.abaAtiva.set('templates');
     this.showForm.set(true);
@@ -475,8 +482,12 @@ export class DespesasComponent implements OnInit {
     this.saving.set(true);
 
 
-    const { nome, tipo, valorPlanejado, categoriaId, diaVencimento } = this.formTemplate.getRawValue();
-    const payload = { nome: nome!, tipo: tipo!, valorPlanejado: valorPlanejado!, categoriaId: categoriaId!, diaVencimento: diaVencimento ?? undefined };
+    const { nome, tipo, valorPlanejado, categoriaId, dataInicio, dataFim, diaVencimento } = this.formTemplate.getRawValue();
+    const payload = {
+      nome: nome!, tipo: tipo!, valorPlanejado: valorPlanejado!,
+      categoriaId: categoriaId!, dataInicio: dataInicio!,
+      dataFim: dataFim ?? undefined, diaVencimento: diaVencimento ?? undefined,
+    };
     const id = this.editandoTemplate()?.id;
 
     const req$ = id

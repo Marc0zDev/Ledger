@@ -8,8 +8,10 @@ public class DespesaResponse
     public string   Tipo           { get; set; } = string.Empty;
     public decimal  ValorPlanejado { get; set; }
     public int?     DiaVencimento  { get; set; }
-    public bool     Ativa          { get; set; }
-    public Guid?    ArquivoId      { get; set; }
+    public bool      Ativa      { get; set; }
+    public DateTime  DataInicio { get; set; }
+    public DateTime? DataFim    { get; set; }
+    public Guid?     ArquivoId  { get; set; }
     public Guid     CategoriaId    { get; set; }
     public string   CategoriaNome  { get; set; } = string.Empty;
     public string?  CategoriaIcone { get; set; }

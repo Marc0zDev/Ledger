@@ -32,7 +32,7 @@ public class InfrastructureProfile : Profile
             .ConstructUsing(src => DespesaDomain.Reconstituir(
                 src.Id, src.Nome, (TipoDespesa)src.Tipo, src.ValorPlanejado,
                 src.DiaVencimento, src.Ativa, src.ArquivoId, src.CategoriaId, src.UsuarioId,
-                src.CreatedAt, src.UpdatedAt))
+                src.DataInicio, src.DataFim, src.CreatedAt, src.UpdatedAt))
             .ForAllMembers(opt => opt.Ignore());
 
         CreateMap<DespesaPeriodoModel, DespesaPeriodoDomain>()
@@ -117,7 +117,7 @@ public class InfrastructureProfile : Profile
         CreateMap<ReceitaTemplateModel, ReceitaTemplateDomain>()
             .ConstructUsing(src => ReceitaTemplateDomain.Reconstituir(
                 src.Id, src.Nome, src.Valor, src.Descricao,
-                src.UsuarioId, src.Ativa, src.CreatedAt, src.UpdatedAt))
+                src.UsuarioId, src.Ativa, src.DataInicio, src.DataFim, src.CreatedAt, src.UpdatedAt))
             .ForAllMembers(opt => opt.Ignore());
 
         CreateMap<ReceitaTemplateDomain, ReceitaTemplateModel>()

@@ -66,7 +66,9 @@ public class ReceitaController : ControllerBase
             request.UsuarioId,
             request.Nome,
             request.Valor,
-            request.Descricao), ct);
+            request.Descricao,
+            request.DataInicio,
+            request.DataFim), ct);
 
         return CreatedAtAction(nameof(ListarTemplates), new { usuarioId = request.UsuarioId }, template);
     }
@@ -78,7 +80,9 @@ public class ReceitaController : ControllerBase
             id,
             request.Nome,
             request.Valor,
-            request.Descricao), ct);
+            request.Descricao,
+            request.DataInicio,
+            request.DataFim), ct);
 
         return template is null ? NotFound() : Ok(template);
     }

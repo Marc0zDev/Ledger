@@ -31,10 +31,6 @@
         <button class="mes-nav-btn" (click)="mesSeguinte()"><i class="pi pi-chevron-right"></i></button>
       </div>
       <div class="mes-actions">
-        <button class="btn-secondary" (click)="gerarDoMes()" [disabled]="gerando()">
-          <i class="pi pi-sync"></i>
-          {{ gerando() ? 'Gerando...' : 'Gerar fixas do mês' }}
-        </button>
         <button class="btn-primary" (click)="abrirForm()">
           <i class="pi pi-plus"></i> Nova receita
         </button>
@@ -94,9 +90,6 @@
         <p class="state-title">Nenhuma receita neste mês</p>
         <p class="state-desc">Registre suas entradas ou gere as receitas fixas para este mês.</p>
         <div class="state-actions">
-          <button class="btn-secondary" (click)="gerarDoMes()">
-            <i class="pi pi-sync"></i> Gerar fixas do mês
-          </button>
           <button class="btn-primary" (click)="abrirForm()">
             <i class="pi pi-plus"></i> Nova receita
           </button>
@@ -139,6 +132,14 @@
           <div class="form-group">
             <label class="form-label">Valor (R$)</label>
             <input formControlName="valor" type="number" step="0.01" min="0.01" class="form-field" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Data início</label>
+            <input formControlName="dataInicio" type="date" class="form-field" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Data fim (opcional)</label>
+            <input formControlName="dataFim" type="date" class="form-field" />
           </div>
           <div class="form-group form-group--wide">
             <label class="form-label">Descrição (opcional)</label>
