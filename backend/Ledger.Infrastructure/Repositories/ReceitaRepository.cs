@@ -22,18 +22,26 @@ public class ReceitaRepository : BaseRepository<ReceitaDomain, ReceitaModel>, IR
 
     public async Task<IEnumerable<ReceitaDomain>> GetByCompetenciaAsync(Guid usuarioId, DateTime competencia, CancellationToken ct)
     {
+        var inicio = new DateTime(competencia.Year, competencia.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+        var fim    = inicio.AddMonths(1);
+
         var models = await DbSet.AsNoTracking()
             .Where(r => r.UsuarioId == usuarioId
-                     && r.Competencia.Year  == competencia.Year
-                     && r.Competencia.Month == competencia.Month)
+                     && r.Competencia >= inicio
+                     && r.Competencia < fim)
             .OrderBy(r => r.DataRecebimento)
             .ToListAsync(ct);
         return Mapper.Map<IEnumerable<ReceitaDomain>>(models);
     }
 
     public async Task<bool> ExisteParaTemplateNoMesAsync(Guid templateId, DateTime competencia, CancellationToken ct)
-        => await DbSet.AnyAsync(r =>
+    {
+        var inicio = new DateTime(competencia.Year, competencia.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+        var fim    = inicio.AddMonths(1);
+
+        return await DbSet.AnyAsync(r =>
             r.ReceitaTemplateId == templateId &&
-            r.Competencia.Year  == competencia.Year &&
-            r.Competencia.Month == competencia.Month, ct);
+            r.Competencia >= inicio &&
+            r.Competencia < fim, ct);
+    }
 }
