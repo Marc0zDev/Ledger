@@ -70,6 +70,14 @@ export class CofreService {
     );
   }
 
+  aprovarMovimentacao(cofreId: string, movimentacaoId: string): Observable<MovimentacaoResponse> {
+    return this.http.patch<MovimentacaoResponse>(`${this.base}/${cofreId}/movimentacoes/${movimentacaoId}/aprovar`, {});
+  }
+
+  rejeitarMovimentacao(cofreId: string, movimentacaoId: string): Observable<MovimentacaoResponse> {
+    return this.http.patch<MovimentacaoResponse>(`${this.base}/${cofreId}/movimentacoes/${movimentacaoId}/rejeitar`, {});
+  }
+
   // ── Despesas ─────────────────────────────────────────────────────────
 
   listarDespesas(cofreId: string): Observable<CofreDespesaResponse[]> {

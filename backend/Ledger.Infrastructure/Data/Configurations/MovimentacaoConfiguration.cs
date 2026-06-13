@@ -27,6 +27,11 @@ public class MovimentacaoConfiguration : IEntityTypeConfiguration<MovimentacaoMo
         builder.Property(m => m.Tipo)
                .HasColumnName("tipo");
 
+        builder.Property(m => m.Status)
+               .HasColumnName("status")
+               .IsRequired()
+               .HasDefaultValue(1);
+
         builder.Property(m => m.Data)
                .HasColumnName("data")
                .HasColumnType("timestamp with time zone");

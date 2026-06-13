@@ -179,17 +179,35 @@
             <p class="empty-msg">Carregando...</p>
           }
           @for (m of movimentacoes(); track m.id) {
-            <div class="movimentacao-item" [class]="'mov-' + m.tipo.toLowerCase()">
+            <div class="movimentacao-item" [class]="'mov-' + m.tipo.toLowerCase()" [class.mov-pendente]="m.status === 'PendenteAprovacao'" [class.mov-rejeitada]="m.status === 'Rejeitada'">
               <div class="mov-icon">
                 <i class="pi" [class.pi-arrow-up-right]="m.tipo === 'Entrada'" [class.pi-arrow-down-left]="m.tipo !== 'Entrada' && !!m.tipo"></i>
               </div>
               <div class="mov-info">
                 <span class="mov-descricao">{{ m.descricao }}</span>
                 <span class="mov-data">{{ formatarData(m.data) }}{{ m.usuarioNome ? ' · ' + m.usuarioNome : '' }}</span>
+                @if (m.status === 'PendenteAprovacao') {
+                  <span class="mov-status-badge pending">Aguardando aprovação</span>
+                }
+                @if (m.status === 'Rejeitada') {
+                  <span class="mov-status-badge rejected">Rejeitada</span>
+                }
               </div>
-              <span class="mov-valor" [class.entrada]="m.tipo === 'Entrada'" [class.saida]="m.tipo !== 'Entrada' && !!m.tipo">
-                {{ m.tipo === 'Entrada' ? '+' : '-' }} {{ formatarMoeda(m.valor) }}
-              </span>
+              <div class="mov-right">
+                <span class="mov-valor" [class.entrada]="m.tipo === 'Entrada'" [class.saida]="m.tipo !== 'Entrada' && !!m.tipo" [class.pendente]="m.status === 'PendenteAprovacao'" [class.rejeitada]="m.status === 'Rejeitada'">
+                  {{ m.tipo === 'Entrada' ? '+' : '-' }} {{ formatarMoeda(m.valor) }}
+                </span>
+                @if (m.status === 'PendenteAprovacao' && isAdmin()) {
+                  <div class="mov-aprovacao-btns">
+                    <button class="btn-aprovar" (click)="aprovarMovimentacao(m)" title="Aprovar">
+                      <i class="pi pi-check"></i>
+                    </button>
+                    <button class="btn-rejeitar" (click)="rejeitarMovimentacao(m)" title="Rejeitar">
+                      <i class="pi pi-times"></i>
+                    </button>
+                  </div>
+                }
+              </div>
             </div>
           }
 

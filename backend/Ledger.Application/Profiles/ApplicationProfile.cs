@@ -41,6 +41,7 @@ public class ApplicationProfile : Profile
 
         CreateMap<MovimentacaoDomain, MovimentacaoResponse>()
             .ForMember(r => r.Tipo,        opt => opt.MapFrom(d => d.Tipo.ToString()))
+            .ForMember(r => r.Status,      opt => opt.MapFrom(d => d.Status.ToString()))
             .ForMember(r => r.UsuarioNome, opt => opt.MapFrom(d => d.UsuarioNome));
 
         CreateMap<CofreDomain, CofreResponse>()

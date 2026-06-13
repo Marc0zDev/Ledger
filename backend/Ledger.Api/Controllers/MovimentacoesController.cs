@@ -2,6 +2,7 @@ using System.Security.Claims;
 using Ledger.Application.Commands.Movimentacao;
 using Ledger.Application.DTOs.Movimentacao;
 using Ledger.Application.Queries.Movimentacao;
+using Ledger.Domain.Exceptions;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -41,5 +42,21 @@ public class MovimentacoesController : ControllerBase
         var mov = await _mediator.Send(
             new RegistrarMovimentacaoCommand(cofreId, UsuarioId, request.Descricao, request.Valor, request.Tipo, request.Data), ct);
         return Created(string.Empty, mov);
+    }
+
+    /// <summary>Aprova uma movimentação pendente (apenas Admin do cofre).</summary>
+    [HttpPatch("{movimentacaoId:guid}/aprovar")]
+    public async Task<IActionResult> Aprovar(Guid cofreId, Guid movimentacaoId, CancellationToken ct)
+    {
+        var mov = await _mediator.Send(new AprovarMovimentacaoCommand(cofreId, movimentacaoId, UsuarioId), ct);
+        return Ok(mov);
+    }
+
+    /// <summary>Rejeita uma movimentação pendente (apenas Admin do cofre).</summary>
+    [HttpPatch("{movimentacaoId:guid}/rejeitar")]
+    public async Task<IActionResult> Rejeitar(Guid cofreId, Guid movimentacaoId, CancellationToken ct)
+    {
+        var mov = await _mediator.Send(new RejeitarMovimentacaoCommand(cofreId, movimentacaoId, UsuarioId), ct);
+        return Ok(mov);
     }
 }

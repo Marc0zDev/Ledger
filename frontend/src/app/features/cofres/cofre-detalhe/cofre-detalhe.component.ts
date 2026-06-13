@@ -3,6 +3,8 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { CofreService } from '../../../core/services/cofre.service';
 import { UsuarioService } from '../../../core/services/usuario.service';
+import { AuthService } from '../../../core/services/auth.service';
+import { NotificationService } from '../../../core/services/notification.service';
 import {
   CofreResponse, MovimentacaoResponse, PagedResult, ParticipanteResponse, UsuarioResponse
 } from '../../../core/models/cofre.model';
@@ -18,11 +20,21 @@ export class CofreDetalheComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly cofreService = inject(CofreService);
   private readonly usuarioService = inject(UsuarioService);
+  private readonly auth = inject(AuthService);
+  private readonly notify = inject(NotificationService);
   private readonly fb = inject(FormBuilder);
 
   cofre = signal<CofreResponse | null>(null);
   participantes = signal<ParticipanteResponse[]>([]);
   movimentacoes = signal<MovimentacaoResponse[]>([]);
+
+  isAdmin = computed(() => {
+    const userId = this.auth.currentUser()?.usuarioId;
+    const parts = this.participantes();
+    const mine = parts.find(p => p.usuarioId === userId);
+    // Criador do cofre sem registro explícito ou com role Admin
+    return !mine || mine.role === 'Admin';
+  });
   // Paginação server-side
   readonly pageSize = 5;
   movPage       = signal(1);
@@ -171,6 +183,27 @@ export class CofreDetalheComponent implements OnInit {
 
   movAnterior(): void { if (this.movPodeAnterior()) this.recarregarMovimentacoes(this.movPage() - 1); }
   movProxima():  void { if (this.movPodeProxima())  this.recarregarMovimentacoes(this.movPage() + 1); }
+
+  aprovarMovimentacao(mov: MovimentacaoResponse): void {
+    this.cofreService.aprovarMovimentacao(this.cofre()!.id, mov.id).subscribe({
+      next: () => {
+        this.notify.success('Movimentação aprovada.');
+        this.recarregarCofre();
+        this.recarregarMovimentacoes();
+      },
+      error: (err) => this.notify.error(err?.error?.errors?.[0] ?? 'Erro ao aprovar movimentação.'),
+    });
+  }
+
+  rejeitarMovimentacao(mov: MovimentacaoResponse): void {
+    this.cofreService.rejeitarMovimentacao(this.cofre()!.id, mov.id).subscribe({
+      next: () => {
+        this.notify.warn('Movimentação rejeitada.');
+        this.recarregarMovimentacoes();
+      },
+      error: (err) => this.notify.error(err?.error?.errors?.[0] ?? 'Erro ao rejeitar movimentação.'),
+    });
+  }
 
   progresso(cofre: CofreResponse): number {
     if (!cofre.meta || cofre.meta === 0) return 0;

@@ -535,6 +535,9 @@ select.form-input {
   border-bottom: 1px solid var(--border);
 
   &:last-child { border-bottom: none; }
+
+  &.mov-pendente { opacity: 0.8; }
+  &.mov-rejeitada { opacity: 0.5; }
 }
 
 .mov-icon {
@@ -548,6 +551,7 @@ select.form-input {
 
   .mov-entrada & { background: rgba(39,174,96,0.1); color: #27AE60; }
   .mov-saida   & { background: rgba(192,57,43,0.1);  color: #C0392B; }
+  .mov-pendente & { background: rgba(168,116,42,0.1); color: var(--gold); }
 }
 
 .mov-info {
@@ -573,15 +577,75 @@ select.form-input {
   color: var(--faint);
 }
 
+.mov-status-badge {
+  display: inline-block;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 0.1rem 0.45rem;
+  border-radius: 6px;
+  width: fit-content;
+
+  &.pending  { background: rgba(168,116,42,0.12); color: var(--gold); }
+  &.rejected { background: rgba(192,57,43,0.1);  color: var(--error); }
+}
+
+.mov-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.35rem;
+  flex-shrink: 0;
+}
+
 .mov-valor {
   font-family: 'Cormorant Garamond', serif;
   font-size: 1.1rem;
   font-weight: 400;
   white-space: nowrap;
-  flex-shrink: 0;
 
-  &.entrada { color: #27AE60; }
-  &.saida   { color: #C0392B; }
+  &.entrada  { color: #27AE60; }
+  &.saida    { color: #C0392B; }
+  &.pendente { color: var(--gold); }
+  &.rejeitada { color: var(--faint); text-decoration: line-through; }
+}
+
+.mov-aprovacao-btns {
+  display: flex;
+  gap: 0.3rem;
+}
+
+.btn-aprovar,
+.btn-rejeitar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px solid;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  i { font-size: 0.6rem; }
+}
+
+.btn-aprovar {
+  border-color: rgba(39,174,96,0.4);
+  background: rgba(39,174,96,0.06);
+  color: #27AE60;
+
+  &:hover { background: rgba(39,174,96,0.15); border-color: #27AE60; }
+}
+
+.btn-rejeitar {
+  border-color: rgba(192,57,43,0.3);
+  background: rgba(192,57,43,0.05);
+  color: var(--error);
+
+  &:hover { background: rgba(192,57,43,0.12); border-color: var(--error); }
 }
 
 .form-row {

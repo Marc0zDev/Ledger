@@ -44,7 +44,7 @@ public class InfrastructureProfile : Profile
 
         CreateMap<MovimentacaoModel, MovimentacaoDomain>()
             .ConstructUsing(src => MovimentacaoDomain.Reconstituir(
-                src.Id, src.Descricao, src.Valor, (TipoMovimentacao)src.Tipo,
+                src.Id, src.Descricao, src.Valor, (TipoMovimentacao)src.Tipo, (StatusMovimentacao)src.Status,
                 src.Data, src.CofreId, src.UsuarioId,
                 src.CreatedAt, src.UpdatedAt,
                 src.Usuario != null ? src.Usuario.Nome : null))
@@ -84,8 +84,9 @@ public class InfrastructureProfile : Profile
             .ForMember(m => m.Categoria, opt => opt.Ignore());
 
         CreateMap<MovimentacaoDomain, MovimentacaoModel>()
-            .ForMember(m => m.Tipo,  opt => opt.MapFrom(d => (int)d.Tipo))
-            .ForMember(m => m.Cofre, opt => opt.Ignore());
+            .ForMember(m => m.Tipo,   opt => opt.MapFrom(d => (int)d.Tipo))
+            .ForMember(m => m.Status, opt => opt.MapFrom(d => (int)d.Status))
+            .ForMember(m => m.Cofre,  opt => opt.Ignore());
 
         CreateMap<CofreDomain, CofreModel>()
             .ForMember(m => m.Status,        opt => opt.MapFrom(d => (int)d.Status))

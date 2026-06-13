@@ -29,9 +29,11 @@ public class CofreDomain : BaseDomain
 
     // ── Propriedades calculadas ───────────────────────────────────────────────
 
-    /// <summary>Saldo líquido das movimentações (Entradas − Saídas).</summary>
+    /// <summary>Saldo líquido das movimentações aprovadas (Entradas − Saídas).</summary>
     public decimal TotalMovimentado =>
-        _movimentacoes.Sum(m => m.Tipo == TipoMovimentacao.Entrada ? m.Valor : -m.Valor);
+        _movimentacoes
+            .Where(m => m.Status == StatusMovimentacao.Aprovada)
+            .Sum(m => m.Tipo == TipoMovimentacao.Entrada ? m.Valor : -m.Valor);
 
     // ── Construtores ──────────────────────────────────────────────────────────
 

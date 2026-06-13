@@ -33,7 +33,8 @@ export interface MovimentacaoResponse {
   usuarioNome?: string;
   descricao: string;
   valor: number;
-  tipo: string; // 'Entrada' | 'Saida' — may be missing on legacy records
+  tipo: string; // 'Entrada' | 'Saida'
+  status: string; // 'Aprovada' | 'PendenteAprovacao' | 'Rejeitada'
   data: string;
   createdAt: string;
 }

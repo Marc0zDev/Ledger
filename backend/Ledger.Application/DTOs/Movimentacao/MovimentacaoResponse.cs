@@ -6,6 +6,7 @@ public class MovimentacaoResponse
     public string    Descricao    { get; set; } = string.Empty;
     public decimal   Valor        { get; set; }
     public string    Tipo         { get; set; } = string.Empty;
+    public string    Status       { get; set; } = string.Empty;
     public DateTime  Data         { get; set; }
     public Guid      CofreId      { get; set; }
     public Guid      UsuarioId    { get; set; }
