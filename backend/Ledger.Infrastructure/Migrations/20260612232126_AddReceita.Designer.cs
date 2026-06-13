@@ -3,6 +3,7 @@ using System;
 using Ledger.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Ledger.Infrastructure.Migrations
 {
     [DbContext(typeof(LedgerDbContext))]
-    partial class LedgerDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260612232126_AddReceita")]
+    partial class AddReceita
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -631,6 +634,9 @@ namespace Ledger.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("usuario_id");
 
+                    b.Property<Guid>("UsuarioId1")
+                        .HasColumnType("uuid");
+
                     b.Property<decimal>("Valor")
                         .HasColumnType("numeric");
 
@@ -642,7 +648,9 @@ namespace Ledger.Infrastructure.Migrations
 
                     b.HasIndex("UsuarioId");
 
-                    b.ToTable("receitas", "ledger");
+                    b.HasIndex("UsuarioId1");
+
+                    b.ToTable("receitas", "ledge");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", b =>
@@ -871,9 +879,15 @@ namespace Ledger.Infrastructure.Migrations
                         .WithMany()
                         .HasForeignKey("ArquivoId1");
 
-                    b.HasOne("Ledger.Infrastructure.Data.Models.ApplicationUser", "Usuario")
+                    b.HasOne("Ledger.Infrastructure.Data.Models.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UsuarioId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Ledger.Infrastructure.Data.Models.ApplicationUser", "Usuario")
+                        .WithMany()
+                        .HasForeignKey("UsuarioId1")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

@@ -18,6 +18,7 @@ public class LedgerDbContext : IdentityDbContext<ApplicationUser, IdentityRole<G
     public DbSet<MovimentacaoModel>  Movimentacoes   => Set<MovimentacaoModel>();
     public DbSet<ConviteModel> Convites => Set<ConviteModel>();
     public DbSet<ArquivoModel> Arquivos => Set<ArquivoModel>();
+    public DbSet<ReceitaModel> Receitas => Set<ReceitaModel>();
 
 
     protected override void OnModelCreating(ModelBuilder builder)

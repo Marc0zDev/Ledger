@@ -100,6 +100,18 @@ public class InfrastructureProfile : Profile
 
         // -- Convite -------------------------------------------------------
 
+        CreateMap<ReceitaModel, ReceitaDomain>()
+            .ConstructUsing(src => ReceitaDomain.Reconstituir(
+                src.Id, src.Nome, src.Valor, src.Descricao, src.ArquivoId,
+                src.DataRecebimento, src.UsuarioId, src.DataCriacao, src.DataAtualizacao ?? src.DataCriacao))
+            .ForAllMembers(opt => opt.Ignore());
+
+        CreateMap<ReceitaDomain, ReceitaModel>()
+            .ForMember(m => m.DataCriacao,    opt => opt.MapFrom(d => d.CreatedAt))
+            .ForMember(m => m.DataAtualizacao, opt => opt.MapFrom(d => d.UpdatedAt))
+            .ForMember(m => m.Arquivo,        opt => opt.Ignore())
+            .ForMember(m => m.Usuario,        opt => opt.Ignore());
+
         CreateMap<ConviteModel, ConviteDomain>()
             .ConstructUsing(src => ConviteDomain.Reconstituir(
                 src.Id, src.CofreId, src.ConvidadoPorUsuarioId, src.UsuarioId,

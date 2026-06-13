@@ -6,6 +6,7 @@ using Ledger.Application.DTOs.Despesa;
 using Ledger.Application.DTOs.DespesaPeriodo;
 using Ledger.Application.DTOs.Movimentacao;
 using Ledger.Application.DTOs.Participante;
+using Ledger.Application.DTOs.Receita;
 using Ledger.Application.DTOs.Usuario;
 using Ledger.Domain.Entities;
 
@@ -50,6 +51,9 @@ public class ApplicationProfile : Profile
 
         CreateMap<ArquivoDomain, ArquivoResponse>()
             .ForMember(r => r.DataUpload, opt => opt.MapFrom(d => d.CreatedAt));
+
+        CreateMap<ReceitaDomain, ReceitaResponse>()
+            .ForMember(r => r.DataCriacao, opt => opt.MapFrom(d => d.CreatedAt));
     }
 }
 
