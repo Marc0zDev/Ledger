@@ -20,6 +20,8 @@ public class LedgerDbContext : IdentityDbContext<ApplicationUser, IdentityRole<G
     public DbSet<ArquivoModel> Arquivos => Set<ArquivoModel>();
     public DbSet<ReceitaModel> Receitas => Set<ReceitaModel>();
     public DbSet<ReceitaTemplateModel> ReceitaTemplates => Set<ReceitaTemplateModel>();
+    public DbSet<GrupoModel> Grupos => Set<GrupoModel>();
+    public DbSet<GrupoMembroModel> GrupoMembros => Set<GrupoMembroModel>();
 
 
     protected override void OnModelCreating(ModelBuilder builder)

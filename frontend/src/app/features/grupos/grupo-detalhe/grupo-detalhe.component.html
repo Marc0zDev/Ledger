@@ -1,0 +1,136 @@
+<div class="detalhe-page">
+
+  @if (loading()) {
+    <div class="state-center">
+      <div class="spinner"></div>
+    </div>
+  }
+
+  @if (!loading() && erro()) {
+    <div class="state-center">
+      <i class="pi pi-exclamation-circle state-icon--error"></i>
+      <p class="state-msg">{{ erro() }}</p>
+      <a routerLink="/grupos" class="btn-voltar">← Voltar para grupos</a>
+    </div>
+  }
+
+  @if (!loading() && !erro() && grupo(); as g) {
+
+    <!-- Voltar -->
+    <a routerLink="/grupos" class="btn-voltar">
+      <i class="pi pi-arrow-left"></i> Grupos
+    </a>
+
+    <!-- Header -->
+    <div class="grupo-header">
+      <div class="grupo-avatar-lg">{{ g.nome.charAt(0).toUpperCase() }}</div>
+      <div class="grupo-header-info">
+        <div class="grupo-title-row">
+          <h1 class="grupo-nome">{{ g.nome }}</h1>
+          @if (isChefe()) {
+            <span class="role-badge chefe">Chefe</span>
+          } @else {
+            <span class="role-badge membro">Membro</span>
+          }
+        </div>
+        @if (g.descricao) {
+          <p class="grupo-desc">{{ g.descricao }}</p>
+        }
+        <span class="grupo-meta">Criado em {{ formatarData(g.createdAt) }}</span>
+      </div>
+      @if (isChefe()) {
+        <button class="btn-edit" (click)="abrirEditForm()" title="Editar grupo">
+          <i class="pi pi-pencil"></i>
+        </button>
+      }
+    </div>
+
+    <!-- Form de edição -->
+    @if (showEditForm()) {
+      <div class="form-panel">
+        <h3 class="form-panel-title">Editar grupo</h3>
+        <form [formGroup]="editForm" (ngSubmit)="salvarEdicao()" class="form-grid">
+          <div class="form-group form-group--wide">
+            <label class="form-label">Nome</label>
+            <input formControlName="nome" type="text" class="form-field" />
+          </div>
+          <div class="form-group form-group--wide">
+            <label class="form-label">Descrição (opcional)</label>
+            <input formControlName="descricao" type="text" class="form-field" />
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn-ghost" (click)="fecharEditForm()">Cancelar</button>
+            <button type="submit" class="btn-primary" [disabled]="editForm.invalid || saving()">
+              {{ saving() ? 'Salvando...' : 'Salvar alterações' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    }
+
+    <!-- Card de membros -->
+    <div class="section-card">
+      <div class="section-header">
+        <h2 class="section-title">
+          <i class="pi pi-users"></i>
+          Membros
+          <span class="section-count">{{ g.membros.length }}</span>
+        </h2>
+        @if (isChefe()) {
+          <button class="btn-add" (click)="showAddMembro.set(!showAddMembro())" [class.active]="showAddMembro()">
+            <i class="pi" [class.pi-plus]="!showAddMembro()" [class.pi-times]="showAddMembro()"></i>
+            {{ showAddMembro() ? 'Cancelar' : 'Adicionar' }}
+          </button>
+        }
+      </div>
+
+      <!-- Form adicionar membro -->
+      @if (showAddMembro()) {
+        <div class="add-membro-form">
+          <form [formGroup]="emailForm" class="lookup-row">
+            <input formControlName="email" type="email" placeholder="E-mail do usuário" class="form-field" />
+            <button type="button" class="btn-buscar" (click)="buscarUsuario()" [disabled]="emailForm.invalid || buscandoUsuario()">
+              {{ buscandoUsuario() ? '...' : 'Buscar' }}
+            </button>
+          </form>
+
+          @if (usuarioEncontrado(); as u) {
+            <div class="usuario-preview">
+              <div class="u-avatar">{{ u.nome.charAt(0).toUpperCase() }}</div>
+              <div class="u-info">
+                <span class="u-nome">{{ u.nome }}</span>
+                <span class="u-email">{{ u.email }}</span>
+              </div>
+              <button class="btn-primary btn-sm" (click)="adicionarMembro()" [disabled]="savingMembro()">
+                {{ savingMembro() ? 'Adicionando...' : 'Adicionar ao grupo' }}
+              </button>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- Lista de membros -->
+      <div class="membros-list">
+        @for (m of g.membros; track m.id) {
+          <div class="membro-item">
+            <div class="m-avatar">{{ m.nome.charAt(0).toUpperCase() }}</div>
+            <div class="m-info">
+              <span class="m-nome">{{ m.nome }}</span>
+              <span class="m-email">{{ m.email }}</span>
+            </div>
+            <span class="role-badge" [class.chefe]="m.role === 'Chefe'" [class.membro]="m.role === 'Membro'">
+              {{ m.role }}
+            </span>
+            @if (isChefe() && m.role !== 'Chefe') {
+              <button class="btn-remover" (click)="removerMembro(m)" title="Remover membro">
+                <i class="pi pi-times"></i>
+              </button>
+            }
+          </div>
+        }
+      </div>
+    </div>
+
+  }
+
+</div>

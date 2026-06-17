@@ -126,6 +126,30 @@ public class InfrastructureProfile : Profile
             .ForMember(m => m.UpdatedAt, opt => opt.MapFrom(d => d.UpdatedAt))
             .ForMember(m => m.Usuario,   opt => opt.Ignore());
 
+        CreateMap<GrupoMembroModel, GrupoMembroDomain>()
+            .ConstructUsing((src, ctx) => GrupoMembroDomain.Reconstituir(
+                src.Id, src.GrupoId, src.UsuarioId,
+                (RoleGrupo)src.Role,
+                src.Usuario != null ? ctx.Mapper.Map<UsuarioDomain>(src.Usuario) : null,
+                src.CreatedAt, src.UpdatedAt))
+            .ForAllMembers(opt => opt.Ignore());
+
+        CreateMap<GrupoModel, GrupoDomain>()
+            .ConstructUsing((src, ctx) => GrupoDomain.Reconstituir(
+                src.Id, src.Nome, src.Descricao, src.CriadoPorUsuarioId,
+                src.CreatedAt, src.UpdatedAt,
+                ctx.Mapper.Map<IEnumerable<GrupoMembroDomain>>(src.Membros)))
+            .ForAllMembers(opt => opt.Ignore());
+
+        CreateMap<GrupoMembroDomain, GrupoMembroModel>()
+            .ForMember(m => m.Role,   opt => opt.MapFrom(d => (int)d.Role))
+            .ForMember(m => m.Grupo,  opt => opt.Ignore())
+            .ForMember(m => m.Usuario, opt => opt.Ignore());
+
+        CreateMap<GrupoDomain, GrupoModel>()
+            .ForMember(m => m.CriadoPor, opt => opt.Ignore())
+            .ForMember(m => m.Membros,   opt => opt.Ignore());
+
         CreateMap<ConviteModel, ConviteDomain>()
             .ConstructUsing(src => ConviteDomain.Reconstituir(
                 src.Id, src.CofreId, src.ConvidadoPorUsuarioId, src.UsuarioId,

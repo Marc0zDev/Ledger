@@ -4,6 +4,7 @@ using Ledger.Application.DTOs.Categoria;
 using Ledger.Application.DTOs.Cofre;
 using Ledger.Application.DTOs.Despesa;
 using Ledger.Application.DTOs.DespesaPeriodo;
+using Ledger.Application.DTOs.Grupo;
 using Ledger.Application.DTOs.Movimentacao;
 using Ledger.Application.DTOs.Participante;
 using Ledger.Application.DTOs.Receita;
@@ -58,6 +59,14 @@ public class ApplicationProfile : Profile
 
         CreateMap<ReceitaTemplateDomain, ReceitaTemplateResponse>()
             .ForMember(r => r.CreatedAt, opt => opt.MapFrom(d => d.CreatedAt));
+
+        CreateMap<GrupoMembroDomain, GrupoMembroResponse>()
+            .ForMember(r => r.Role,  opt => opt.MapFrom(d => d.Role.ToString()))
+            .ForMember(r => r.Nome,  opt => opt.MapFrom(d => d.Usuario != null ? d.Usuario.Nome  : string.Empty))
+            .ForMember(r => r.Email, opt => opt.MapFrom(d => d.Usuario != null ? d.Usuario.Email : string.Empty));
+
+        CreateMap<GrupoDomain, GrupoResponse>()
+            .ForMember(r => r.Membros, opt => opt.MapFrom(d => d.Membros));
     }
 }
 

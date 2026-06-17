@@ -51,6 +51,11 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'grupos',
+        loadChildren: () =>
+          import('./features/grupos/grupos.routes').then((m) => m.gruposRoutes),
+      },
+      {
         path: 'convites/aceitar',
         loadComponent: () =>
           import('./features/convites/convite-aceitar/convite-aceitar.component').then(

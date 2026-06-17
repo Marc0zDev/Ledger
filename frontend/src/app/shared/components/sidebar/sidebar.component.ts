@@ -18,5 +18,6 @@ export class SidebarComponent {
     { label: 'Cofres', route: '/cofres', icon: 'account_balance' },
     { label: 'Despesas', route: '/despesas', icon: 'wallet' },
     { label: 'Receitas', route: '/receitas', icon: 'attach_money' },
+    { label: 'Grupos', route: '/grupos', icon: 'group' },
   ]);
 }
