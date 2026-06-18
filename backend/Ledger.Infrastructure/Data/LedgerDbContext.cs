@@ -22,6 +22,7 @@ public class LedgerDbContext : IdentityDbContext<ApplicationUser, IdentityRole<G
     public DbSet<ReceitaTemplateModel> ReceitaTemplates => Set<ReceitaTemplateModel>();
     public DbSet<GrupoModel> Grupos => Set<GrupoModel>();
     public DbSet<GrupoMembroModel> GrupoMembros => Set<GrupoMembroModel>();
+    public DbSet<ConviteGrupoModel> ConviteGrupos => Set<ConviteGrupoModel>();
 
 
     protected override void OnModelCreating(ModelBuilder builder)

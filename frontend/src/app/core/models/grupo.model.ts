@@ -31,3 +31,13 @@ export interface AtualizarGrupoRequest {
 export interface AdicionarMembroGrupoRequest {
   usuarioId: string;
 }
+
+export interface ConviteGrupoResponse {
+  id: string;
+  grupoId: string;
+  grupoNome: string;
+  token: string;
+  status: string;
+  expiresAt: string;
+  createdAt: string;
+}

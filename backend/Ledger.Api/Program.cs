@@ -61,6 +61,7 @@ builder.Services.AddScoped<IArquivoRepository, ArquivoRepository>();
 builder.Services.AddScoped<IReceitaRepository, ReceitaRepository>();
 builder.Services.AddScoped<IReceitaTemplateRepository, ReceitaTemplateRepository>();
 builder.Services.AddScoped<IGrupoRepository, GrupoRepository>();
+builder.Services.AddScoped<IConviteGrupoRepository, ConviteGrupoRepository>();
 
 
 // Infrastructure Services

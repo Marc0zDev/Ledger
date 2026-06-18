@@ -114,6 +114,36 @@ public static class EmailTemplates
         {Footer()}
         """);
 
+    /// <summary>Convite para participar de um grupo familiar.</summary>
+    public static string ConviteGrupo(string nomeConvidado, string nomeConvidante, string nomeGrupo, string linkApp) => Wrap($"""
+        {Header()}
+              <tr>
+                <td style="padding:40px 40px 32px;">
+                  <h1 style="margin:0 0 8px;font-family:Georgia,serif;font-size:26px;font-weight:400;color:{PrimaryColor};">
+                    Você foi convidado!
+                  </h1>
+                  <p style="margin:0 0 16px;font-size:15px;color:{MutedColor};line-height:1.6;">
+                    Olá, <strong style="color:{PrimaryColor};">{nomeConvidado}</strong>!<br>
+                    <strong style="color:{PrimaryColor};">{nomeConvidante}</strong> convidou você para o grupo familiar:
+                  </p>
+                  <div style="margin:0 0 24px;padding:16px 20px;background:{BgColor};border-radius:10px;border-left:4px solid {GoldColor};">
+                    <span style="font-family:Georgia,serif;font-size:18px;color:{PrimaryColor};font-weight:600;">{nomeGrupo}</span>
+                  </div>
+                  <table cellpadding="0" cellspacing="0" style="margin:0 0 8px;">
+                    <tr>
+                      <td style="background:{PrimaryColor};border-radius:10px;">
+                        <a href="{linkApp}"
+                           style="display:inline-block;padding:14px 32px;font-size:15px;font-weight:600;color:#fff;text-decoration:none;letter-spacing:0.02em;">
+                          Aceitar convite
+                        </a>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+        {Footer()}
+        """);
+
     /// <summary>Notificação de cofre concluído — enviado a todos os participantes.</summary>
     public static string CofreConcluido(string nomeParticipante, string nomeCofre, decimal meta, decimal totalMovimentado) => Wrap($"""
         {Header()}
