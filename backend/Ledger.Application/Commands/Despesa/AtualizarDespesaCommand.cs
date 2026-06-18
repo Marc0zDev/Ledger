@@ -17,7 +17,8 @@ public record AtualizarDespesaCommand(
     Guid        CategoriaId,
     DateTime    DataInicio,
     DateTime?   DataFim,
-    int?        DiaVencimento) : IRequest<DespesaResponse?>;
+    int?        DiaVencimento,
+    Guid?       GrupoId = null) : IRequest<DespesaResponse?>;
 
 // ── Handler ───────────────────────────────────────────────────────────────────
 public class AtualizarDespesaCommandHandler : IRequestHandler<AtualizarDespesaCommand, DespesaResponse?>
@@ -50,7 +51,7 @@ public class AtualizarDespesaCommandHandler : IRequestHandler<AtualizarDespesaCo
             : (DateTime?)null;
 
         despesa.Atualizar(cmd.Nome, cmd.Tipo, cmd.ValorPlanejado, cmd.CategoriaId,
-            dataInicio, dataFim, cmd.DiaVencimento);
+            dataInicio, dataFim, cmd.DiaVencimento, cmd.GrupoId);
 
         if (!despesa.IsValid)
             throw new DomainValidationException(despesa.Notifications.Select(n => n.Message));
@@ -78,7 +79,7 @@ public class AtualizarDespesaCommandHandler : IRequestHandler<AtualizarDespesaCo
             {
                 var periodo = DespesaPeriodoDomain.Criar(
                     despesa.Id, despesa.CategoriaId, despesa.UsuarioId,
-                    despesa.Nome, despesa.ValorPlanejado, competencia);
+                    despesa.Nome, despesa.ValorPlanejado, competencia, despesa.GrupoId);
                 await _periodoRepo.AddAsync(periodo, ct);
             }
             competencia = competencia.AddMonths(1);

@@ -79,6 +79,14 @@
               <option [value]="cat.id">{{ cat.nome }}</option>
             }
           </select>
+          @if (grupos().length > 0) {
+            <select formControlName="grupoId" class="form-field">
+              <option [ngValue]="null">Pessoal</option>
+              @for (g of grupos(); track g.id) {
+                <option [value]="g.id">{{ g.nome }}</option>
+              }
+            </select>
+          }
           <div class="form-actions">
             <button type="button" class="btn-cancel" (click)="fecharForm()">Cancelar</button>
             <button type="submit" class="btn-save" [disabled]="formPeriodo.invalid || saving()">
@@ -147,6 +155,14 @@
           <input formControlName="dataInicio" type="date" class="form-field" title="Data início" />
           <input formControlName="dataFim"    type="date" class="form-field" title="Data fim (opcional)" />
           <input formControlName="diaVencimento" type="number" min="1" max="31" placeholder="Dia vencimento (opcional)" class="form-field" />
+          @if (grupos().length > 0) {
+            <select formControlName="grupoId" class="form-field">
+              <option [ngValue]="null">Pessoal</option>
+              @for (g of grupos(); track g.id) {
+                <option [value]="g.id">{{ g.nome }}</option>
+              }
+            </select>
+          }
 
           <div class="form-actions">
             <button type="button" class="btn-cancel" (click)="fecharForm()">Cancelar</button>

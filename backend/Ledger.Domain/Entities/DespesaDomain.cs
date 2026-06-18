@@ -20,11 +20,13 @@ public class DespesaDomain : BaseDomain
     public Guid        UsuarioId      { get; private set; }
     public DateTime    DataInicio     { get; private set; }
     public DateTime?   DataFim        { get; private set; }
+    public Guid?       GrupoId        { get; private set; }
 
     private DespesaDomain() { }
 
     private DespesaDomain(string nome, TipoDespesa tipo, decimal valorPlanejado,
-        Guid categoriaId, Guid usuarioId, int? diaVencimento, DateTime dataInicio, DateTime? dataFim)
+        Guid categoriaId, Guid usuarioId, int? diaVencimento, DateTime dataInicio, DateTime? dataFim,
+        Guid? grupoId)
     {
         Nome           = nome;
         Tipo           = tipo;
@@ -34,13 +36,15 @@ public class DespesaDomain : BaseDomain
         DiaVencimento  = diaVencimento;
         DataInicio     = dataInicio;
         DataFim        = dataFim;
+        GrupoId        = grupoId;
         Ativa          = true;
         Validate();
     }
 
     private DespesaDomain(Guid id, string nome, TipoDespesa tipo, decimal valorPlanejado,
         int? diaVencimento, bool ativa, Guid? arquivoId, Guid categoriaId, Guid usuarioId,
-        DateTime dataInicio, DateTime? dataFim, DateTime createdAt, DateTime? updatedAt)
+        DateTime dataInicio, DateTime? dataFim, DateTime createdAt, DateTime? updatedAt,
+        Guid? grupoId)
     {
         Id             = id;
         Nome           = nome;
@@ -53,6 +57,7 @@ public class DespesaDomain : BaseDomain
         UsuarioId      = usuarioId;
         DataInicio     = dataInicio;
         DataFim        = dataFim;
+        GrupoId        = grupoId;
         CreatedAt      = createdAt;
         UpdatedAt      = updatedAt;
     }
@@ -60,18 +65,21 @@ public class DespesaDomain : BaseDomain
     // ── Factory ───────────────────────────────────────────────────────────────
 
     public static DespesaDomain Criar(string nome, TipoDespesa tipo, decimal valorPlanejado,
-        Guid categoriaId, Guid usuarioId, DateTime dataInicio, DateTime? dataFim = null, int? diaVencimento = null)
-        => new(nome, tipo, valorPlanejado, categoriaId, usuarioId, diaVencimento, dataInicio, dataFim);
+        Guid categoriaId, Guid usuarioId, DateTime dataInicio, DateTime? dataFim = null,
+        int? diaVencimento = null, Guid? grupoId = null)
+        => new(nome, tipo, valorPlanejado, categoriaId, usuarioId, diaVencimento, dataInicio, dataFim, grupoId);
 
     public static DespesaDomain Reconstituir(Guid id, string nome, TipoDespesa tipo, decimal valorPlanejado,
         int? diaVencimento, bool ativa, Guid? arquivoId, Guid categoriaId, Guid usuarioId,
-        DateTime dataInicio, DateTime? dataFim, DateTime createdAt, DateTime? updatedAt)
-        => new(id, nome, tipo, valorPlanejado, diaVencimento, ativa, arquivoId, categoriaId, usuarioId, dataInicio, dataFim, createdAt, updatedAt);
+        DateTime dataInicio, DateTime? dataFim, DateTime createdAt, DateTime? updatedAt,
+        Guid? grupoId = null)
+        => new(id, nome, tipo, valorPlanejado, diaVencimento, ativa, arquivoId, categoriaId, usuarioId, dataInicio, dataFim, createdAt, updatedAt, grupoId);
 
     // ── Comportamento ─────────────────────────────────────────────────────────
 
     public void Atualizar(string nome, TipoDespesa tipo, decimal valorPlanejado,
-        Guid categoriaId, DateTime dataInicio, DateTime? dataFim, int? diaVencimento)
+        Guid categoriaId, DateTime dataInicio, DateTime? dataFim, int? diaVencimento,
+        Guid? grupoId = null)
     {
         Nome           = nome;
         Tipo           = tipo;
@@ -80,6 +88,7 @@ public class DespesaDomain : BaseDomain
         DiaVencimento  = diaVencimento;
         DataInicio     = dataInicio;
         DataFim        = dataFim;
+        GrupoId        = grupoId;
         UpdatedAt      = DateTime.UtcNow;
         Validate();
     }

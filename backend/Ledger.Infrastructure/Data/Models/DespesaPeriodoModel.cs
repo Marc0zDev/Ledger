@@ -13,10 +13,12 @@ public class DespesaPeriodoModel
     public string?   BoletoPath     { get; set; }
     public Guid?     ComprovanteId  { get; set; }
     public DateTime  Competencia    { get; set; }
+    public Guid?     GrupoId        { get; set; }
     public DateTime  CreatedAt      { get; set; }
     public DateTime? UpdatedAt      { get; set; }
 
     // Navigation properties
     public DespesaModel?   Despesa   { get; set; }
     public CategoriaModel? Categoria { get; set; }
+    public GrupoModel?     Grupo     { get; set; }
 }

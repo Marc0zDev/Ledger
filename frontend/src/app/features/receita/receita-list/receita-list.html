@@ -67,6 +67,17 @@
             <label class="form-label">Descrição (opcional)</label>
             <input formControlName="descricao" type="text" class="form-field" />
           </div>
+          @if (grupos().length > 0) {
+            <div class="form-group">
+              <label class="form-label">Grupo (opcional)</label>
+              <select formControlName="grupoId" class="form-field">
+                <option [ngValue]="null">Pessoal</option>
+                @for (g of grupos(); track g.id) {
+                  <option [value]="g.id">{{ g.nome }}</option>
+                }
+              </select>
+            </div>
+          }
           <div class="form-actions">
             <button type="button" class="btn-ghost" (click)="fecharForm()">Cancelar</button>
             <button type="submit" class="btn-primary" [disabled]="form.invalid || saving()">

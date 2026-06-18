@@ -12,4 +12,7 @@ public interface IDespesaPeriodoRepository : IRepository<DespesaPeriodoDomain>
 
     /// <summary>Verifica se já existem lançamentos gerados para um template em determinada competência.</summary>
     Task<bool> ExisteParaTemplateNoMesAsync(Guid despesaId, DateTime competencia, CancellationToken ct = default);
+
+    /// <summary>Lista lançamentos de um grupo para uma competência.</summary>
+    Task<IEnumerable<DespesaPeriodoDomain>> GetByGrupoAndCompetenciaAsync(Guid grupoId, DateTime competencia, CancellationToken ct = default);
 }

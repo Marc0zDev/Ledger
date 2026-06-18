@@ -9,4 +9,5 @@ public class CriarDespesaRequest
     public DateTime  DataInicio     { get; set; }
     public DateTime? DataFim        { get; set; }
     public int?      DiaVencimento  { get; set; }
+    public Guid?     GrupoId        { get; set; }
 }

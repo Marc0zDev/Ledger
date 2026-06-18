@@ -32,14 +32,14 @@ public class InfrastructureProfile : Profile
             .ConstructUsing(src => DespesaDomain.Reconstituir(
                 src.Id, src.Nome, (TipoDespesa)src.Tipo, src.ValorPlanejado,
                 src.DiaVencimento, src.Ativa, src.ArquivoId, src.CategoriaId, src.UsuarioId,
-                src.DataInicio, src.DataFim, src.CreatedAt, src.UpdatedAt))
+                src.DataInicio, src.DataFim, src.CreatedAt, src.UpdatedAt, src.GrupoId))
             .ForAllMembers(opt => opt.Ignore());
 
         CreateMap<DespesaPeriodoModel, DespesaPeriodoDomain>()
             .ConstructUsing(src => DespesaPeriodoDomain.Reconstituir(
                 src.Id, src.DespesaId, src.CategoriaId, src.UsuarioId, src.Descricao,
                 src.ValorPlanejado, src.ValorRealizado, src.PagaEm, src.BoletoPath,
-                src.ComprovanteId, src.Competencia, src.CreatedAt, src.UpdatedAt))
+                src.ComprovanteId, src.Competencia, src.CreatedAt, src.UpdatedAt, src.GrupoId))
             .ForAllMembers(opt => opt.Ignore());
 
         CreateMap<MovimentacaoModel, MovimentacaoDomain>()
@@ -77,11 +77,14 @@ public class InfrastructureProfile : Profile
 
         CreateMap<DespesaDomain, DespesaModel>()
             .ForMember(m => m.Tipo,     opt => opt.MapFrom(d => (int)d.Tipo))
-            .ForMember(m => m.Categoria, opt => opt.Ignore());
+            .ForMember(m => m.Categoria, opt => opt.Ignore())
+            .ForMember(m => m.Grupo,    opt => opt.Ignore())
+            .ForMember(m => m.Arquivo,  opt => opt.Ignore());
 
         CreateMap<DespesaPeriodoDomain, DespesaPeriodoModel>()
             .ForMember(m => m.Despesa,   opt => opt.Ignore())
-            .ForMember(m => m.Categoria, opt => opt.Ignore());
+            .ForMember(m => m.Categoria, opt => opt.Ignore())
+            .ForMember(m => m.Grupo,     opt => opt.Ignore());
 
         CreateMap<MovimentacaoDomain, MovimentacaoModel>()
             .ForMember(m => m.Tipo,   opt => opt.MapFrom(d => (int)d.Tipo))
@@ -105,7 +108,7 @@ public class InfrastructureProfile : Profile
             .ConstructUsing(src => ReceitaDomain.Reconstituir(
                 src.Id, src.Nome, src.Valor, src.Descricao, src.ArquivoId,
                 src.DataRecebimento, src.Competencia, src.ReceitaTemplateId,
-                src.UsuarioId, src.CreatedAt, src.UpdatedAt))
+                src.UsuarioId, src.CreatedAt, src.UpdatedAt, src.GrupoId))
             .ForAllMembers(opt => opt.Ignore());
 
         CreateMap<ReceitaDomain, ReceitaModel>()
@@ -113,7 +116,8 @@ public class InfrastructureProfile : Profile
             .ForMember(m => m.UpdatedAt,        opt => opt.MapFrom(d => d.UpdatedAt))
             .ForMember(m => m.Arquivo,          opt => opt.Ignore())
             .ForMember(m => m.Usuario,          opt => opt.Ignore())
-            .ForMember(m => m.Template,         opt => opt.Ignore());
+            .ForMember(m => m.Template,         opt => opt.Ignore())
+            .ForMember(m => m.Grupo,            opt => opt.Ignore());
 
         CreateMap<ReceitaTemplateModel, ReceitaTemplateDomain>()
             .ConstructUsing(src => ReceitaTemplateDomain.Reconstituir(
@@ -160,5 +164,16 @@ public class InfrastructureProfile : Profile
         CreateMap<ConviteDomain, ConviteModel>()
             .ForMember(m => m.Status,   opt => opt.MapFrom(d => (int)d.Status))
             .ForMember(m => m.Cofre,    opt => opt.Ignore());
+
+        CreateMap<ConviteGrupoModel, ConviteGrupoDomain>()
+            .ConstructUsing(src => ConviteGrupoDomain.Reconstituir(
+                src.Id, src.GrupoId, src.ConvidadoPorUsuarioId, src.UsuarioId,
+                src.Token, (ConviteStatus)src.Status, src.ExpiresAt,
+                src.CreatedAt, src.UpdatedAt))
+            .ForAllMembers(opt => opt.Ignore());
+
+        CreateMap<ConviteGrupoDomain, ConviteGrupoModel>()
+            .ForMember(m => m.Status, opt => opt.MapFrom(d => (int)d.Status))
+            .ForMember(m => m.Grupo,  opt => opt.Ignore());
     }
 }

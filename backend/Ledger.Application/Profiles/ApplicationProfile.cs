@@ -38,7 +38,8 @@ public class ApplicationProfile : Profile
             .ForMember(r => r.BoletoUrl,      opt => opt.MapFrom(d => d.BoletoPath))
             .ForMember(r => r.CategoriaNome,  opt => opt.Ignore())
             .ForMember(r => r.CategoriaIcone, opt => opt.Ignore())
-            .ForMember(r => r.CategoriaCor,   opt => opt.Ignore());
+            .ForMember(r => r.CategoriaCor,   opt => opt.Ignore())
+            .ForMember(r => r.UsuarioNome,    opt => opt.Ignore());
 
         CreateMap<MovimentacaoDomain, MovimentacaoResponse>()
             .ForMember(r => r.Tipo,        opt => opt.MapFrom(d => d.Tipo.ToString()))
@@ -55,7 +56,8 @@ public class ApplicationProfile : Profile
             .ForMember(r => r.DataUpload, opt => opt.MapFrom(d => d.CreatedAt));
 
         CreateMap<ReceitaDomain, ReceitaResponse>()
-            .ForMember(r => r.CreatedAt, opt => opt.MapFrom(d => d.CreatedAt));
+            .ForMember(r => r.CreatedAt, opt => opt.MapFrom(d => d.CreatedAt))
+            .ForMember(r => r.UsuarioNome, opt => opt.Ignore());
 
         CreateMap<ReceitaTemplateDomain, ReceitaTemplateResponse>()
             .ForMember(r => r.CreatedAt, opt => opt.MapFrom(d => d.CreatedAt));

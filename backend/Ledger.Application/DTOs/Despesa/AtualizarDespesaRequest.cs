@@ -9,6 +9,7 @@ public class AtualizarDespesaRequest
     public DateTime  DataInicio     { get; set; }
     public DateTime? DataFim        { get; set; }
     public int?      DiaVencimento  { get; set; }
+    public Guid?     GrupoId        { get; set; }
 }
 
 public class PagarDespesaRequest

@@ -19,6 +19,8 @@ public class DespesaPeriodoResponse
     public string?   BoletoUrl      { get; set; }
     public Guid?     ComprovanteId  { get; set; }
     public DateTime  Competencia    { get; set; }
+    public Guid?     GrupoId        { get; set; }
+    public string?   UsuarioNome    { get; set; }
     public DateTime  CreatedAt      { get; set; }
     public DateTime? UpdatedAt      { get; set; }
 }

@@ -17,6 +17,7 @@ public class DespesaResponse
     public string?  CategoriaIcone { get; set; }
     public string?  CategoriaCor   { get; set; }
     public Guid     UsuarioId      { get; set; }
+    public Guid?    GrupoId        { get; set; }
     public DateTime CreatedAt      { get; set; }
     public DateTime? UpdatedAt     { get; set; }
 }

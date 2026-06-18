@@ -3,7 +3,7 @@
   display: flex;
   flex-direction: column;
   gap: 1.75rem;
-  max-width: 720px;
+  max-width: 960px;
 }
 
 // ── States ─────────────────────────────────────────────────────────────────
@@ -476,4 +476,119 @@
     border-color: oklch(0.520 0.180 25 / 0.3);
     color: var(--error);
   }
+}
+
+// ── Finanças ────────────────────────────────────────────────────────────────
+
+.month-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.month-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  i { font-size: 0.7rem; }
+  &:hover { border-color: var(--gold); color: var(--gold); }
+}
+
+.month-label {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--ink);
+  text-transform: capitalize;
+  min-width: 160px;
+  text-align: center;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.75rem;
+
+  @media (max-width: 700px) { grid-template-columns: repeat(2, 1fr); }
+}
+
+.summary-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.9rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+
+  &--realizado { border-left: 3px solid var(--color-success); }
+  &--receita   { border-left: 3px solid var(--gold); }
+  &--positivo  { border-left: 3px solid var(--color-success); }
+  &--negativo  { border-left: 3px solid var(--error); }
+}
+
+.summary-label {
+  font: 600 0.65rem 'DM Sans', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--faint);
+}
+
+.summary-value {
+  font: 600 1.1rem 'DM Sans', sans-serif;
+  color: var(--ink);
+}
+
+.tab-row {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.tab-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.55rem 1.1rem;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  font: 500 0.82rem 'DM Sans', sans-serif;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &--active {
+    color: var(--ink);
+    border-bottom-color: var(--gold);
+  }
+
+  &:hover:not(&--active) { color: var(--ink); }
+}
+
+.tab-count {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--faint);
+  background: var(--border);
+  padding: 0.08rem 0.35rem;
+  border-radius: 20px;
+}
+
+.empty-msg {
+  font: 400 0.875rem 'DM Sans', sans-serif;
+  color: var(--faint);
+  text-align: center;
+  padding: 2rem 1rem;
+  margin: 0;
 }

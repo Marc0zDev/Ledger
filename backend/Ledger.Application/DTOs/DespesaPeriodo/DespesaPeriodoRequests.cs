@@ -11,6 +11,7 @@ public class CriarDespesaPeriodoRequest
 
     /// <summary>Competência no formato YYYY-MM-01 (primeiro dia do mês, UTC).</summary>
     public DateTime  Competencia    { get; set; }
+    public Guid?     GrupoId        { get; set; }
 }
 
 public class AtualizarDespesaPeriodoRequest

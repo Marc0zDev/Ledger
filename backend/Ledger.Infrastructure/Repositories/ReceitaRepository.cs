@@ -44,4 +44,17 @@ public class ReceitaRepository : BaseRepository<ReceitaDomain, ReceitaModel>, IR
             r.Competencia >= inicio &&
             r.Competencia < fim, ct);
     }
+
+    public async Task<IEnumerable<ReceitaDomain>> GetByGrupoAndCompetenciaAsync(
+        Guid grupoId, DateTime competencia, CancellationToken ct = default)
+    {
+        var inicio = new DateTime(competencia.Year, competencia.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+        var fim    = inicio.AddMonths(1);
+
+        var models = await DbSet.AsNoTracking()
+            .Where(r => r.GrupoId == grupoId && r.Competencia >= inicio && r.Competencia < fim)
+            .OrderBy(r => r.DataRecebimento)
+            .ToListAsync(ct);
+        return Mapper.Map<IEnumerable<ReceitaDomain>>(models);
+    }
 }

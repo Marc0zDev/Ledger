@@ -2,6 +2,7 @@ using System.Security.Claims;
 using Ledger.Application.Commands.Grupo;
 using Ledger.Application.DTOs.Grupo;
 using Ledger.Application.Queries.Grupo;
+using Ledger.Application.DTOs.Convite;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -60,10 +61,10 @@ public class GruposController : ControllerBase
     // ── Membros ────────────────────────────────────────────────────────────────
 
     [HttpPost("{id:guid}/membros")]
-    public async Task<IActionResult> AdicionarMembro(Guid id, [FromBody] AdicionarMembroGrupoRequest request, CancellationToken ct)
+    public async Task<IActionResult> ConvidarMembro(Guid id, [FromBody] AdicionarMembroGrupoRequest request, CancellationToken ct)
     {
-        var membro = await _mediator.Send(new AdicionarMembroGrupoCommand(id, request.UsuarioId, UsuarioId), ct);
-        return Ok(membro);
+        var convite = await _mediator.Send(new EnviarConviteGrupoCommand(id, request.UsuarioId, UsuarioId), ct);
+        return CreatedAtAction(nameof(ObterPorId), new { id }, convite);
     }
 
     [HttpDelete("{id:guid}/membros/{membroId:guid}")]
@@ -71,5 +72,23 @@ public class GruposController : ControllerBase
     {
         var removido = await _mediator.Send(new RemoverMembroGrupoCommand(id, membroId, UsuarioId), ct);
         return removido ? NoContent() : NotFound();
+    }
+
+    // ── Finanças ───────────────────────────────────────────────────────────────
+
+    [HttpGet("{id:guid}/despesas")]
+    public async Task<IActionResult> ListarDespesas(Guid id, [FromQuery] DateTime? competencia, CancellationToken ct)
+    {
+        var comp = competencia ?? new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+        var lista = await _mediator.Send(new ListarDespesasPeriodoGrupoQuery(id, UsuarioId, comp), ct);
+        return Ok(lista);
+    }
+
+    [HttpGet("{id:guid}/receitas")]
+    public async Task<IActionResult> ListarReceitas(Guid id, [FromQuery] DateTime? competencia, CancellationToken ct)
+    {
+        var comp = competencia ?? new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+        var lista = await _mediator.Send(new ListarReceitasGrupoQuery(id, UsuarioId, comp), ct);
+        return Ok(lista);
     }
 }

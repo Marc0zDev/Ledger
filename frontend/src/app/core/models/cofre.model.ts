@@ -103,6 +103,7 @@ export interface CriarDespesaRequest {
   dataInicio: string;
   dataFim?: string;
   diaVencimento?: number;
+  grupoId?: string;
 }
 
 export interface AtualizarDespesaRequest {
@@ -113,6 +114,7 @@ export interface AtualizarDespesaRequest {
   dataInicio: string;
   dataFim?: string;
   diaVencimento?: number;
+  grupoId?: string;
 }
 
 export interface DespesaResponse {
@@ -130,6 +132,7 @@ export interface DespesaResponse {
   categoriaIcone?: string;
   categoriaCor?: string;
   usuarioId: string;
+  grupoId?: string;
   createdAt: string;
   updatedAt?: string;
 }
@@ -142,6 +145,7 @@ export interface CriarDespesaPeriodoRequest {
   descricao: string;
   valorPlanejado: number;
   competencia: string;
+  grupoId?: string;
 }
 
 export interface AtualizarDespesaPeriodoRequest {
@@ -171,6 +175,8 @@ export interface DespesaPeriodoResponse {
   pagaEm?: string;
   boletoUrl?: string;
   comprovanteId?: string;
+  grupoId?: string;
+  usuarioNome?: string;
   competencia: string;
   createdAt: string;
   updatedAt?: string;

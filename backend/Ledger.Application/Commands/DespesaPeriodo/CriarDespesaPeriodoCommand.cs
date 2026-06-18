@@ -14,7 +14,8 @@ public record CriarDespesaPeriodoCommand(
     Guid     UsuarioId,
     string   Descricao,
     decimal  ValorPlanejado,
-    DateTime Competencia) : IRequest<DespesaPeriodoResponse>;
+    DateTime Competencia,
+    Guid?    GrupoId = null) : IRequest<DespesaPeriodoResponse>;
 
 // ── Handler ───────────────────────────────────────────────────────────────────
 public class CriarDespesaPeriodoCommandHandler : IRequestHandler<CriarDespesaPeriodoCommand, DespesaPeriodoResponse>
@@ -40,7 +41,7 @@ public class CriarDespesaPeriodoCommandHandler : IRequestHandler<CriarDespesaPer
 
         var lancamento = DespesaPeriodoDomain.Criar(
             cmd.DespesaId, cmd.CategoriaId, cmd.UsuarioId,
-            cmd.Descricao, cmd.ValorPlanejado, competencia);
+            cmd.Descricao, cmd.ValorPlanejado, competencia, cmd.GrupoId);
 
         if (!lancamento.IsValid)
             throw new DomainValidationException(lancamento.Notifications.Select(n => n.Message));

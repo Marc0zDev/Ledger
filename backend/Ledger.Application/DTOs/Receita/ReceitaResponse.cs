@@ -10,5 +10,7 @@ public class ReceitaResponse
     public DateTime DataRecebimento { get; set; }
     public DateTime Competencia { get; set; }
     public Guid? ReceitaTemplateId { get; set; }
+    public Guid? GrupoId { get; set; }
+    public string? UsuarioNome { get; set; }
     public DateTime CreatedAt { get; set; }
 }

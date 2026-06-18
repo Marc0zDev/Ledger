@@ -6,6 +6,8 @@ import {
   GrupoResponse, CriarGrupoRequest, AtualizarGrupoRequest,
   AdicionarMembroGrupoRequest, GrupoMembroResponse,
 } from '../models/grupo.model';
+import { DespesaPeriodoResponse } from '../models/cofre.model';
+import { ReceitaResponse } from '../models/receita.model';
 
 @Injectable({ providedIn: 'root' })
 export class GrupoService {
@@ -38,5 +40,13 @@ export class GrupoService {
 
   removerMembro(grupoId: string, membroId: string): Observable<void> {
     return this.http.delete<void>(`${this.base}/${grupoId}/membros/${membroId}`);
+  }
+
+  listarDespesas(grupoId: string, competencia: string): Observable<DespesaPeriodoResponse[]> {
+    return this.http.get<DespesaPeriodoResponse[]>(`${this.base}/${grupoId}/despesas`, { params: { competencia } });
+  }
+
+  listarReceitas(grupoId: string, competencia: string): Observable<ReceitaResponse[]> {
+    return this.http.get<ReceitaResponse[]>(`${this.base}/${grupoId}/receitas`, { params: { competencia } });
   }
 }

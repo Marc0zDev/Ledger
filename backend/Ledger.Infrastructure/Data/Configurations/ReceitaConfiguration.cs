@@ -36,5 +36,14 @@ public class ReceitaConfiguration : IEntityTypeConfiguration<ReceitaModel>
             .WithMany()
             .HasForeignKey(r => r.ReceitaTemplateId)
             .OnDelete(DeleteBehavior.SetNull);
+
+        builder.Property(r => r.GrupoId).HasColumnName("grupo_id");
+        builder.HasOne(r => r.Grupo)
+            .WithMany()
+            .HasForeignKey(r => r.GrupoId)
+            .IsRequired(false)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.HasIndex(r => r.GrupoId);
     }
 }

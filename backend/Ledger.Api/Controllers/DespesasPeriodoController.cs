@@ -50,7 +50,8 @@ public class DespesasPeriodoController : ControllerBase
         var item = await _mediator.Send(
             new CriarDespesaPeriodoCommand(
                 request.DespesaId, request.CategoriaId, UsuarioId,
-                request.Descricao, request.ValorPlanejado, request.Competencia), ct);
+                request.Descricao, request.ValorPlanejado, request.Competencia,
+                request.GrupoId), ct);
         return CreatedAtAction(nameof(ObterPorId), new { id = item.Id }, item);
     }
 

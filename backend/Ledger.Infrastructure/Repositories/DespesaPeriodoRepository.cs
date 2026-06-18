@@ -47,4 +47,20 @@ public class DespesaPeriodoRepository : BaseRepository<DespesaPeriodoDomain, Des
         return await DbSet.AnyAsync(
             d => d.DespesaId == despesaId && d.Competencia >= inicio && d.Competencia < fim, ct);
     }
+
+    public async Task<IEnumerable<DespesaPeriodoDomain>> GetByGrupoAndCompetenciaAsync(
+        Guid grupoId, DateTime competencia, CancellationToken ct = default)
+    {
+        var inicio = new DateTime(competencia.Year, competencia.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+        var fim    = inicio.AddMonths(1);
+
+        var models = await DbSet
+            .Include(d => d.Categoria)
+            .Where(d => d.GrupoId == grupoId && d.Competencia >= inicio && d.Competencia < fim)
+            .OrderBy(d => d.PagaEm.HasValue)
+            .ThenBy(d => d.Descricao)
+            .ToListAsync(ct);
+
+        return Mapper.Map<IEnumerable<DespesaPeriodoDomain>>(models);
+    }
 }

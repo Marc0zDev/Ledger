@@ -37,7 +37,15 @@ public class DespesaPeriodoConfiguration : IEntityTypeConfiguration<DespesaPerio
                .HasForeignKey(d => d.CategoriaId)
                .OnDelete(DeleteBehavior.Restrict);
 
+        builder.Property(d => d.GrupoId).HasColumnName("grupo_id");
+        builder.HasOne(d => d.Grupo)
+               .WithMany()
+               .HasForeignKey(d => d.GrupoId)
+               .IsRequired(false)
+               .OnDelete(DeleteBehavior.SetNull);
+
         builder.HasIndex(d => new { d.UsuarioId, d.Competencia });
         builder.HasIndex(d => d.DespesaId).IsUnique(false);
+        builder.HasIndex(d => d.GrupoId);
     }
 }

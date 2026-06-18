@@ -2,8 +2,10 @@ import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { ReceitaService } from '../../../core/services/receita.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { GrupoService } from '../../../core/services/grupo.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { ReceitaResponse, ReceitaTemplateResponse } from '../../../core/models/receita.model';
+import { GrupoResponse } from '../../../core/models/grupo.model';
 import { LedgerTableComponent, LedgerColumn, RowActionEvent } from '../../../shared/components/ledger-table/ledger-table.component';
 
 function primeiroDiaMes(d: Date): Date {
@@ -21,7 +23,10 @@ export class ReceitaList implements OnInit {
   private readonly receitaService = inject(ReceitaService);
   private readonly auth           = inject(AuthService);
   private readonly notify         = inject(NotificationService);
+  private readonly grupoService    = inject(GrupoService);
   private readonly fb             = inject(FormBuilder);
+
+  grupos = signal<GrupoResponse[]>([]);
 
   // ── Abas ─────────────────────────────────────────────────────────────────
   activeTab = signal<'receitas' | 'fixas'>('receitas');
@@ -49,11 +54,12 @@ export class ReceitaList implements OnInit {
   totalMes = computed(() => this.receitas().reduce((acc, r) => acc + r.valor, 0));
 
   // ── Forms ─────────────────────────────────────────────────────────────────
-  form = this.fb.nonNullable.group({
+  form = this.fb.group({
     nome:            ['', [Validators.required, Validators.maxLength(100)]],
     valor:           [0,  [Validators.required, Validators.min(0.01)]],
     descricao:       [''],
     dataRecebimento: ['', Validators.required],
+    grupoId:         [null as string | null],
   });
 
   templateForm = this.fb.nonNullable.group({
@@ -92,6 +98,7 @@ export class ReceitaList implements OnInit {
   ];
 
   ngOnInit(): void {
+    this.grupoService.listar().subscribe({ next: (g) => this.grupos.set(g) });
     this.carregarReceitas();
     this.carregarTemplates();
   }
@@ -123,7 +130,7 @@ export class ReceitaList implements OnInit {
   }
 
   abrirForm(): void {
-    this.form.reset({ dataRecebimento: new Date().toISOString().substring(0, 10) });
+    this.form.reset({ dataRecebimento: new Date().toISOString().substring(0, 10), grupoId: null });
     this.showForm.set(true);
   }
 
@@ -135,10 +142,10 @@ export class ReceitaList implements OnInit {
   salvar(): void {
     if (this.form.invalid || this.saving()) return;
     this.saving.set(true);
-    const { nome, valor, descricao, dataRecebimento } = this.form.getRawValue();
+    const { nome, valor, descricao, dataRecebimento, grupoId } = this.form.getRawValue();
     const usuarioId = this.auth.currentUser()!.usuarioId;
 
-    this.receitaService.criar({ usuarioId, nome, valor, descricao, dataRecebimento }).subscribe({
+    this.receitaService.criar({ usuarioId, nome: nome!, valor: valor!, descricao: descricao ?? undefined, dataRecebimento: dataRecebimento!, grupoId: grupoId ?? undefined }).subscribe({
       next: () => {
         this.notify.success('Receita registrada com sucesso.');
         this.fecharForm();

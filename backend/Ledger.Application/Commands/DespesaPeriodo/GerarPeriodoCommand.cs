@@ -41,7 +41,7 @@ public class GerarPeriodoCommandHandler : IRequestHandler<GerarPeriodoCommand, I
                 continue;
 
             var lancamento = DespesaPeriodoDomain.Criar(
-                t.Id, t.CategoriaId, t.UsuarioId, t.Nome, t.ValorPlanejado, competencia);
+                t.Id, t.CategoriaId, t.UsuarioId, t.Nome, t.ValorPlanejado, competencia, t.GrupoId);
 
             await _periodoRepo.AddAsync(lancamento, ct);
             criados.Add(lancamento);

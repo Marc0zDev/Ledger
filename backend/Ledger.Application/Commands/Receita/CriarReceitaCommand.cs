@@ -13,7 +13,8 @@ public record CriarReceitaCommand(
     string?  Descricao,
     Guid?    ArquivoId,
     DateTime DataRecebimento,
-    Guid?    ReceitaTemplateId = null) : IRequest<Guid>;
+    Guid?    ReceitaTemplateId = null,
+    Guid?    GrupoId = null) : IRequest<Guid>;
 
 // ── Handler ───────────────────────────────────────────────────────────────────
 public class CriarReceitaCommandHandler : IRequestHandler<CriarReceitaCommand, Guid>
@@ -26,7 +27,7 @@ public class CriarReceitaCommandHandler : IRequestHandler<CriarReceitaCommand, G
     {
         var dataRecebimento = DateTime.SpecifyKind(cmd.DataRecebimento, DateTimeKind.Utc);
         var receita = ReceitaDomain.Criar(cmd.Nome, cmd.Valor, cmd.Descricao, cmd.ArquivoId,
-            dataRecebimento, cmd.UsuarioId, cmd.ReceitaTemplateId);
+            dataRecebimento, cmd.UsuarioId, cmd.ReceitaTemplateId, cmd.GrupoId);
 
         if (!receita.IsValid)
             throw new DomainValidationException(receita.Notifications.Select(n => n.Message));

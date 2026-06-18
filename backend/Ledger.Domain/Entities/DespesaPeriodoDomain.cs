@@ -36,6 +36,8 @@ public class DespesaPeriodoDomain : BaseDomain
     /// <summary>Primeiro dia do mês/ano ao qual este lançamento pertence (UTC).</summary>
     public DateTime  Competencia    { get; private set; }
 
+    public Guid?     GrupoId        { get; private set; }
+
     private DespesaPeriodoDomain() { }
 
     private DespesaPeriodoDomain(
@@ -44,7 +46,8 @@ public class DespesaPeriodoDomain : BaseDomain
         Guid     usuarioId,
         string   descricao,
         decimal  valorPlanejado,
-        DateTime competencia)
+        DateTime competencia,
+        Guid?    grupoId)
     {
         DespesaId      = despesaId;
         CategoriaId    = categoriaId;
@@ -53,6 +56,7 @@ public class DespesaPeriodoDomain : BaseDomain
         ValorPlanejado = valorPlanejado;
         ValorRealizado = 0;
         Competencia    = competencia;
+        GrupoId        = grupoId;
         Validate();
     }
 
@@ -69,7 +73,8 @@ public class DespesaPeriodoDomain : BaseDomain
         Guid?     comprovanteId,
         DateTime  competencia,
         DateTime  createdAt,
-        DateTime? updatedAt)
+        DateTime? updatedAt,
+        Guid?     grupoId)
     {
         Id             = id;
         DespesaId      = despesaId;
@@ -82,6 +87,7 @@ public class DespesaPeriodoDomain : BaseDomain
         BoletoPath     = boletoPath;
         ComprovanteId  = comprovanteId;
         Competencia    = competencia;
+        GrupoId        = grupoId;
         CreatedAt      = createdAt;
         UpdatedAt      = updatedAt;
     }
@@ -94,8 +100,9 @@ public class DespesaPeriodoDomain : BaseDomain
         Guid     usuarioId,
         string   descricao,
         decimal  valorPlanejado,
-        DateTime competencia)
-        => new(despesaId, categoriaId, usuarioId, descricao, valorPlanejado, competencia);
+        DateTime competencia,
+        Guid?    grupoId = null)
+        => new(despesaId, categoriaId, usuarioId, descricao, valorPlanejado, competencia, grupoId);
 
     public static DespesaPeriodoDomain Reconstituir(
         Guid      id,
@@ -110,9 +117,10 @@ public class DespesaPeriodoDomain : BaseDomain
         Guid?     comprovanteId,
         DateTime  competencia,
         DateTime  createdAt,
-        DateTime? updatedAt)
+        DateTime? updatedAt,
+        Guid?     grupoId = null)
         => new(id, despesaId, categoriaId, usuarioId, descricao, valorPlanejado,
-               valorRealizado, pagaEm, boletoPath, comprovanteId, competencia, createdAt, updatedAt);
+               valorRealizado, pagaEm, boletoPath, comprovanteId, competencia, createdAt, updatedAt, grupoId);
 
     // ── Comportamento ─────────────────────────────────────────────────────────
 

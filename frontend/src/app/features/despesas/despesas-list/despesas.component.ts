@@ -6,6 +6,7 @@ import { DespesaService } from '../../../core/services/despesa.service';
 import { DespesaPeriodoService } from '../../../core/services/despesa-periodo.service';
 import { ArquivoService } from '../../../core/services/arquivo.service';
 import { CategoriaService } from '../../../core/services/categoria.service';
+import { GrupoService } from '../../../core/services/grupo.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { FileViewerService } from '../../../core/services/file-viewer.service';
 import { ArquivoResponse } from '../../../core/models/arquivo.model';
@@ -15,6 +16,7 @@ import {
   CategoriaResponse,
   TipoDespesa,
 } from '../../../core/models/cofre.model';
+import { GrupoResponse } from '../../../core/models/grupo.model';
 import { environment } from '../../../../environments/environment';
 import { LedgerTableComponent, LedgerColumn, RowActionEvent } from '../../../shared/components/ledger-table/ledger-table.component';
 import { TagModule } from 'primeng/tag';
@@ -40,6 +42,7 @@ export class DespesasComponent implements OnInit {
   private readonly categoriaService     = inject(CategoriaService);
   private readonly notify               = inject(NotificationService);
   private readonly fileViewer           = inject(FileViewerService);
+  private readonly grupoService          = inject(GrupoService);
   private readonly fb                   = inject(FormBuilder);
 
   readonly TIPOS: { valor: TipoDespesa; label: string }[] = [
@@ -49,6 +52,7 @@ export class DespesasComponent implements OnInit {
   ];
 
   // ── Estado ───────────────────────────────────────────────────────────────
+  grupos        = signal<GrupoResponse[]>([]);
   categorias    = signal<CategoriaResponse[]>([]);
   templates     = signal<DespesaResponse[]>([]);
   periodos      = signal<DespesaPeriodoResponse[]>([]);
@@ -210,6 +214,7 @@ export class DespesasComponent implements OnInit {
     valorPlanejado: [null as number | null, [Validators.required, Validators.min(0.01)]],
     categoriaId:    ['', Validators.required],
     despesaId:      [null as string | null],
+    grupoId:        [null as string | null],
   });
 
   formTemplate = this.fb.group({
@@ -220,6 +225,7 @@ export class DespesasComponent implements OnInit {
     dataInicio:     ['', Validators.required],
     dataFim:        [null as string | null],
     diaVencimento:  [null as number | null, [Validators.min(1), Validators.max(31)]],
+    grupoId:        [null as string | null],
   });
 
   // ── Lifecycle ─────────────────────────────────────────────────────────────
@@ -232,6 +238,9 @@ export class DespesasComponent implements OnInit {
           this.formTemplate.patchValue({ categoriaId: cats[0].id });
         }
       },
+    });
+    this.grupoService.listar().subscribe({
+      next: (g) => this.grupos.set(g),
     });
     this.carregarPeriodo();
     this.carregarTemplates();
@@ -285,11 +294,12 @@ export class DespesasComponent implements OnInit {
         valorPlanejado: periodo.valorPlanejado,
         categoriaId:    periodo.categoriaId,
         despesaId:      periodo.despesaId ?? null,
+        grupoId:        periodo.grupoId ?? null,
       });
     } else {
       this.editandoPeriodo.set(null);
       const defaultCat = this.categorias()[0]?.id ?? '';
-      this.formPeriodo.reset({ categoriaId: defaultCat, despesaId: null });
+      this.formPeriodo.reset({ categoriaId: defaultCat, despesaId: null, grupoId: null });
     }
     this.abaAtiva.set('periodo');
     this.showForm.set(true);
@@ -306,12 +316,12 @@ export class DespesasComponent implements OnInit {
     this.saving.set(true);
 
 
-    const { descricao, valorPlanejado, categoriaId, despesaId } = this.formPeriodo.getRawValue();
+    const { descricao, valorPlanejado, categoriaId, despesaId, grupoId } = this.formPeriodo.getRawValue();
     const id = this.editandoPeriodo()?.id;
 
     const req$ = id
       ? this.periodoService.atualizar(id, { descricao: descricao!, valorPlanejado: valorPlanejado!, categoriaId: categoriaId! })
-      : this.periodoService.criar({ descricao: descricao!, valorPlanejado: valorPlanejado!, categoriaId: categoriaId!, despesaId: despesaId ?? undefined, competencia: this.competencia() });
+      : this.periodoService.criar({ descricao: descricao!, valorPlanejado: valorPlanejado!, categoriaId: categoriaId!, despesaId: despesaId ?? undefined, competencia: this.competencia(), grupoId: grupoId ?? undefined });
 
     req$.subscribe({
       next: () => { this.fecharForm(); this.carregarPeriodo(); this.saving.set(false); },
@@ -464,6 +474,7 @@ export class DespesasComponent implements OnInit {
         dataInicio:     template.dataInicio.substring(0, 10),
         dataFim:        template.dataFim ? template.dataFim.substring(0, 10) : null,
         diaVencimento:  template.diaVencimento ?? null,
+        grupoId:        template.grupoId ?? null,
       });
     } else {
       this.editandoTemplate.set(null);
@@ -471,6 +482,7 @@ export class DespesasComponent implements OnInit {
       this.formTemplate.reset({
         tipo: 3, categoriaId: defaultCat,
         dataInicio: new Date().toISOString().substring(0, 10),
+        grupoId: null,
       });
     }
     this.abaAtiva.set('templates');
@@ -482,11 +494,12 @@ export class DespesasComponent implements OnInit {
     this.saving.set(true);
 
 
-    const { nome, tipo, valorPlanejado, categoriaId, dataInicio, dataFim, diaVencimento } = this.formTemplate.getRawValue();
+    const { nome, tipo, valorPlanejado, categoriaId, dataInicio, dataFim, diaVencimento, grupoId } = this.formTemplate.getRawValue();
     const payload = {
       nome: nome!, tipo: tipo!, valorPlanejado: valorPlanejado!,
       categoriaId: categoriaId!, dataInicio: dataInicio!,
       dataFim: dataFim ?? undefined, diaVencimento: diaVencimento ?? undefined,
+      grupoId: grupoId ?? undefined,
     };
     const id = this.editandoTemplate()?.id;
 

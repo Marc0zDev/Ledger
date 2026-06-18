@@ -9,6 +9,7 @@ public class ReceitaRequest
     public Guid?    ArquivoId        { get; set; }
     public DateTime DataRecebimento  { get; set; }
     public Guid?    ReceitaTemplateId { get; set; }
+    public Guid?    GrupoId          { get; set; }
 }
 
 public class CriarReceitaTemplateRequest

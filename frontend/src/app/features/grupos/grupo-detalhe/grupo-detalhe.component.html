@@ -79,7 +79,7 @@
         @if (isChefe()) {
           <button class="btn-add" (click)="showAddMembro.set(!showAddMembro())" [class.active]="showAddMembro()">
             <i class="pi" [class.pi-plus]="!showAddMembro()" [class.pi-times]="showAddMembro()"></i>
-            {{ showAddMembro() ? 'Cancelar' : 'Adicionar' }}
+            {{ showAddMembro() ? 'Cancelar' : 'Convidar' }}
           </button>
         }
       </div>
@@ -102,7 +102,7 @@
                 <span class="u-email">{{ u.email }}</span>
               </div>
               <button class="btn-primary btn-sm" (click)="adicionarMembro()" [disabled]="savingMembro()">
-                {{ savingMembro() ? 'Adicionando...' : 'Adicionar ao grupo' }}
+                {{ savingMembro() ? 'Enviando...' : 'Convidar para o grupo' }}
               </button>
             </div>
           }
@@ -129,6 +129,77 @@
           </div>
         }
       </div>
+    </div>
+
+    <!-- ── Finanças do grupo ── -->
+    <div class="section-card financas-section">
+      <div class="section-header">
+        <h2 class="section-title">
+          <i class="pi pi-chart-bar"></i>
+          Finanças
+        </h2>
+      </div>
+
+      <!-- Navegação de mês -->
+      <div class="month-nav">
+        <button class="month-btn" (click)="mesAnterior()"><i class="pi pi-chevron-left"></i></button>
+        <span class="month-label">{{ competenciaLabel() }}</span>
+        <button class="month-btn" (click)="mesSeguinte()"><i class="pi pi-chevron-right"></i></button>
+      </div>
+
+      <!-- Summary cards -->
+      <div class="summary-grid">
+        <div class="summary-card">
+          <span class="summary-label">Despesas Planejadas</span>
+          <span class="summary-value">{{ formatarMoeda(totalDespesasPlanejadas()) }}</span>
+        </div>
+        <div class="summary-card summary-card--realizado">
+          <span class="summary-label">Despesas Realizadas</span>
+          <span class="summary-value">{{ formatarMoeda(totalDespesasRealizadas()) }}</span>
+        </div>
+        <div class="summary-card summary-card--receita">
+          <span class="summary-label">Receitas</span>
+          <span class="summary-value">{{ formatarMoeda(totalReceitas()) }}</span>
+        </div>
+        <div class="summary-card" [class.summary-card--positivo]="saldo() >= 0" [class.summary-card--negativo]="saldo() < 0">
+          <span class="summary-label">Saldo</span>
+          <span class="summary-value">{{ formatarMoeda(saldo()) }}</span>
+        </div>
+      </div>
+
+      <!-- Abas -->
+      <div class="tab-row">
+        <button class="tab-btn" [class.tab-btn--active]="abaFinancas() === 'despesas'" (click)="abaFinancas.set('despesas')">
+          Despesas
+          <span class="tab-count">{{ despesas().length }}</span>
+        </button>
+        <button class="tab-btn" [class.tab-btn--active]="abaFinancas() === 'receitas'" (click)="abaFinancas.set('receitas')">
+          Receitas
+          <span class="tab-count">{{ receitas().length }}</span>
+        </button>
+      </div>
+
+      @if (loadingFinancas()) {
+        <div class="state-center">
+          <div class="spinner"></div>
+        </div>
+      }
+
+      @if (!loadingFinancas() && abaFinancas() === 'despesas') {
+        @if (despesas().length === 0) {
+          <p class="empty-msg">Nenhuma despesa marcada para este grupo neste mês.</p>
+        } @else {
+          <app-ledger-table [dataSource]="despesas()" [options]="despesaColumns" />
+        }
+      }
+
+      @if (!loadingFinancas() && abaFinancas() === 'receitas') {
+        @if (receitas().length === 0) {
+          <p class="empty-msg">Nenhuma receita marcada para este grupo neste mês.</p>
+        } @else {
+          <app-ledger-table [dataSource]="receitas()" [options]="receitaColumns" />
+        }
+      }
     </div>
 
   }

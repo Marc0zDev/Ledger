@@ -7,6 +7,8 @@ export interface ReceitaResponse {
   dataRecebimento: string;
   competencia: string;
   receitaTemplateId?: string;
+  grupoId?: string;
+  usuarioNome?: string;
   createdAt: string;
 }
 
@@ -29,6 +31,7 @@ export interface CriarReceitaRequest {
   arquivoId?: string;
   dataRecebimento: string;
   receitaTemplateId?: string;
+  grupoId?: string;
 }
 
 export interface CriarReceitaTemplateRequest {

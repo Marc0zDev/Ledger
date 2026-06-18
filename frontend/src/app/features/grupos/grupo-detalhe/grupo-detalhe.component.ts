@@ -6,12 +6,14 @@ import { UsuarioService } from '../../../core/services/usuario.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { GrupoResponse, GrupoMembroResponse } from '../../../core/models/grupo.model';
-import { UsuarioResponse } from '../../../core/models/cofre.model';
+import { DespesaPeriodoResponse, UsuarioResponse } from '../../../core/models/cofre.model';
+import { ReceitaResponse } from '../../../core/models/receita.model';
+import { LedgerTableComponent, LedgerColumn } from '../../../shared/components/ledger-table/ledger-table.component';
 
 @Component({
   selector: 'app-grupo-detalhe',
   standalone: true,
-  imports: [RouterLink, ReactiveFormsModule],
+  imports: [RouterLink, ReactiveFormsModule, LedgerTableComponent],
   templateUrl: './grupo-detalhe.component.html',
   styleUrl: './grupo-detalhe.component.scss',
 })
@@ -46,6 +48,47 @@ export class GrupoDetalheComponent implements OnInit {
     email: ['', [Validators.required, Validators.email]],
   });
 
+  // ── Finanças ──────────────────────────────────────────────────────────────
+  competencia    = signal<Date>(new Date(Date.UTC(new Date().getFullYear(), new Date().getMonth(), 1)));
+  despesas       = signal<DespesaPeriodoResponse[]>([]);
+  receitas       = signal<ReceitaResponse[]>([]);
+  loadingFinancas = signal(false);
+  abaFinancas    = signal<'despesas' | 'receitas'>('despesas');
+
+  competenciaLabel = computed(() =>
+    this.competencia().toLocaleString('pt-BR', { month: 'long', year: 'numeric', timeZone: 'UTC' })
+  );
+
+  totalDespesasPlanejadas = computed(() =>
+    this.despesas().reduce((s, d) => s + d.valorPlanejado, 0));
+
+  totalDespesasRealizadas = computed(() =>
+    this.despesas().filter(d => d.paga).reduce((s, d) => s + d.valorRealizado, 0));
+
+  totalReceitas = computed(() =>
+    this.receitas().reduce((s, r) => s + r.valor, 0));
+
+  saldo = computed(() => this.totalReceitas() - this.totalDespesasPlanejadas());
+
+  despesaColumns: LedgerColumn[] = [
+    { title: 'Membro',    field: 'usuarioNome',    width: '18%' },
+    { title: 'Descrição', field: 'descricao',      width: '22%' },
+    { title: 'Categoria', field: 'categoriaNome',  width: '18%' },
+    { title: 'Valor',     field: 'valorPlanejado', type: 'currency', width: '18%', align: 'right' },
+    {
+      title: 'Status', type: 'tag', width: '14%',
+      tagLabel:    (_, row) => (row as DespesaPeriodoResponse).paga ? 'Pago' : 'Pendente',
+      tagSeverity: (_, row) => (row as DespesaPeriodoResponse).paga ? 'success' : 'warn',
+    },
+  ];
+
+  receitaColumns: LedgerColumn[] = [
+    { title: 'Membro',    field: 'usuarioNome',    width: '20%' },
+    { title: 'Nome',      field: 'nome',           width: '25%' },
+    { title: 'Valor',     field: 'valor', type: 'currency', width: '20%', align: 'right' },
+    { title: 'Recebido',  field: 'dataRecebimento', type: 'date', width: '20%' },
+  ];
+
   private grupoId!: string;
 
   get usuarioId() { return this.auth.currentUser()!.usuarioId; }
@@ -57,6 +100,7 @@ export class GrupoDetalheComponent implements OnInit {
   ngOnInit(): void {
     this.grupoId = this.route.snapshot.paramMap.get('id')!;
     this.carregar();
+    this.carregarFinancas();
   }
 
   carregar(): void {
@@ -119,13 +163,12 @@ export class GrupoDetalheComponent implements OnInit {
     this.savingMembro.set(true);
     this.grupoService.adicionarMembro(this.grupoId, { usuarioId: usuario.id }).subscribe({
       next: () => {
-        this.notify.success(`${usuario.nome} adicionado ao grupo.`);
+        this.notify.success(`Convite enviado para ${usuario.email}.`);
         this.fecharAddMembro();
-        this.carregar();
         this.savingMembro.set(false);
       },
       error: (err) => {
-        this.notify.error(err?.error?.errors?.[0] ?? 'Erro ao adicionar membro.');
+        this.notify.error(err?.error?.errors?.[0] ?? 'Erro ao enviar convite.');
         this.savingMembro.set(false);
       },
     });
@@ -147,6 +190,39 @@ export class GrupoDetalheComponent implements OnInit {
       },
       error: (err) => this.notify.error(err?.error?.errors?.[0] ?? 'Erro ao remover membro.'),
     });
+  }
+
+  // ── Finanças do grupo ──────────────────────────────────────────────────────
+
+  carregarFinancas(): void {
+    this.loadingFinancas.set(true);
+    const comp = this.competencia().toISOString().substring(0, 10);
+
+    this.grupoService.listarDespesas(this.grupoId, comp).subscribe({
+      next: (d) => this.despesas.set(d),
+      error: () => this.despesas.set([]),
+    });
+
+    this.grupoService.listarReceitas(this.grupoId, comp).subscribe({
+      next: (r) => { this.receitas.set(r); this.loadingFinancas.set(false); },
+      error: () => { this.receitas.set([]); this.loadingFinancas.set(false); },
+    });
+  }
+
+  mesAnterior(): void {
+    const d = this.competencia();
+    this.competencia.set(new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() - 1, 1)));
+    this.carregarFinancas();
+  }
+
+  mesSeguinte(): void {
+    const d = this.competencia();
+    this.competencia.set(new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 1)));
+    this.carregarFinancas();
+  }
+
+  formatarMoeda(valor: number): string {
+    return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   }
 
   formatarData(data: string): string {

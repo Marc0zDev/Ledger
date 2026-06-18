@@ -13,10 +13,12 @@ public class DespesaModel
     public Guid UsuarioId { get; set; }
     public DateTime  DataInicio { get; set; }
     public DateTime? DataFim    { get; set; }
+    public Guid?     GrupoId    { get; set; }
     public DateTime  CreatedAt  { get; set; }
     public DateTime? UpdatedAt  { get; set; }
 
     // Navigation
     public CategoriaModel? Categoria { get; set; }
     public ArquivoModel? Arquivo { get; set; }
+    public GrupoModel? Grupo { get; set; }
 }

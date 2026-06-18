@@ -36,7 +36,15 @@ public class DespesaConfiguration : IEntityTypeConfiguration<DespesaModel>
                .HasForeignKey(d => d.ArquivoId)
                .OnDelete(DeleteBehavior.SetNull);
 
+        builder.Property(d => d.GrupoId).HasColumnName("grupo_id");
+        builder.HasOne(d => d.Grupo)
+               .WithMany()
+               .HasForeignKey(d => d.GrupoId)
+               .IsRequired(false)
+               .OnDelete(DeleteBehavior.SetNull);
+
         builder.HasIndex(d => d.UsuarioId);
         builder.HasIndex(d => new { d.UsuarioId, d.Ativa });
+        builder.HasIndex(d => d.GrupoId);
     }
 }

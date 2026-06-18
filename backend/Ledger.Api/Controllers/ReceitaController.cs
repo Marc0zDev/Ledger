@@ -38,7 +38,8 @@ public class ReceitaController : ControllerBase
             request.Descricao,
             request.ArquivoId,
             request.DataRecebimento,
-            request.ReceitaTemplateId), ct);
+            request.ReceitaTemplateId,
+            request.GrupoId), ct);
 
         return CreatedAtAction(nameof(ListarPorUsuario), new { usuarioId = request.UsuarioId }, new { Id = id });
     }
