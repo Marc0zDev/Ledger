@@ -18,13 +18,19 @@ public sealed class BrowserService : IBrowserService, IAsyncDisposable
         {
             if (_browser is not null) return _browser;
 
-            var fetcher = new BrowserFetcher();
-            await fetcher.DownloadAsync();
+            var executablePath = Environment.GetEnvironmentVariable("PUPPETEER_EXECUTABLE_PATH");
+
+            if (string.IsNullOrEmpty(executablePath))
+            {
+                var fetcher = new BrowserFetcher();
+                await fetcher.DownloadAsync();
+            }
 
             _browser = await Puppeteer.LaunchAsync(new LaunchOptions
             {
-                Headless = true,
-                Args     = ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"]
+                Headless       = true,
+                ExecutablePath = executablePath,
+                Args           = ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"]
             });
         }
         finally
