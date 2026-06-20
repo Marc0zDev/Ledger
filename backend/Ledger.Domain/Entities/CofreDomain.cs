@@ -11,12 +11,13 @@ namespace Ledger.Domain.Entities;
 /// </summary>
 public class CofreDomain : BaseDomain
 {
-    public string         Nome               { get; private set; } = string.Empty;
-    public string?        Descricao          { get; private set; }
-    public decimal        Meta               { get; private set; }
-    public CofreStatus    Status             { get; private set; } = CofreStatus.Aberto;
-    public CategoriaCofre Categoria          { get; private set; } = CategoriaCofre.Outro;
-    public Guid           CriadoPorUsuarioId { get; private set; }
+    public string           Nome               { get; private set; } = string.Empty;
+    public string?          Descricao          { get; private set; }
+    public decimal          Meta               { get; private set; }
+    public CofreStatus      Status             { get; private set; } = CofreStatus.Aberto;
+    public CategoriaCofre   Categoria          { get; private set; } = CategoriaCofre.Outro;
+    public VisibilidadeCofre Visibilidade      { get; private set; } = VisibilidadeCofre.Privado;
+    public Guid             CriadoPorUsuarioId { get; private set; }
 
     // Participantes vinculados ao cofre
     private readonly List<ParticipanteDomain> _participantes = new();
@@ -28,18 +29,22 @@ public class CofreDomain : BaseDomain
 
     // ── Propriedades calculadas ───────────────────────────────────────────────
 
-    /// <summary>Saldo líquido das movimentações (Entradas − Saídas).</summary>
+    /// <summary>Saldo líquido das movimentações aprovadas (Entradas − Saídas).</summary>
     public decimal TotalMovimentado =>
-        _movimentacoes.Sum(m => m.Tipo == TipoMovimentacao.Entrada ? m.Valor : -m.Valor);
+        _movimentacoes
+            .Where(m => m.Status == StatusMovimentacao.Aprovada)
+            .Sum(m => m.Tipo == TipoMovimentacao.Entrada ? m.Valor : -m.Valor);
 
     // ── Construtores ──────────────────────────────────────────────────────────
 
-    private CofreDomain(string nome, decimal meta, string? descricao, CategoriaCofre categoria, Guid criadoPorUsuarioId)
+    private CofreDomain(string nome, decimal meta, string? descricao, CategoriaCofre categoria,
+        VisibilidadeCofre visibilidade, Guid criadoPorUsuarioId)
     {
         Nome               = nome;
         Meta               = meta;
         Descricao          = descricao;
         Categoria          = categoria;
+        Visibilidade       = visibilidade;
         Status             = CofreStatus.Aberto;
         CriadoPorUsuarioId = criadoPorUsuarioId;
         Validate();
@@ -47,15 +52,16 @@ public class CofreDomain : BaseDomain
     }
 
     private CofreDomain(
-        Guid          id,
-        string        nome,
-        decimal       meta,
-        string?       descricao,
-        CofreStatus   status,
-        CategoriaCofre categoria,
-        Guid          criadoPorUsuarioId,
-        DateTime      createdAt,
-        DateTime?     updatedAt)
+        Guid             id,
+        string           nome,
+        decimal          meta,
+        string?          descricao,
+        CofreStatus      status,
+        CategoriaCofre   categoria,
+        VisibilidadeCofre visibilidade,
+        Guid             criadoPorUsuarioId,
+        DateTime         createdAt,
+        DateTime?        updatedAt)
     {
         Id                 = id;
         Nome               = nome;
@@ -63,6 +69,7 @@ public class CofreDomain : BaseDomain
         Descricao          = descricao;
         Status             = status;
         Categoria          = categoria;
+        Visibilidade       = visibilidade;
         CriadoPorUsuarioId = criadoPorUsuarioId;
         CreatedAt          = createdAt;
         UpdatedAt          = updatedAt;
@@ -71,27 +78,29 @@ public class CofreDomain : BaseDomain
     // ── Factory Methods ───────────────────────────────────────────────────────
 
     public static CofreDomain Criar(
-        string        nome,
-        decimal       meta,
-        Guid          criadoPorUsuarioId,
-        string?       descricao = null,
-        CategoriaCofre categoria = CategoriaCofre.Outro)
-        => new(nome, meta, descricao, categoria, criadoPorUsuarioId);
+        string           nome,
+        decimal          meta,
+        Guid             criadoPorUsuarioId,
+        string?          descricao    = null,
+        CategoriaCofre   categoria    = CategoriaCofre.Outro,
+        VisibilidadeCofre visibilidade = VisibilidadeCofre.Privado)
+        => new(nome, meta, descricao, categoria, visibilidade, criadoPorUsuarioId);
 
     public static CofreDomain Reconstituir(
-        Guid           id,
-        string         nome,
-        decimal        meta,
-        string?        descricao,
-        CofreStatus    status,
-        CategoriaCofre categoria,
-        Guid           criadoPorUsuarioId,
-        DateTime       createdAt,
-        DateTime?      updatedAt,
-        IEnumerable<ParticipanteDomain>? participantes  = null,
-        IEnumerable<MovimentacaoDomain>? movimentacoes  = null)
+        Guid             id,
+        string           nome,
+        decimal          meta,
+        string?          descricao,
+        CofreStatus      status,
+        CategoriaCofre   categoria,
+        VisibilidadeCofre visibilidade,
+        Guid             criadoPorUsuarioId,
+        DateTime         createdAt,
+        DateTime?        updatedAt,
+        IEnumerable<ParticipanteDomain>? participantes = null,
+        IEnumerable<MovimentacaoDomain>? movimentacoes = null)
     {
-        var cofre = new CofreDomain(id, nome, meta, descricao, status, categoria, criadoPorUsuarioId, createdAt, updatedAt);
+        var cofre = new CofreDomain(id, nome, meta, descricao, status, categoria, visibilidade, criadoPorUsuarioId, createdAt, updatedAt);
         if (participantes is not null) cofre._participantes.AddRange(participantes);
         if (movimentacoes is not null) cofre._movimentacoes.AddRange(movimentacoes);
         return cofre;
@@ -99,12 +108,14 @@ public class CofreDomain : BaseDomain
 
     // ── Comportamentos ────────────────────────────────────────────────────────
 
-    public void Atualizar(string nome, decimal meta, string? descricao, CategoriaCofre categoria)
+    public void Atualizar(string nome, decimal meta, string? descricao, CategoriaCofre categoria,
+        VisibilidadeCofre visibilidade = VisibilidadeCofre.Privado)
     {
-        Nome      = nome;
-        Meta      = meta;
-        Descricao = descricao;
-        Categoria = categoria;
+        Nome         = nome;
+        Meta         = meta;
+        Descricao    = descricao;
+        Categoria    = categoria;
+        Visibilidade = visibilidade;
         Validate();
         if (IsValid) MarkAsUpdated();
     }
@@ -167,7 +178,7 @@ public class CofreDomain : BaseDomain
     protected override void Validate()
     {
         RuleFor(!string.IsNullOrWhiteSpace(Nome), nameof(Nome), "O nome do cofre é obrigatório.");
-        RuleFor(Meta > 0,                          nameof(Meta), "A meta financeira do cofre deve ser maior que zero.");
+        RuleFor(Meta > 0, nameof(Meta), "A meta financeira do cofre deve ser maior que zero.");
     }
 }
 

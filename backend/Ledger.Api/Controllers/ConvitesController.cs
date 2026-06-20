@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using Ledger.Application.Commands.Grupo;
 using Ledger.Application.Commands.Participante;
 using Ledger.Application.Queries.Convite;
 using MediatR;
@@ -42,6 +43,32 @@ public class ConvitesController : ControllerBase
     public async Task<IActionResult> Recusar(string token, CancellationToken ct)
     {
         var convite = await _mediator.Send(new RecusarConviteCommand(token, UsuarioId), ct);
+        return Ok(convite);
+    }
+
+    // ── Convites de Grupo ─────────────────────────────────────────────────────
+
+    /// <summary>Lista os convites de grupo pendentes do usuário autenticado.</summary>
+    [HttpGet("grupos/pendentes")]
+    public async Task<IActionResult> GruposPendentes(CancellationToken ct)
+    {
+        var convites = await _mediator.Send(new ListarConvitesGrupoPendentesQuery(UsuarioId), ct);
+        return Ok(convites);
+    }
+
+    /// <summary>Aceita um convite de grupo pelo token.</summary>
+    [HttpPost("grupos/{token}/aceitar")]
+    public async Task<IActionResult> AceitarGrupo(string token, CancellationToken ct)
+    {
+        var membro = await _mediator.Send(new AceitarConviteGrupoCommand(token, UsuarioId), ct);
+        return Ok(membro);
+    }
+
+    /// <summary>Recusa um convite de grupo pelo token.</summary>
+    [HttpPost("grupos/{token}/recusar")]
+    public async Task<IActionResult> RecusarGrupo(string token, CancellationToken ct)
+    {
+        var convite = await _mediator.Send(new RecusarConviteGrupoCommand(token, UsuarioId), ct);
         return Ok(convite);
     }
 }

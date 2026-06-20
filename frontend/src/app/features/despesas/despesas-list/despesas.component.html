@@ -6,180 +6,213 @@
       <h1 class="page-title">Despesas</h1>
       <p class="page-subtitle">Seus gastos pessoais e compromissos financeiros</p>
     </div>
-    <button class="btn-novo" (click)="abrirForm()">
-      <i class="pi pi-plus"></i>
-      Nova despesa
-    </button>
-  </div>
-
-  <!-- Resumo -->
-  <div class="summary-row">
-    <div class="summary-card">
-      <span class="summary-label">A pagar</span>
-      <span class="summary-value">{{ formatarMoeda(totalPendente()) }}</span>
-      <span class="summary-count">{{ pendentesCount() }} despesa{{ pendentesCount() !== 1 ? 's' : '' }}</span>
-    </div>
-    <div class="summary-card summary-card--pago">
-      <span class="summary-label">Pago</span>
-      <span class="summary-value summary-value--pago">{{ formatarMoeda(totalPago()) }}</span>
-      <span class="summary-count">{{ despesas().length - pendentesCount() }} quitada{{ (despesas().length - pendentesCount()) !== 1 ? 's' : '' }}</span>
+    <div class="header-actions">
+      @if (abaAtiva() === 'templates') {
+        <button class="btn-novo" (click)="abrirFormTemplate()">
+          <i class="pi pi-plus"></i> Nova conta fixa
+        </button>
+      } @else {
+        <button class="btn-secondary" (click)="gerarRelatorio()" [disabled]="gerarando()">
+          <span class="ms" style="font-size:16px">picture_as_pdf</span>
+          {{ gerarando() ? 'Gerando...' : 'Exportar PDF' }}
+        </button>
+        <button class="btn-secondary" (click)="gerarPeriodo()" [disabled]="gerando()">
+          <i class="pi pi-bolt"></i> {{ gerando() ? 'Gerando...' : 'Gerar do mês' }}
+        </button>
+        <button class="btn-novo" (click)="abrirFormPeriodo()">
+          <i class="pi pi-plus"></i> Nova despesa
+        </button>
+      }
     </div>
   </div>
 
   <!-- Abas -->
   <div class="abas">
-    <button class="aba" [class.aba--ativa]="abaAtiva() === 'todas'" (click)="abaAtiva.set('todas')">
-      Todas
-      <span class="aba-badge">{{ despesas().length }}</span>
+    <button class="aba" [class.aba--ativa]="abaAtiva() === 'periodo'" (click)="abaAtiva.set('periodo'); showForm.set(false)">
+      Período
+      <span class="aba-badge">{{ periodos().length }}</span>
     </button>
-    <button class="aba" [class.aba--ativa]="abaAtiva() === 'pendentes'" (click)="abaAtiva.set('pendentes')">
-      Pendentes
-      @if (pendentesCount() > 0) {
-        <span class="aba-badge aba-badge--alert">{{ pendentesCount() }}</span>
-      }
+    <button class="aba" [class.aba--ativa]="abaAtiva() === 'templates'" (click)="abaAtiva.set('templates'); showForm.set(false)">
+      Contas Fixas
+      <span class="aba-badge">{{ tmTotal() }}</span>
     </button>
   </div>
 
-  <!-- Form inline -->
-  @if (showForm()) {
-    <div class="form-panel">
-      <h3 class="form-panel-title">{{ editando() ? 'Editar despesa' : 'Nova despesa' }}</h3>
-      <form [formGroup]="form" (ngSubmit)="salvar()" class="form-grid">
-        <input formControlName="descricao" type="text" placeholder="Descrição" class="form-field form-field--wide" />
-        <input formControlName="valor" type="number" step="0.01" min="0.01" placeholder="Valor (R$)" class="form-field" />
-        <input formControlName="dataVencimento" type="date" class="form-field" />
-        <select formControlName="categoria" class="form-field">
-          @for (cat of categorias; track cat.valor) {
-            <option [value]="cat.valor">{{ cat.label }}</option>
+  <!-- ── PERÍODO ── -->
+  @if (abaAtiva() === 'periodo') {
+
+    <!-- Navegação de mês -->
+    <div class="mes-nav">
+      <button class="mes-nav-btn" (click)="mesAnterior()"><i class="pi pi-chevron-left"></i></button>
+      <span class="mes-label">{{ competenciaLabel() }}</span>
+      <button class="mes-nav-btn" (click)="mesSeguinte()"><i class="pi pi-chevron-right"></i></button>
+    </div>
+
+    <!-- Resumo -->
+    <div class="summary-row">
+      <div class="summary-card">
+        <span class="summary-label">Planejado</span>
+        <span class="summary-value">{{ formatarMoeda(totalPlanejado()) }}</span>
+        <span class="summary-count">{{ periodos().length }} item{{ periodos().length !== 1 ? 's' : '' }}</span>
+      </div>
+      <div class="summary-card summary-card--pago">
+        <span class="summary-label">Realizado</span>
+        <span class="summary-value summary-value--pago">{{ formatarMoeda(totalRealizado()) }}</span>
+        <span class="summary-count">{{ periodos().length - pendentesCount() }} pago{{ (periodos().length - pendentesCount()) !== 1 ? 's' : '' }}</span>
+      </div>
+      <div class="summary-card summary-card--pendente">
+        <span class="summary-label">Pendente</span>
+        <span class="summary-value summary-value--pendente">{{ formatarMoeda(totalPlanejado() - totalRealizado()) }}</span>
+        <span class="summary-count">{{ pendentesCount() }} pendente{{ pendentesCount() !== 1 ? 's' : '' }}</span>
+      </div>
+    </div>
+
+    <!-- Form inline para período -->
+    @if (showForm() && abaAtiva() === 'periodo') {
+      <div class="form-panel">
+        <h3 class="form-panel-title">{{ editandoPeriodo() ? 'Editar despesa' : 'Nova despesa' }}</h3>
+        <form [formGroup]="formPeriodo" (ngSubmit)="salvarPeriodo()" class="form-grid">
+          <input formControlName="descricao" type="text" placeholder="Descrição" class="form-field form-field--wide" />
+          <input formControlName="valorPlanejado" type="number" step="0.01" min="0.01" placeholder="Valor planejado (R$)" class="form-field" />
+          <select formControlName="categoriaId" class="form-field">
+            @for (cat of categorias(); track cat.id) {
+              <option [value]="cat.id">{{ cat.nome }}</option>
+            }
+          </select>
+          @if (grupos().length > 0) {
+            <select formControlName="grupoId" class="form-field">
+              <option [ngValue]="null">Pessoal</option>
+              @for (g of grupos(); track g.id) {
+                <option [value]="g.id">{{ g.nome }}</option>
+              }
+            </select>
           }
-        </select>
-        <label class="form-check">
-          <input formControlName="recorrente" type="checkbox" />
-          Recorrente (mensal)
-        </label>
+          <div class="form-actions">
+            <button type="button" class="btn-cancel" (click)="fecharForm()">Cancelar</button>
+            <button type="submit" class="btn-save" [disabled]="formPeriodo.invalid || saving()">
+              {{ saving() ? 'Salvando...' : (editandoPeriodo() ? 'Salvar alterações' : 'Registrar') }}
+            </button>
+          </div>
+        </form>
+      </div>
+    }
 
-        @if (erros().length > 0) {
-          <p class="form-erro">{{ erros()[0] }}</p>
-        }
+    <!-- Loading -->
+    @if (loading()) {
+      <div class="state-center">
+        <div class="spinner"></div>
+        <span class="state-label">Carregando...</span>
+      </div>
+    }
 
-        <div class="form-actions">
-          <button type="button" class="btn-cancel" (click)="fecharForm()">Cancelar</button>
-          <button type="submit" class="btn-save" [disabled]="form.invalid || saving()">
-            {{ saving() ? 'Salvando...' : (editando() ? 'Salvar alterações' : 'Registrar') }}
+    <!-- Vazio -->
+    @if (!loading() && periodos().length === 0) {
+      <div class="state-center">
+        <i class="pi pi-receipt state-icon"></i>
+        <p class="state-title">Nenhuma despesa este mês</p>
+        <p class="state-desc">Gere automaticamente dos templates ou adicione manualmente.</p>
+        <div class="state-actions">
+          <button class="btn-secondary" (click)="gerarPeriodo()" [disabled]="gerando()">
+            <i class="pi pi-bolt"></i> Gerar do mês
           </button>
-        </div>
-      </form>
-    </div>
-  }
-
-  <!-- Loading -->
-  @if (loading()) {
-    <div class="state-center">
-      <div class="spinner"></div>
-      <span class="state-label">Carregando...</span>
-    </div>
-  }
-
-  <!-- Vazio -->
-  @if (!loading() && listagem().length === 0) {
-    <div class="state-center">
-      <i class="pi pi-receipt state-icon"></i>
-      <p class="state-title">{{ abaAtiva() === 'pendentes' ? 'Nenhuma pendência' : 'Nenhuma despesa' }}</p>
-      <p class="state-desc">
-        {{ abaAtiva() === 'pendentes'
-          ? 'Você está em dia com seus compromissos.'
-          : 'Registre sua primeira despesa para começar.' }}
-      </p>
-      @if (abaAtiva() === 'todas') {
-        <button class="btn-novo" (click)="abrirForm()">
-          <i class="pi pi-plus"></i>
-          Nova despesa
-        </button>
-      }
-    </div>
-  }
-
-  <!-- Lista agrupada por mês -->
-  @if (!loading() && grupos().length > 0) {
-    @for (grupo of grupos(); track grupo.mes) {
-      <div class="grupo-mes">
-        <h3 class="grupo-titulo">{{ grupo.mes }}</h3>
-        <div class="despesas-list">
-          @for (d of grupo.items; track d.id) {
-            <div class="despesa-card" [class.despesa-card--paga]="d.paga" [class.despesa-card--vencida]="vencida(d)">
-              <div class="card-content">
-                <div class="row-main">
-                  <div class="row-info">
-                    <div class="row-title-row">
-                      <span class="row-desc">{{ d.descricao }}</span>
-                      @if (d.recorrente) {
-                        <span class="badge-recorrente" title="Recorrente mensal">
-                          <i class="pi pi-refresh"></i>
-                        </span>
-                      }
-                    </div>
-                    <div class="row-meta">
-                      <span class="meta-item meta-item--cat">
-                        <i class="pi pi-tag"></i>
-                        {{ d.categoria }}
-                      </span>
-                      <span class="meta-item" [class.meta-item--alerta]="vencida(d)">
-                        <i class="pi pi-calendar"></i>
-                        {{ vencida(d) ? 'Venceu' : 'Vence' }} {{ formatarData(d.dataVencimento) }}
-                      </span>
-                      @if (d.paga && d.dataPagamento) {
-                        <span class="meta-item meta-item--quitado">
-                          <i class="pi pi-check-circle"></i>
-                          Pago {{ formatarData(d.dataPagamento) }}
-                        </span>
-                      }
-                    </div>
-                  </div>
-
-                  <div class="row-right">
-                    <span class="row-valor" [class.row-valor--pago]="d.paga">
-                      {{ formatarMoeda(d.valor) }}
-                    </span>
-                    @if (d.paga) {
-                      <span class="row-status-pill row-status-pill--pago">Pago</span>
-                    } @else if (vencida(d)) {
-                      <span class="row-status-pill row-status-pill--vencido">Vencida</span>
-                    } @else {
-                      <span class="row-status-pill row-status-pill--pendente">Pendente</span>
-                    }
-                  </div>
-                </div>
-
-                <div class="row-actions">
-                  @if (!d.paga) {
-                    <button class="action-btn action-btn--primary" (click)="pagar(d)" [disabled]="pagandoId() === d.id">
-                      <i class="pi pi-check"></i>
-                      {{ pagandoId() === d.id ? 'Processando...' : 'Marcar como pago' }}
-                    </button>
-                  }
-                  @if (d.boletoUrl) {
-                    <a class="action-btn" [href]="boletoUrl(d.boletoUrl!)" target="_blank" rel="noopener">
-                      <i class="pi pi-file-pdf"></i> Ver boleto
-                    </a>
-                  } @else if (!d.paga) {
-                    <label class="action-btn">
-                      <i class="pi pi-upload"></i> Anexar boleto
-                      <input type="file" accept="application/pdf" (change)="onBoletoChange($event, d)" hidden />
-                    </label>
-                  }
-                  <button class="action-btn action-btn--ghost" (click)="abrirForm(d)">
-                    <i class="pi pi-pencil"></i> Editar
-                  </button>
-                  <button class="action-btn action-btn--danger" (click)="deletar(d.id)" [disabled]="deletandoId() === d.id">
-                    <i class="pi pi-trash"></i>
-                  </button>
-                </div>
-              </div>
-            </div>
-          }
+          <button class="btn-novo" (click)="abrirFormPeriodo()">
+            <i class="pi pi-plus"></i> Nova despesa
+          </button>
         </div>
       </div>
     }
+
+    <!-- Tabela de período -->
+    @if (!loading() && periodos().length > 0) {
+      <app-ledger-table
+        [dataSource]="periodos()"
+        [options]="periodoColumns"
+        (rowAction)="onPeriodoAction($event)"
+      />
+    }
+  }
+
+  <!-- ── CONTAS FIXAS ── -->
+  @if (abaAtiva() === 'templates') {
+
+    <!-- Form inline -->
+    @if (showForm() && abaAtiva() === 'templates') {
+      <div class="form-panel">
+        <h3 class="form-panel-title">{{ editandoTemplate() ? 'Editar conta fixa' : 'Nova conta fixa' }}</h3>
+        <form [formGroup]="formTemplate" (ngSubmit)="salvarTemplate()" class="form-grid">
+          <input formControlName="nome" type="text" placeholder="Nome" class="form-field form-field--wide" />
+          <select formControlName="tipo" class="form-field">
+            @for (t of TIPOS; track t.valor) {
+              <option [value]="t.valor">{{ t.label }}</option>
+            }
+          </select>
+          <input formControlName="valorPlanejado" type="number" step="0.01" min="0.01" placeholder="Valor planejado (R$)" class="form-field" />
+          <select formControlName="categoriaId" class="form-field">
+            @for (cat of categorias(); track cat.id) {
+              <option [value]="cat.id">{{ cat.nome }}</option>
+            }
+          </select>
+          <input formControlName="dataInicio" type="date" class="form-field" title="Data início" />
+          <input formControlName="dataFim"    type="date" class="form-field" title="Data fim (opcional)" />
+          <input formControlName="diaVencimento" type="number" min="1" max="31" placeholder="Dia vencimento (opcional)" class="form-field" />
+          @if (grupos().length > 0) {
+            <select formControlName="grupoId" class="form-field">
+              <option [ngValue]="null">Pessoal</option>
+              @for (g of grupos(); track g.id) {
+                <option [value]="g.id">{{ g.nome }}</option>
+              }
+            </select>
+          }
+
+          <div class="form-actions">
+            <button type="button" class="btn-cancel" (click)="fecharForm()">Cancelar</button>
+            <button type="submit" class="btn-save" [disabled]="formTemplate.invalid || saving()">
+              {{ saving() ? 'Salvando...' : (editandoTemplate() ? 'Salvar alterações' : 'Criar conta fixa') }}
+            </button>
+          </div>
+        </form>
+      </div>
+    }
+
+    <!-- Loading -->
+    @if (tmLoading()) {
+      <div class="state-center">
+        <div class="spinner"></div>
+        <span class="state-label">Carregando...</span>
+      </div>
+    }
+
+    <!-- Vazio -->
+    @if (!tmLoading() && templates().length === 0) {
+      <div class="state-center">
+        <i class="pi pi-wallet state-icon"></i>
+        <p class="state-title">Nenhuma conta fixa cadastrada</p>
+        <p class="state-desc">Cadastre suas contas recorrentes para gerar despesas mensais automaticamente.</p>
+        <button class="btn-novo" (click)="abrirFormTemplate()">
+          <i class="pi pi-plus"></i> Nova conta fixa
+        </button>
+      </div>
+    }
+
+    <!-- Tabela de contas fixas -->
+    @if (!tmLoading() && templates().length > 0) {
+      <app-ledger-table
+        [dataSource]="templates()"
+        [options]="cfColumns"
+        (rowAction)="onCfAction($event)"
+      />
+    }
+
+      <!-- Paginação -->
+      @if (tmTotalPags() > 1) {
+        <div class="paginacao">
+          <p-button icon="pi pi-chevron-left" [text]="true" [rounded]="true" severity="secondary" size="small"
+            [disabled]="!tmPodeAnterior() || tmLoading()" (onClick)="tmAnterior()" />
+          <span class="pag-info">{{ tmPage() }} / {{ tmTotalPags() }}</span>
+          <p-button icon="pi pi-chevron-right" [text]="true" [rounded]="true" severity="secondary" size="small"
+            [disabled]="!tmPodeProxima() || tmLoading()" (onClick)="tmProxima()" />
+        </div>
+      }
   }
 
 </div>

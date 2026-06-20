@@ -37,9 +37,11 @@ export class CriarCofreComponent {
   serverErrors = signal<string[]>([]);
 
   form = this.fb.group({
-    nome: ['', [Validators.required, Validators.maxLength(150)]],
-    meta: [null as number | null, [Validators.required, Validators.min(0.01)]],
-    descricao: [''],
+    nome:        ['', [Validators.required, Validators.maxLength(150)]],
+    meta:        [null as number | null, [Validators.required, Validators.min(0.01)]],
+    descricao:   [''],
+    categoria:   ['Outro'],
+    visibilidade: ['Privado'],
   });
 
   get nome() { return this.form.controls.nome; }
@@ -51,9 +53,14 @@ export class CriarCofreComponent {
     this.serverErrors.set([]);
     this.loading.set(true);
 
-    const { nome, meta, descricao } = this.form.getRawValue();
+    const { nome, meta, descricao, categoria, visibilidade } = this.form.getRawValue();
 
-    this.cofreService.criar({ nome: nome!, meta: meta!, descricao: descricao ?? undefined }).subscribe({
+    this.cofreService.criar({
+      nome: nome!, meta: meta!,
+      descricao: descricao ?? undefined,
+      categoria: categoria ?? 'Outro',
+      visibilidade: visibilidade ?? 'Privado',
+    }).subscribe({
       next: (cofre) => {
         this.loading.set(false);
         this.success.set(true);

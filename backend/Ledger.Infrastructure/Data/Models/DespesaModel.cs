@@ -2,16 +2,23 @@ namespace Ledger.Infrastructure.Data.Models;
 
 public class DespesaModel
 {
-    public Guid      Id             { get; set; }
-    public string    Descricao      { get; set; } = string.Empty;
-    public decimal   Valor          { get; set; }
-    public DateTime  DataVencimento { get; set; }
-    public DateTime? DataPagamento  { get; set; }
-    public bool      Paga           { get; set; }
-    public string?   BoletoPath     { get; set; }
-    public Guid      UsuarioId      { get; set; }
-    public int       Categoria      { get; set; }
-    public bool      Recorrente     { get; set; }
-    public DateTime  CreatedAt      { get; set; }
-    public DateTime? UpdatedAt      { get; set; }
+    public Guid Id{ get; set; }
+    public string Nome { get; set; } = string.Empty;
+    public int Tipo { get; set; } 
+    public decimal ValorPlanejado { get; set; }
+    public int? DiaVencimento  { get; set; }
+    public bool Ativa { get; set; } = true;
+    public Guid? ArquivoId { get; set; }
+    public Guid CategoriaId { get; set; }
+    public Guid UsuarioId { get; set; }
+    public DateTime  DataInicio { get; set; }
+    public DateTime? DataFim    { get; set; }
+    public Guid?     GrupoId    { get; set; }
+    public DateTime  CreatedAt  { get; set; }
+    public DateTime? UpdatedAt  { get; set; }
+
+    // Navigation
+    public CategoriaModel? Categoria { get; set; }
+    public ArquivoModel? Arquivo { get; set; }
+    public GrupoModel? Grupo { get; set; }
 }

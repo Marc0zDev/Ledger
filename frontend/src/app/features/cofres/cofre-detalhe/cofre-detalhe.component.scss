@@ -504,6 +504,219 @@ select.form-input {
   white-space: nowrap;
 }
 
+.role-badge {
+  margin-left: auto;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.15rem 0.5rem;
+  border-radius: 20px;
+  flex-shrink: 0;
+
+  &.role-admin {
+    background: rgba(168, 116, 42, 0.12);
+    color: var(--gold);
+  }
+  &.role-contributor {
+    background: var(--border);
+    color: var(--muted);
+  }
+}
+
+// ── Movimentações ─────────────────────────────────────────────────────────
+
+.movimentacao-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border);
+
+  &:last-child { border-bottom: none; }
+
+  &.mov-pendente { opacity: 0.8; }
+  &.mov-rejeitada { opacity: 0.5; }
+}
+
+.mov-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  .mov-entrada & { background: rgba(39,174,96,0.1); color: #27AE60; }
+  .mov-saida   & { background: rgba(192,57,43,0.1);  color: #C0392B; }
+  .mov-pendente & { background: rgba(168,116,42,0.1); color: var(--gold); }
+}
+
+.mov-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.mov-descricao {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.875rem;
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mov-data {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.75rem;
+  color: var(--faint);
+}
+
+.mov-status-badge {
+  display: inline-block;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 0.1rem 0.45rem;
+  border-radius: 6px;
+  width: fit-content;
+
+  &.pending  { background: rgba(168,116,42,0.12); color: var(--gold); }
+  &.rejected { background: rgba(192,57,43,0.1);  color: var(--error); }
+}
+
+.mov-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.35rem;
+  flex-shrink: 0;
+}
+
+.mov-valor {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.1rem;
+  font-weight: 400;
+  white-space: nowrap;
+
+  &.entrada  { color: #27AE60; }
+  &.saida    { color: #C0392B; }
+  &.pendente { color: var(--gold); }
+  &.rejeitada { color: var(--faint); text-decoration: line-through; }
+}
+
+.mov-aprovacao-btns {
+  display: flex;
+  gap: 0.3rem;
+}
+
+.btn-aprovar,
+.btn-rejeitar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px solid;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  i { font-size: 0.6rem; }
+}
+
+.btn-aprovar {
+  border-color: rgba(39,174,96,0.4);
+  background: rgba(39,174,96,0.06);
+  color: #27AE60;
+
+  &:hover { background: rgba(39,174,96,0.15); border-color: #27AE60; }
+}
+
+.btn-rejeitar {
+  border-color: rgba(192,57,43,0.3);
+  background: rgba(192,57,43,0.05);
+  color: var(--error);
+
+  &:hover { background: rgba(192,57,43,0.12); border-color: var(--error); }
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0.5rem;
+
+  @media (max-width: 500px) { grid-template-columns: 1fr; }
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.form-label {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
+
+// ── Paginação ─────────────────────────────────────────────────────────────
+
+.paginacao {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border);
+  margin-top: 0.25rem;
+}
+
+.pag-btn {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  i { font-size: 0.65rem; }
+
+  &:hover:not(:disabled) {
+    border-color: var(--gold);
+    color: var(--gold);
+  }
+
+  &:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+}
+
+.pag-info {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.78rem;
+  color: var(--faint);
+  min-width: 3rem;
+  text-align: center;
+}
+
 // ── Despesa ────────────────────────────────────────────────────────────────
 
 .despesa-item {

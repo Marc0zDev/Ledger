@@ -4,8 +4,9 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import {
   CofreResponse, CriarCofreRequest, AtualizarCofreRequest,
-  AdicionarParticipanteRequest, ParticipanteResponse,
-  RegistrarDespesaRequest, DespesaResponse,
+  AdicionarParticipanteRequest, AlterarRoleRequest, ParticipanteResponse,
+  PagedResult, RegistrarMovimentacaoRequest, MovimentacaoResponse,
+  RegistrarDespesaRequest, CofreDespesaResponse,
 } from '../models/cofre.model';
 
 @Injectable({ providedIn: 'root' })
@@ -53,14 +54,38 @@ export class CofreService {
     return this.http.delete<void>(`${this.base}/${cofreId}/participantes/${participanteId}`);
   }
 
-  // ── Despesas ─────────────────────────────────────────────────────────
-
-  listarDespesas(cofreId: string): Observable<DespesaResponse[]> {
-    return this.http.get<DespesaResponse[]>(`${environment.apiUrl}/api/despesas/cofre/${cofreId}`);
+  alterarRole(cofreId: string, participanteId: string, request: AlterarRoleRequest): Observable<ParticipanteResponse> {
+    return this.http.patch<ParticipanteResponse>(`${this.base}/${cofreId}/participantes/${participanteId}/role`, request);
   }
 
-  registrarDespesa(cofreId: string, request: RegistrarDespesaRequest): Observable<DespesaResponse> {
-    return this.http.post<DespesaResponse>(`${environment.apiUrl}/api/despesas`, { ...request, cofreId });
+  // ── Movimentações ─────────────────────────────────────────────────────
+
+  registrarMovimentacao(cofreId: string, request: RegistrarMovimentacaoRequest): Observable<MovimentacaoResponse> {
+    return this.http.post<MovimentacaoResponse>(`${this.base}/${cofreId}/movimentacoes`, request);
+  }
+
+  listarMovimentacoes(cofreId: string, page = 1, pageSize = 5): Observable<PagedResult<MovimentacaoResponse>> {
+    return this.http.get<PagedResult<MovimentacaoResponse>>(
+      `${this.base}/${cofreId}/movimentacoes`, { params: { page, pageSize } }
+    );
+  }
+
+  aprovarMovimentacao(cofreId: string, movimentacaoId: string): Observable<MovimentacaoResponse> {
+    return this.http.patch<MovimentacaoResponse>(`${this.base}/${cofreId}/movimentacoes/${movimentacaoId}/aprovar`, {});
+  }
+
+  rejeitarMovimentacao(cofreId: string, movimentacaoId: string): Observable<MovimentacaoResponse> {
+    return this.http.patch<MovimentacaoResponse>(`${this.base}/${cofreId}/movimentacoes/${movimentacaoId}/rejeitar`, {});
+  }
+
+  // ── Despesas ─────────────────────────────────────────────────────────
+
+  listarDespesas(cofreId: string): Observable<CofreDespesaResponse[]> {
+    return this.http.get<CofreDespesaResponse[]>(`${environment.apiUrl}/api/despesas/cofre/${cofreId}`);
+  }
+
+  registrarDespesa(cofreId: string, request: RegistrarDespesaRequest): Observable<CofreDespesaResponse> {
+    return this.http.post<CofreDespesaResponse>(`${environment.apiUrl}/api/despesas`, { ...request, cofreId });
   }
 
   removerDespesa(cofreId: string, despesaId: string): Observable<void> {

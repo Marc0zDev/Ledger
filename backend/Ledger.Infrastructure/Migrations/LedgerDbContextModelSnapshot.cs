@@ -97,6 +97,161 @@ namespace Ledger.Infrastructure.Migrations
                     b.ToTable("usuarios", "auth");
                 });
 
+            modelBuilder.Entity("Ledger.Infrastructure.Data.Models.ArquivoModel", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<byte[]>("ArquivoByte")
+                        .IsRequired()
+                        .HasColumnType("bytea");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime>("DataAlteracao")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<DateTime>("DataCriacao")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<string>("Extensao")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("Nome")
+                        .IsRequired()
+                        .HasMaxLength(350)
+                        .HasColumnType("character varying(350)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("arquivo", "arquivo");
+                });
+
+            modelBuilder.Entity("Ledger.Infrastructure.Data.Models.CategoriaModel", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Cor")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("cor");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Icone")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("icone");
+
+                    b.Property<string>("Nome")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("nome");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid?>("UsuarioId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("usuario_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UsuarioId");
+
+                    b.ToTable("categorias", "ledger");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0000-000000000001"),
+                            Cor = "#8B5CF6",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Icone = "pi-home",
+                            Nome = "Moradia"
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0000-000000000002"),
+                            Cor = "#3B82F6",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Icone = "pi-car",
+                            Nome = "Transporte"
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0000-000000000003"),
+                            Cor = "#F59E0B",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Icone = "pi-shopping-cart",
+                            Nome = "Alimentação"
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0000-000000000004"),
+                            Cor = "#EF4444",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Icone = "pi-heart",
+                            Nome = "Saúde"
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0000-000000000005"),
+                            Cor = "#06B6D4",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Icone = "pi-book",
+                            Nome = "Educação"
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0000-000000000006"),
+                            Cor = "#EC4899",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Icone = "pi-star",
+                            Nome = "Lazer"
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0000-000000000007"),
+                            Cor = "#10B981",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Icone = "pi-refresh",
+                            Nome = "Assinaturas"
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0000-000000000008"),
+                            Cor = "#F97316",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Icone = "pi-credit-card",
+                            Nome = "Financiamentos"
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0000-000000000099"),
+                            Cor = "#6B7280",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Icone = "pi-tag",
+                            Nome = "Outros"
+                        });
+                });
+
             modelBuilder.Entity("Ledger.Infrastructure.Data.Models.CofreModel", b =>
                 {
                     b.Property<Guid>("Id")
@@ -141,9 +296,75 @@ namespace Ledger.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
 
+                    b.Property<int>("Visibilidade")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(1)
+                        .HasColumnName("visibilidade");
+
                     b.HasKey("Id");
 
                     b.ToTable("cofres", "ledger");
+                });
+
+            modelBuilder.Entity("Ledger.Infrastructure.Data.Models.ConviteGrupoModel", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("ConvidadoPorUsuarioId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("convidado_por_usuario_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expires_at");
+
+                    b.Property<Guid>("GrupoId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("grupo_id");
+
+                    b.Property<int>("Status")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(1)
+                        .HasColumnName("status");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("token");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid>("UsuarioId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("usuario_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GrupoId")
+                        .HasDatabaseName("IX_convite_grupos_grupo_id");
+
+                    b.HasIndex("Status")
+                        .HasDatabaseName("IX_convite_grupos_status");
+
+                    b.HasIndex("Token")
+                        .IsUnique();
+
+                    b.HasIndex("UsuarioId")
+                        .HasDatabaseName("IX_convite_grupos_usuario_id");
+
+                    b.ToTable("convite_grupos", "ledger");
                 });
 
             modelBuilder.Entity("Ledger.Infrastructure.Data.Models.ConviteModel", b =>
@@ -213,46 +434,49 @@ namespace Ledger.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<string>("BoletoPath")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)")
-                        .HasColumnName("boleto_path");
+                    b.Property<Guid?>("ArquivoId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("arquivo_id");
 
-                    b.Property<int>("Categoria")
+                    b.Property<bool>("Ativa")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasDefaultValue(99)
-                        .HasColumnName("categoria");
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true)
+                        .HasColumnName("ativa");
+
+                    b.Property<Guid>("CategoriaId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("categoria_id");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
 
-                    b.Property<DateTime?>("DataPagamento")
+                    b.Property<DateTime?>("DataFim")
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("data_pagamento");
+                        .HasColumnName("data_fim");
 
-                    b.Property<DateTime>("DataVencimento")
+                    b.Property<DateTime>("DataInicio")
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("data_vencimento");
+                        .HasColumnName("data_inicio");
 
-                    b.Property<string>("Descricao")
+                    b.Property<int?>("DiaVencimento")
+                        .HasColumnType("integer")
+                        .HasColumnName("dia_vencimento");
+
+                    b.Property<Guid?>("GrupoId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("grupo_id");
+
+                    b.Property<string>("Nome")
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)")
-                        .HasColumnName("descricao");
+                        .HasColumnName("nome");
 
-                    b.Property<bool>("Paga")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false)
-                        .HasColumnName("paga");
-
-                    b.Property<bool>("Recorrente")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false)
-                        .HasColumnName("recorrente");
+                    b.Property<int>("Tipo")
+                        .HasColumnType("integer")
+                        .HasColumnName("tipo");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
@@ -262,20 +486,177 @@ namespace Ledger.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("usuario_id");
 
-                    b.Property<decimal>("Valor")
+                    b.Property<decimal>("ValorPlanejado")
                         .HasPrecision(18, 2)
                         .HasColumnType("numeric(18,2)")
-                        .HasColumnName("valor");
+                        .HasColumnName("valor_planejado");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("DataVencimento");
+                    b.HasIndex("ArquivoId");
+
+                    b.HasIndex("CategoriaId");
+
+                    b.HasIndex("GrupoId");
 
                     b.HasIndex("UsuarioId");
 
-                    b.HasIndex("UsuarioId", "Categoria");
+                    b.HasIndex("UsuarioId", "Ativa");
 
                     b.ToTable("despesas", "ledger");
+                });
+
+            modelBuilder.Entity("Ledger.Infrastructure.Data.Models.DespesaPeriodoModel", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("BoletoPath")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("boleto_path");
+
+                    b.Property<Guid>("CategoriaId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("categoria_id");
+
+                    b.Property<DateTime>("Competencia")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("competencia");
+
+                    b.Property<Guid?>("ComprovanteId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("comprovante_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Descricao")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("descricao");
+
+                    b.Property<Guid?>("DespesaId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("despesa_id");
+
+                    b.Property<Guid?>("GrupoId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("grupo_id");
+
+                    b.Property<DateTime?>("PagaEm")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("paga_em");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid>("UsuarioId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("usuario_id");
+
+                    b.Property<decimal>("ValorPlanejado")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("valor_planejado");
+
+                    b.Property<decimal>("ValorRealizado")
+                        .ValueGeneratedOnAdd()
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasDefaultValue(0m)
+                        .HasColumnName("valor_realizado");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CategoriaId");
+
+                    b.HasIndex("DespesaId");
+
+                    b.HasIndex("GrupoId");
+
+                    b.HasIndex("UsuarioId", "Competencia");
+
+                    b.ToTable("despesas_periodo", "ledger");
+                });
+
+            modelBuilder.Entity("Ledger.Infrastructure.Data.Models.GrupoMembroModel", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid>("GrupoId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("grupo_id");
+
+                    b.Property<int>("Role")
+                        .HasColumnType("integer")
+                        .HasColumnName("role");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid>("UsuarioId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("usuario_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UsuarioId");
+
+                    b.HasIndex("GrupoId", "UsuarioId")
+                        .IsUnique();
+
+                    b.ToTable("grupo_membros", "ledger");
+                });
+
+            modelBuilder.Entity("Ledger.Infrastructure.Data.Models.GrupoModel", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid>("CriadoPorUsuarioId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("criado_por_usuario_id");
+
+                    b.Property<string>("Descricao")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("descricao");
+
+                    b.Property<string>("Nome")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("nome");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CriadoPorUsuarioId");
+
+                    b.ToTable("grupos", "ledger");
                 });
 
             modelBuilder.Entity("Ledger.Infrastructure.Data.Models.MovimentacaoModel", b =>
@@ -303,6 +684,12 @@ namespace Ledger.Infrastructure.Migrations
                         .HasColumnType("character varying(200)")
                         .HasColumnName("descricao");
 
+                    b.Property<int>("Status")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(1)
+                        .HasColumnName("status");
+
                     b.Property<int>("Tipo")
                         .HasColumnType("integer")
                         .HasColumnName("tipo");
@@ -324,6 +711,8 @@ namespace Ledger.Infrastructure.Migrations
 
                     b.HasIndex("CofreId");
 
+                    b.HasIndex("UsuarioId");
+
                     b.ToTable("movimentacoes", "ledger");
                 });
 
@@ -342,6 +731,12 @@ namespace Ledger.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
 
+                    b.Property<int>("Role")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(2)
+                        .HasColumnName("role");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
@@ -358,6 +753,114 @@ namespace Ledger.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("participantes", "ledger");
+                });
+
+            modelBuilder.Entity("Ledger.Infrastructure.Data.Models.ReceitaModel", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("ArquivoId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("arquivo_id");
+
+                    b.Property<DateTime>("Competencia")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("competencia");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateTime>("DataRecebimento")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Descricao")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<Guid?>("GrupoId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("grupo_id");
+
+                    b.Property<string>("Nome")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<Guid?>("ReceitaTemplateId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("receita_template_id");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid>("UsuarioId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("usuario_id");
+
+                    b.Property<decimal>("Valor")
+                        .HasColumnType("numeric");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ArquivoId");
+
+                    b.HasIndex("GrupoId");
+
+                    b.HasIndex("ReceitaTemplateId");
+
+                    b.HasIndex("UsuarioId");
+
+                    b.ToTable("receitas", "ledger");
+                });
+
+            modelBuilder.Entity("Ledger.Infrastructure.Data.Models.ReceitaTemplateModel", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("Ativa")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("DataFim")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("data_fim");
+
+                    b.Property<DateTime>("DataInicio")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("data_inicio");
+
+                    b.Property<string>("Descricao")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("Nome")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UsuarioId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("usuario_id");
+
+                    b.Property<decimal>("Valor")
+                        .HasColumnType("numeric");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UsuarioId");
+
+                    b.ToTable("receita_templates", "ledger");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", b =>
@@ -490,6 +993,17 @@ namespace Ledger.Infrastructure.Migrations
                     b.ToTable("usuario_tokens", "auth");
                 });
 
+            modelBuilder.Entity("Ledger.Infrastructure.Data.Models.ConviteGrupoModel", b =>
+                {
+                    b.HasOne("Ledger.Infrastructure.Data.Models.GrupoModel", "Grupo")
+                        .WithMany()
+                        .HasForeignKey("GrupoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Grupo");
+                });
+
             modelBuilder.Entity("Ledger.Infrastructure.Data.Models.ConviteModel", b =>
                 {
                     b.HasOne("Ledger.Infrastructure.Data.Models.CofreModel", "Cofre")
@@ -501,6 +1015,86 @@ namespace Ledger.Infrastructure.Migrations
                     b.Navigation("Cofre");
                 });
 
+            modelBuilder.Entity("Ledger.Infrastructure.Data.Models.DespesaModel", b =>
+                {
+                    b.HasOne("Ledger.Infrastructure.Data.Models.ArquivoModel", "Arquivo")
+                        .WithMany()
+                        .HasForeignKey("ArquivoId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("Ledger.Infrastructure.Data.Models.CategoriaModel", "Categoria")
+                        .WithMany()
+                        .HasForeignKey("CategoriaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Ledger.Infrastructure.Data.Models.GrupoModel", "Grupo")
+                        .WithMany()
+                        .HasForeignKey("GrupoId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Arquivo");
+
+                    b.Navigation("Categoria");
+
+                    b.Navigation("Grupo");
+                });
+
+            modelBuilder.Entity("Ledger.Infrastructure.Data.Models.DespesaPeriodoModel", b =>
+                {
+                    b.HasOne("Ledger.Infrastructure.Data.Models.CategoriaModel", "Categoria")
+                        .WithMany()
+                        .HasForeignKey("CategoriaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Ledger.Infrastructure.Data.Models.DespesaModel", "Despesa")
+                        .WithMany()
+                        .HasForeignKey("DespesaId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("Ledger.Infrastructure.Data.Models.GrupoModel", "Grupo")
+                        .WithMany()
+                        .HasForeignKey("GrupoId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Categoria");
+
+                    b.Navigation("Despesa");
+
+                    b.Navigation("Grupo");
+                });
+
+            modelBuilder.Entity("Ledger.Infrastructure.Data.Models.GrupoMembroModel", b =>
+                {
+                    b.HasOne("Ledger.Infrastructure.Data.Models.GrupoModel", "Grupo")
+                        .WithMany("Membros")
+                        .HasForeignKey("GrupoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Ledger.Infrastructure.Data.Models.ApplicationUser", "Usuario")
+                        .WithMany()
+                        .HasForeignKey("UsuarioId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Grupo");
+
+                    b.Navigation("Usuario");
+                });
+
+            modelBuilder.Entity("Ledger.Infrastructure.Data.Models.GrupoModel", b =>
+                {
+                    b.HasOne("Ledger.Infrastructure.Data.Models.ApplicationUser", "CriadoPor")
+                        .WithMany()
+                        .HasForeignKey("CriadoPorUsuarioId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("CriadoPor");
+                });
+
             modelBuilder.Entity("Ledger.Infrastructure.Data.Models.MovimentacaoModel", b =>
                 {
                     b.HasOne("Ledger.Infrastructure.Data.Models.CofreModel", "Cofre")
@@ -509,7 +1103,15 @@ namespace Ledger.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Ledger.Infrastructure.Data.Models.ApplicationUser", "Usuario")
+                        .WithMany()
+                        .HasForeignKey("UsuarioId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.Navigation("Cofre");
+
+                    b.Navigation("Usuario");
                 });
 
             modelBuilder.Entity("Ledger.Infrastructure.Data.Models.ParticipanteModel", b =>
@@ -527,6 +1129,49 @@ namespace Ledger.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Cofre");
+
+                    b.Navigation("Usuario");
+                });
+
+            modelBuilder.Entity("Ledger.Infrastructure.Data.Models.ReceitaModel", b =>
+                {
+                    b.HasOne("Ledger.Infrastructure.Data.Models.ArquivoModel", "Arquivo")
+                        .WithMany()
+                        .HasForeignKey("ArquivoId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("Ledger.Infrastructure.Data.Models.GrupoModel", "Grupo")
+                        .WithMany()
+                        .HasForeignKey("GrupoId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("Ledger.Infrastructure.Data.Models.ReceitaTemplateModel", "Template")
+                        .WithMany()
+                        .HasForeignKey("ReceitaTemplateId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("Ledger.Infrastructure.Data.Models.ApplicationUser", "Usuario")
+                        .WithMany()
+                        .HasForeignKey("UsuarioId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Arquivo");
+
+                    b.Navigation("Grupo");
+
+                    b.Navigation("Template");
+
+                    b.Navigation("Usuario");
+                });
+
+            modelBuilder.Entity("Ledger.Infrastructure.Data.Models.ReceitaTemplateModel", b =>
+                {
+                    b.HasOne("Ledger.Infrastructure.Data.Models.ApplicationUser", "Usuario")
+                        .WithMany()
+                        .HasForeignKey("UsuarioId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Usuario");
                 });
@@ -587,6 +1232,11 @@ namespace Ledger.Infrastructure.Migrations
                     b.Navigation("Movimentacoes");
 
                     b.Navigation("Participantes");
+                });
+
+            modelBuilder.Entity("Ledger.Infrastructure.Data.Models.GrupoModel", b =>
+                {
+                    b.Navigation("Membros");
                 });
 #pragma warning restore 612, 618
         }

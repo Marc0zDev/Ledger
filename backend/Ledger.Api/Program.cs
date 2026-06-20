@@ -2,7 +2,6 @@
 using Ledger.Application.Events;
 using Ledger.Application.Interfaces;
 using Ledger.Application.Profiles;
-using Ledger.Application.Services;
 using Ledger.Domain.Exceptions;
 using Ledger.Domain.Interfaces;
 using Ledger.Infrastructure.Data;
@@ -53,21 +52,22 @@ builder.Services.AddAutoMapper(
 builder.Services.AddScoped<ICofreRepository, CofreRepository>();
 builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
 builder.Services.AddScoped<IParticipanteRepository, ParticipanteRepository>();
+builder.Services.AddScoped<ICategoriaRepository, CategoriaRepository>();
 builder.Services.AddScoped<IDespesaRepository, DespesaRepository>();
+builder.Services.AddScoped<IDespesaPeriodoRepository, DespesaPeriodoRepository>();
 builder.Services.AddScoped<IMovimentacaoRepository, MovimentacaoRepository>();
 builder.Services.AddScoped<IConviteRepository, ConviteRepository>();
+builder.Services.AddScoped<IArquivoRepository, ArquivoRepository>();
+builder.Services.AddScoped<IReceitaRepository, ReceitaRepository>();
+builder.Services.AddScoped<IReceitaTemplateRepository, ReceitaTemplateRepository>();
+builder.Services.AddScoped<IGrupoRepository, GrupoRepository>();
+builder.Services.AddScoped<IConviteGrupoRepository, ConviteGrupoRepository>();
+
 
 // Infrastructure Services
 builder.Services.AddScoped<IIdentityService, IdentityService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
-
-// Application Services
-builder.Services.AddScoped<ICofreService, CofreService>();
-builder.Services.AddScoped<IUsuarioService, UsuarioService>();
-builder.Services.AddScoped<IParticipanteService, ParticipanteService>();
-builder.Services.AddScoped<IDespesaService, DespesaService>();
-builder.Services.AddScoped<IMovimentacaoService, MovimentacaoService>();
-builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddSingleton<IBrowserService, BrowserService>();
 
 // JWT Authentication (desabilita cookie do Identity — API pura)
 builder.Services.AddAuthentication(options =>
@@ -108,6 +108,8 @@ if (app.Environment.IsDevelopment())
     app.MapScalarApiReference(options => options.WithTitle("Ledger API"));
 }
 
+app.UseCors("AngularApp");
+
 // Handler global para erros de validação de domínio → 422
 app.UseExceptionHandler(errApp => errApp.Run(async ctx =>
 {
@@ -126,7 +128,6 @@ app.UseExceptionHandler(errApp => errApp.Run(async ctx =>
     }
 }));
 
-app.UseCors("AngularApp");
 app.UseStaticFiles(); // serve wwwroot/boletos/*.pdf
 app.UseAuthentication();
 app.UseAuthorization();

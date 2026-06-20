@@ -2,6 +2,7 @@ using AutoMapper;
 using Ledger.Application.DTOs.Participante;
 using Ledger.Application.Events;
 using Ledger.Domain.Entities;
+using Ledger.Domain.Enums;
 using Ledger.Domain.Exceptions;
 using Ledger.Domain.Interfaces;
 using MediatR;
@@ -45,7 +46,7 @@ public class AdicionarParticipanteCommandHandler : IRequestHandler<AdicionarPart
         await (_usuarioRepository.GetByIdAsync(cmd.UsuarioId, ct)
             ?? throw new DomainValidationException(["Usuário não encontrado."]));
 
-        var membership = ParticipanteDomain.Criar(cmd.CofreId, cmd.UsuarioId);
+        var membership = ParticipanteDomain.Criar(cmd.CofreId, cmd.UsuarioId, RoleParticipante.Contributor);
         cofre.AdicionarParticipante(membership);
 
         if (!cofre.IsValid)

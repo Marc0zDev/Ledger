@@ -1,0 +1,66 @@
+<p-menu #rowMenu [popup]="true" [model]="activeMenuItems()" styleClass="ledger-row-menu" />
+<input #fileInput type="file" hidden (change)="onMenuFileChange($event)" />
+
+<p-table
+  [value]="dataSource()"
+  styleClass="tbl-primeng"
+  [rowHover]="rowHover()"
+  [loading]="loading()"
+  [rows]="rows() > 0 ? rows() : undefined"
+  [totalRecords]="totalRecords()"
+  [lazy]="lazy()"
+  [paginator]="rows() > 0"
+  (onLazyLoad)="lazyLoad.emit($event)"
+>
+  <ng-template pTemplate="header">
+    <tr>
+      @for (col of options(); track col.field ?? col.title) {
+        <th [style.width]="col.width" [style.textAlign]="col.align ?? 'left'">
+          {{ col.title }}
+        </th>
+      }
+    </tr>
+  </ng-template>
+
+  <ng-template pTemplate="body" let-row>
+    <tr>
+      @for (col of options(); track col.field ?? col.title) {
+        <td [style.textAlign]="col.type === 'actions' ? 'right' : (col.align ?? 'left')" [style.padding]="col.type === 'actions' ? '0' : null">
+
+          @if (col.cellTpl) {
+            <ng-container *ngTemplateOutlet="col.cellTpl; context: { $implicit: row, value: getValue(row, col.field) }" />
+          } @else {
+            @switch (col.type ?? 'text') {
+
+              @case ('currency') {
+                <span class="cf-valor">{{ formatCurrency(getValue(row, col.field)) }}</span>
+              }
+
+              @case ('tag') {
+                <p-tag [value]="getTagLabel(col, row)" [severity]="getTagSeverity(col, row)" />
+              }
+
+              @case ('date') {
+                {{ formatDate(getValue(row, col.field)) }}
+              }
+
+              @case ('actions') {
+                <div class="actions-menu-cell">
+                  <button class="kebab-btn" (click)="openRowMenu($event, rowMenu, row, col)">
+                    <span class="ms">more_horiz</span>
+                  </button>
+                </div>
+              }
+
+              @default {
+                {{ getValue(row, col.field) }}
+              }
+
+            }
+          }
+
+        </td>
+      }
+    </tr>
+  </ng-template>
+</p-table>

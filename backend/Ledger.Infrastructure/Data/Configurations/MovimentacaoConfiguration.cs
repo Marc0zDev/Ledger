@@ -27,6 +27,11 @@ public class MovimentacaoConfiguration : IEntityTypeConfiguration<MovimentacaoMo
         builder.Property(m => m.Tipo)
                .HasColumnName("tipo");
 
+        builder.Property(m => m.Status)
+               .HasColumnName("status")
+               .IsRequired()
+               .HasDefaultValue(1);
+
         builder.Property(m => m.Data)
                .HasColumnName("data")
                .HasColumnType("timestamp with time zone");
@@ -49,5 +54,11 @@ public class MovimentacaoConfiguration : IEntityTypeConfiguration<MovimentacaoMo
                .WithMany(c => c.Movimentacoes)
                .HasForeignKey(m => m.CofreId)
                .OnDelete(DeleteBehavior.Cascade);
+
+        // FK cross-schema: movimentacao → auth.usuarios
+        builder.HasOne(m => m.Usuario)
+               .WithMany()
+               .HasForeignKey(m => m.UsuarioId)
+               .OnDelete(DeleteBehavior.Restrict);
     }
 }

@@ -21,6 +21,10 @@ public class ParticipanteConfiguration : IEntityTypeConfiguration<ParticipanteMo
         builder.Property(p => p.UsuarioId)
                .HasColumnName("usuario_id");
 
+        builder.Property(p => p.Role)
+               .HasColumnName("role")
+               .HasDefaultValue(2); // Contributor
+
         builder.Property(p => p.CreatedAt)
                .HasColumnName("created_at")
                .HasColumnType("timestamp with time zone");

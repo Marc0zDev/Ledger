@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ParticipanteResponse } from '../models/cofre.model';
+import { ConviteGrupoResponse, GrupoMembroResponse } from '../models/grupo.model';
 
 export interface ConviteResponse {
   id: string;
@@ -29,5 +30,19 @@ export class ConviteService {
 
   recusar(token: string): Observable<ConviteResponse> {
     return this.http.post<ConviteResponse>(`${this.base}/${token}/recusar`, {});
+  }
+
+  // ── Grupo ────────────────────────────────────────────────────────────────
+
+  gruposPendentes(): Observable<ConviteGrupoResponse[]> {
+    return this.http.get<ConviteGrupoResponse[]>(`${this.base}/grupos/pendentes`);
+  }
+
+  aceitarGrupo(token: string): Observable<GrupoMembroResponse> {
+    return this.http.post<GrupoMembroResponse>(`${this.base}/grupos/${token}/aceitar`, {});
+  }
+
+  recusarGrupo(token: string): Observable<ConviteGrupoResponse> {
+    return this.http.post<ConviteGrupoResponse>(`${this.base}/grupos/${token}/recusar`, {});
   }
 }

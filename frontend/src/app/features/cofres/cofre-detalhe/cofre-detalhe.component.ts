@@ -1,9 +1,13 @@
-﻿import { Component, inject, OnInit, signal } from '@angular/core';
+﻿import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { CofreService } from '../../../core/services/cofre.service';
 import { UsuarioService } from '../../../core/services/usuario.service';
-import { CofreResponse, ParticipanteResponse, DespesaResponse, UsuarioResponse } from '../../../core/models/cofre.model';
+import { AuthService } from '../../../core/services/auth.service';
+import { NotificationService } from '../../../core/services/notification.service';
+import {
+  CofreResponse, MovimentacaoResponse, PagedResult, ParticipanteResponse, UsuarioResponse
+} from '../../../core/models/cofre.model';
 
 @Component({
   selector: 'app-cofre-detalhe',
@@ -16,23 +20,41 @@ export class CofreDetalheComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly cofreService = inject(CofreService);
   private readonly usuarioService = inject(UsuarioService);
+  private readonly auth = inject(AuthService);
+  private readonly notify = inject(NotificationService);
   private readonly fb = inject(FormBuilder);
 
   cofre = signal<CofreResponse | null>(null);
   participantes = signal<ParticipanteResponse[]>([]);
-  despesas = signal<DespesaResponse[]>([]);
+  movimentacoes = signal<MovimentacaoResponse[]>([]);
+
+  isAdmin = computed(() => {
+    const userId = this.auth.currentUser()?.usuarioId;
+    const parts = this.participantes();
+    const mine = parts.find(p => p.usuarioId === userId);
+    // Criador do cofre sem registro explícito ou com role Admin
+    return !mine || mine.role === 'Admin';
+  });
+  // Paginação server-side
+  readonly pageSize = 5;
+  movPage       = signal(1);
+  movTotal      = signal(0);
+  movTotalPags  = signal(1);
+  movCarregando = signal(false);
+  movPodeAnterior = computed(() => this.movPage() > 1);
+  movPodeProxima  = computed(() => this.movPage() < this.movTotalPags());
   loading = signal(true);
   erro = signal<string | null>(null);
 
   // Painéis
   showFormParticipante = signal(false);
-  showFormDespesa = signal(false);
+  showFormMovimentacao = signal(false);
 
   // Estado dos forms
   savingParticipante = signal(false);
-  savingDespesa = signal(false);
   errosParticipante = signal<string[]>([]);
-  errosDespesa = signal<string[]>([]);
+  savingMovimentacao = signal(false);
+  errosMovimentacao = signal<string[]>([]);
 
   // Usuário encontrado pelo email (lookup)
   usuarioEncontrado = signal<UsuarioResponse | null>(null);
@@ -42,31 +64,38 @@ export class CofreDetalheComponent implements OnInit {
     email: ['', [Validators.required, Validators.email]],
   });
 
-  formDespesa = this.fb.group({
-    descricao:      ['', [Validators.required, Validators.maxLength(200)]],
-    valor:          [null as number | null, [Validators.required, Validators.min(0.01)]],
-    dataVencimento: [new Date().toISOString().substring(0, 10), Validators.required],
+  formMovimentacao = this.fb.group({
+    descricao: ['', Validators.required],
+    valor: [0, [Validators.required, Validators.min(0.01)]],
+    tipo: ['Entrada', Validators.required],
+    data: [new Date().toISOString().substring(0, 10), Validators.required],
   });
 
+  private cofreId!: string;
+
   ngOnInit(): void {
-    const id = this.route.snapshot.paramMap.get('id')!;
-    this.carregar(id);
+    this.cofreId = this.route.snapshot.paramMap.get('id')!;
+    this.carregar();
   }
 
-  private carregar(id: string): void {
-    this.cofreService.obterComDetalhes(id).subscribe({
+  private carregar(): void {
+    this.cofreService.obterComDetalhes(this.cofreId).subscribe({
       next: (data) => {
         this.cofre.set(data);
         this.participantes.set(data.participantes ?? []);
         this.loading.set(false);
+        this.recarregarMovimentacoes(1);
       },
       error: () => {
         this.erro.set('Não foi possível carregar o cofre.');
         this.loading.set(false);
       },
     });
-    this.cofreService.listarDespesas(id).subscribe({
-      next: (list) => this.despesas.set(list),
+  }
+
+  private recarregarCofre(): void {
+    this.cofreService.obterComDetalhes(this.cofreId).subscribe({
+      next: (data) => this.cofre.set(data),
     });
   }
 
@@ -76,13 +105,17 @@ export class CofreDetalheComponent implements OnInit {
     });
   }
 
-  private recarregarDespesas(): void {
-    const id = this.cofre()!.id;
-    this.cofreService.listarDespesas(id).subscribe({
-      next: (list) => this.despesas.set(list),
-    });
-    this.cofreService.obterComDetalhes(id).subscribe({
-      next: (c) => this.cofre.set(c),
+  private recarregarMovimentacoes(page = this.movPage()): void {
+    this.movCarregando.set(true);
+    this.cofreService.listarMovimentacoes(this.cofre()!.id, page, this.pageSize).subscribe({
+      next: (r) => {
+        this.movimentacoes.set(r.items ?? []);
+        this.movPage.set(r.page ?? 1);
+        this.movTotal.set(r.total ?? 0);
+        this.movTotalPags.set(r.totalPages ?? 1);
+        this.movCarregando.set(false);
+      },
+      error: () => { this.movCarregando.set(false); },
     });
   }
 
@@ -120,26 +153,55 @@ export class CofreDetalheComponent implements OnInit {
     });
   }
 
-  registrarDespesa(): void {
-    if (this.formDespesa.invalid || this.savingDespesa()) return;
-    this.errosDespesa.set([]);
-    this.savingDespesa.set(true);
-    const { descricao, valor, dataVencimento } = this.formDespesa.getRawValue();
-    this.cofreService.registrarDespesa(this.cofre()!.id, {
-      descricao: descricao!,
-      valor: valor!,
-      dataVencimento: new Date(dataVencimento!).toISOString(),
+  registrarMovimentacao(): void {
+    if (this.formMovimentacao.invalid || this.savingMovimentacao()) return;
+    this.errosMovimentacao.set([]);
+    this.savingMovimentacao.set(true);
+    const v = this.formMovimentacao.value;
+    this.cofreService.registrarMovimentacao(this.cofre()!.id, {
+      descricao: v.descricao!,
+      valor: v.valor!,
+      tipo: v.tipo!,
+      data: v.data!,
     }).subscribe({
-      next: () => {
-        this.recarregarDespesas();
-        this.formDespesa.reset({ dataVencimento: new Date().toISOString().substring(0, 10) });
-        this.showFormDespesa.set(false);
-        this.savingDespesa.set(false);
+      next: (mov) => {
+        this.recarregarCofre();        // re-busca totalMovimentado correto do servidor
+        this.recarregarMovimentacoes(1);
+        this.formMovimentacao.reset({
+          descricao: '', valor: 0, tipo: 'Entrada',
+          data: new Date().toISOString().substring(0, 10),
+        });
+        this.showFormMovimentacao.set(false);
+        this.savingMovimentacao.set(false);
       },
       error: (err) => {
-        this.errosDespesa.set(err?.error?.errors ?? ['Erro ao registrar despesa.']);
-        this.savingDespesa.set(false);
+        this.errosMovimentacao.set(err?.error?.errors ?? ['Erro ao registrar movimentação.']);
+        this.savingMovimentacao.set(false);
       },
+    });
+  }
+
+  movAnterior(): void { if (this.movPodeAnterior()) this.recarregarMovimentacoes(this.movPage() - 1); }
+  movProxima():  void { if (this.movPodeProxima())  this.recarregarMovimentacoes(this.movPage() + 1); }
+
+  aprovarMovimentacao(mov: MovimentacaoResponse): void {
+    this.cofreService.aprovarMovimentacao(this.cofre()!.id, mov.id).subscribe({
+      next: () => {
+        this.notify.success('Movimentação aprovada.');
+        this.recarregarCofre();
+        this.recarregarMovimentacoes();
+      },
+      error: (err) => this.notify.error(err?.error?.errors?.[0] ?? 'Erro ao aprovar movimentação.'),
+    });
+  }
+
+  rejeitarMovimentacao(mov: MovimentacaoResponse): void {
+    this.cofreService.rejeitarMovimentacao(this.cofre()!.id, mov.id).subscribe({
+      next: () => {
+        this.notify.warn('Movimentação rejeitada.');
+        this.recarregarMovimentacoes();
+      },
+      error: (err) => this.notify.error(err?.error?.errors?.[0] ?? 'Erro ao rejeitar movimentação.'),
     });
   }
 

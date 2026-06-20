@@ -1,0 +1,65 @@
+::ng-deep .file-viewer-dialog {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  .p-dialog-header {
+    flex-shrink: 0;
+    padding: 1rem 1.5rem;
+    background: var(--surface-alt);
+    border-radius: 9px 9px 0 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .p-dialog-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+    overflow: hidden;
+  }
+}
+
+.fv-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.5rem;
+  font-weight: 400;
+  color: var(--ink);
+
+  i { font-size: 18px; color: var(--gold); }
+}
+
+.fv-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.fv-loading {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fv-iframe {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+.fv-image {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}

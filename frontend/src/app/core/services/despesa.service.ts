@@ -1,11 +1,12 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import {
   DespesaResponse,
-  RegistrarDespesaRequest,
+  CriarDespesaRequest,
   AtualizarDespesaRequest,
+  PagedResult,
 } from '../models/cofre.model';
 
 @Injectable({ providedIn: 'root' })
@@ -13,25 +14,15 @@ export class DespesaService {
   private readonly http = inject(HttpClient);
   private readonly base = `${environment.apiUrl}/api/despesas`;
 
-  listar(): Observable<DespesaResponse[]> {
-    return this.http.get<DespesaResponse[]>(this.base);
-  }
-
-  pendentes(vencimentoAte?: string): Observable<DespesaResponse[]> {
-    let params = new HttpParams();
-    if (vencimentoAte) params = params.set('vencimentoAte', vencimentoAte);
-    return this.http.get<DespesaResponse[]>(`${this.base}/pendentes`, { params });
-  }
-
-  porCofre(cofreId: string): Observable<DespesaResponse[]> {
-    return this.http.get<DespesaResponse[]>(`${this.base}/cofre/${cofreId}`);
+  listar(page = 1, pageSize = 10): Observable<PagedResult<DespesaResponse>> {
+    return this.http.get<PagedResult<DespesaResponse>>(this.base, { params: { page, pageSize } });
   }
 
   obter(id: string): Observable<DespesaResponse> {
     return this.http.get<DespesaResponse>(`${this.base}/${id}`);
   }
 
-  criar(request: RegistrarDespesaRequest): Observable<DespesaResponse> {
+  criar(request: CriarDespesaRequest): Observable<DespesaResponse> {
     return this.http.post<DespesaResponse>(this.base, request);
   }
 
@@ -39,17 +30,12 @@ export class DespesaService {
     return this.http.put<DespesaResponse>(`${this.base}/${id}`, request);
   }
 
-  pagar(id: string, dataPagamento?: string): Observable<DespesaResponse> {
-    return this.http.patch<DespesaResponse>(`${this.base}/${id}/pagar`, { dataPagamento });
-  }
-
-  uploadBoleto(id: string, file: File): Observable<DespesaResponse> {
-    const form = new FormData();
-    form.append('boleto', file);
-    return this.http.post<DespesaResponse>(`${this.base}/${id}/boleto`, form);
+  desativar(id: string): Observable<DespesaResponse> {
+    return this.http.patch<DespesaResponse>(`${this.base}/${id}/desativar`, {});
   }
 
   deletar(id: string): Observable<void> {
     return this.http.delete<void>(`${this.base}/${id}`);
   }
 }
+

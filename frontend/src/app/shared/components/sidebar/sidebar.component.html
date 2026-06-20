@@ -6,18 +6,12 @@
   </div>
 
   <nav class="sidebar-nav">
-    <a routerLink="/home" routerLinkActive="active" class="nav-item" title="Início">
-      <i class="pi pi-home"></i>
-      <span class="nav-label">Início</span>
-    </a>
-    <a routerLink="/cofres" routerLinkActive="active" class="nav-item" title="Cofres">
-      <i class="pi pi-lock"></i>
-      <span class="nav-label">Cofres</span>
-    </a>
-    <a routerLink="/despesas" routerLinkActive="active" class="nav-item" title="Despesas">
-      <i class="pi pi-receipt"></i>
-      <span class="nav-label">Despesas</span>
-    </a>
+    @for(item of menuItems(); track item.route) {
+      <a [routerLink]="item.route" routerLinkActive="active" class="nav-item" [title]="item.label">
+        <span class="material-symbols-outlined nav-icon">{{ item.icon }}</span>
+        <span class="nav-label">{{ item.label }}</span>
+      </a>
+    }
   </nav>
 
   <div class="sidebar-footer">

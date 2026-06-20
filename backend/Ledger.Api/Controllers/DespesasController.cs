@@ -1,7 +1,11 @@
 using System.Security.Claims;
+using Ledger.Application.Commands.Arquivo;
 using Ledger.Application.Commands.Despesa;
+using Ledger.Application.DTOs.Arquivo;
+using Ledger.Application.DTOs.Cofre;
 using Ledger.Application.DTOs.Despesa;
 using Ledger.Application.Queries.Despesa;
+using Ledger.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -9,7 +13,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Ledger.Api.Controllers;
 
 /// <summary>
-/// Gerencia despesas pessoais do usuário (contas mensais).
+/// Contas fixas — definições recorrentes que geram lançamentos mensais automaticamente.
 /// </summary>
 [ApiController]
 [Route("api/despesas")]
@@ -25,27 +29,15 @@ public class DespesasController : ControllerBase
             ?? User.FindFirstValue("sub")
             ?? throw new UnauthorizedAccessException());
 
-    /// <summary>Lista todas as despesas do usuário logado.</summary>
+    /// <summary>Lista contas fixas do usuário com paginação.</summary>
     [HttpGet]
-    public async Task<IActionResult> Listar(CancellationToken ct)
+    public async Task<IActionResult> Listar(
+        [FromQuery] int page     = 1,
+        [FromQuery] int pageSize = 10,
+        CancellationToken ct = default)
     {
-        var despesas = await _mediator.Send(new ListarDespesasQuery(UsuarioId), ct);
-        return Ok(despesas);
-    }
-
-    /// <summary>Lista despesas pendentes (não pagas), com filtro opcional de vencimento.</summary>
-    [HttpGet("pendentes")]
-    public async Task<IActionResult> Pendentes([FromQuery] DateTime? vencimentoAte, CancellationToken ct)
-    {
-        var despesas = await _mediator.Send(new ListarDespesasPendentesQuery(UsuarioId, vencimentoAte), ct);
-        return Ok(despesas);
-    }
-
-    /// <summary>Lista despesas vinculadas a um cofre específico.</summary>
-    [HttpGet("cofre/{cofreId:guid}")]
-    public async Task<IActionResult> ListarPorCofre(Guid cofreId, CancellationToken ct)
-    {
-        return Ok(Array.Empty<object>());
+        var result = await _mediator.Send(new ListarDespesasQuery(UsuarioId, page, pageSize), ct);
+        return Ok(result);
     }
 
     [HttpGet("{id:guid}")]
@@ -55,70 +47,59 @@ public class DespesasController : ControllerBase
         return despesa is null ? NotFound() : Ok(despesa);
     }
 
-    /// <summary>Registra uma nova despesa pessoal.</summary>
+    /// <summary>Cria um novo template de despesa.</summary>
     [HttpPost]
     public async Task<IActionResult> Registrar([FromBody] CriarDespesaRequest request, CancellationToken ct)
     {
         var despesa = await _mediator.Send(
             new RegistrarDespesaCommand(
-                request.Descricao, request.Valor, request.DataVencimento,
-                UsuarioId, (Domain.Enums.CategoriaDespesa)request.Categoria, request.Recorrente), ct);
+                request.Nome, (TipoDespesa)request.Tipo, request.ValorPlanejado,
+                request.CategoriaId, UsuarioId, request.DataInicio, request.DataFim,
+                request.DiaVencimento, request.GrupoId), ct);
         return CreatedAtAction(nameof(ObterPorId), new { id = despesa.Id }, despesa);
     }
 
-    /// <summary>Atualiza os dados de uma despesa.</summary>
+    /// <summary>Atualiza um template de despesa.</summary>
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> Atualizar(Guid id, [FromBody] AtualizarDespesaRequest request, CancellationToken ct)
     {
         var despesa = await _mediator.Send(
-            new AtualizarDespesaCommand(id, request.Descricao, request.Valor, request.DataVencimento,
-                (Domain.Enums.CategoriaDespesa)request.Categoria, request.Recorrente), ct);
+            new AtualizarDespesaCommand(id, request.Nome, (TipoDespesa)request.Tipo,
+                request.ValorPlanejado, request.CategoriaId, request.DataInicio,
+                request.DataFim, request.DiaVencimento, request.GrupoId), ct);
         return despesa is null ? NotFound() : Ok(despesa);
     }
 
-    /// <summary>Marca a despesa como paga.</summary>
-    [HttpPatch("{id:guid}/pagar")]
-    public async Task<IActionResult> Pagar(Guid id, [FromBody] PagarDespesaRequest? request, CancellationToken ct)
+    [HttpPost("arquivo")]
+    public async Task<IActionResult> AdionarBoleto([FromBody] ArquivoRequest request, CancellationToken ct)
     {
-        var despesa = await _mediator.Send(new PagarDespesaCommand(id, request?.DataPagamento), ct);
-        return despesa is null ? NotFound() : Ok(despesa);
+        var arquivoResponse = await _mediator.Send
+        (
+            new RegistrarArquivoCommand(
+                request.DespesaID, 
+                request.Nome, 
+                request.Content, 
+                request.ArquivoByte, 
+                request.Extensao
+                ), 
+            ct
+        );
+        return arquivoResponse is null ? NotFound() : Ok(arquivoResponse);
     }
 
-    /// <summary>Faz upload do PDF do boleto vinculado a esta despesa.</summary>
-    [HttpPost("{id:guid}/boleto")]
-    [RequestSizeLimit(10 * 1024 * 1024)] // 10 MB
-    public async Task<IActionResult> UploadBoleto(Guid id, IFormFile arquivo, CancellationToken ct)
+    /// <summary>Desativa um template (para de gerar lançamentos mensais).</summary>
+    [HttpPatch("{id:guid}/desativar")]
+    public async Task<IActionResult> Desativar(Guid id, CancellationToken ct)
     {
-        if (arquivo is null || arquivo.Length == 0)
-            return BadRequest("Arquivo não enviado.");
-
-        if (!arquivo.ContentType.Equals("application/pdf", StringComparison.OrdinalIgnoreCase))
-            return BadRequest("Apenas arquivos PDF são aceitos.");
-
-        var despesa = await _mediator.Send(new ObterDespesaQuery(id), ct);
-        if (despesa is null) return NotFound();
-
-        // Armazena em wwwroot/boletos/{id}.pdf
-        var pastaDestino = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "boletos");
-        Directory.CreateDirectory(pastaDestino);
-
-        var nomeArquivo = $"{id}.pdf";
-        var caminho     = Path.Combine(pastaDestino, nomeArquivo);
-
-        await using var stream = new FileStream(caminho, FileMode.Create, FileAccess.Write);
-        await arquivo.CopyToAsync(stream, ct);
-
-        var result = await _mediator.Send(
-            new AnexarBoletoCommand(id, $"boletos/{nomeArquivo}"), ct);
-
-        return result is null ? NotFound() : Ok(result);
+        var ok = await _mediator.Send(new DesativarDespesaCommand(id), ct);
+        return ok ? NoContent() : NotFound();
     }
 
+    /// <summary>Remove permanentemente um template.</summary>
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Remover(Guid id, CancellationToken ct)
     {
-        var removido = await _mediator.Send(new RemoverDespesaCommand(id), ct);
-        return removido ? NoContent() : NotFound();
+        var ok = await _mediator.Send(new RemoverDespesaCommand(id), ct);
+        return ok ? NoContent() : NotFound();
     }
 }
-

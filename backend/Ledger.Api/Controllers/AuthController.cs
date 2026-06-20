@@ -1,5 +1,7 @@
+using Ledger.Application.Commands.Auth;
 using Ledger.Application.DTOs.Auth;
 using Ledger.Application.Interfaces;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Ledger.Api.Controllers;
@@ -8,26 +10,26 @@ namespace Ledger.Api.Controllers;
 [Route("api/auth")]
 public class AuthController : ControllerBase
 {
-    private readonly IAuthService     _authService;
+    private readonly IMediator        _mediator;
     private readonly IIdentityService _identityService;
 
-    public AuthController(IAuthService authService, IIdentityService identityService)
+    public AuthController(IMediator mediator, IIdentityService identityService)
     {
-        _authService     = authService;
-        _identityService = identityService;
+        _mediator         = mediator;
+        _identityService  = identityService;
     }
 
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequest request, CancellationToken ct)
     {
-        var result = await _authService.LoginAsync(request, ct);
+        var result = await _mediator.Send(new LoginCommand(request.Email, request.Senha), ct);
         return Ok(result);
     }
 
     [HttpPost("registrar")]
     public async Task<IActionResult> Registrar([FromBody] RegistrarRequest request, CancellationToken ct)
     {
-        var result = await _authService.RegistrarAsync(request, ct);
+        var result = await _mediator.Send(new RegistrarCommand(request.Nome, request.Email, request.Senha), ct);
         return Created(string.Empty, result);
     }
 
@@ -51,15 +53,15 @@ public class AuthController : ControllerBase
         var frontendUrl = "http://localhost:4200/login";
         var html = sucesso
             ? ConfirmacaoHtml(
-                titulo:  "E-mail confirmado!",
-                icone:   "✓",
+                titulo:   "E-mail confirmado!",
+                icone:    "✓",
                 corIcone: "#2ECC71",
                 mensagem: "Sua conta foi ativada com sucesso. Você já pode fazer login no Ledger.",
                 linkTexto: "Ir para o login",
                 linkUrl:   $"{frontendUrl}?confirmed=true")
             : ConfirmacaoHtml(
-                titulo:  "Link inválido ou expirado",
-                icone:   "✕",
+                titulo:   "Link inválido ou expirado",
+                icone:    "✕",
                 corIcone: "#E74C3C",
                 mensagem: "Este link de confirmação não é mais válido. Faça login e solicite um novo e-mail de confirmação.",
                 linkTexto: "Ir para o login",

@@ -1,5 +1,6 @@
 using Ledger.Domain.Base;
 using Ledger.Domain.Enums;
+using Ledger.Domain.Exceptions;
 
 namespace Ledger.Domain.Entities;
 
@@ -9,32 +10,36 @@ namespace Ledger.Domain.Entities;
 /// </summary>
 public class MovimentacaoDomain : BaseDomain
 {
-    public string            Descricao  { get; private set; } = string.Empty;
-    public decimal           Valor      { get; private set; }
-    public TipoMovimentacao  Tipo       { get; private set; }
-    public DateTime          Data       { get; private set; }
-    public Guid              CofreId    { get; private set; }
-    public Guid              UsuarioId  { get; private set; }
+    public string             Descricao   { get; private set; } = string.Empty;
+    public decimal            Valor       { get; private set; }
+    public TipoMovimentacao   Tipo        { get; private set; }
+    public StatusMovimentacao Status      { get; private set; }
+    public DateTime           Data        { get; private set; }
+    public Guid               CofreId     { get; private set; }
+    public Guid               UsuarioId   { get; private set; }
+    public string?            UsuarioNome { get; private set; }
 
     private MovimentacaoDomain() { }
 
-    private MovimentacaoDomain(string descricao, decimal valor, TipoMovimentacao tipo, DateTime data, Guid cofreId, Guid usuarioId)
+    private MovimentacaoDomain(string descricao, decimal valor, TipoMovimentacao tipo, StatusMovimentacao status, DateTime data, Guid cofreId, Guid usuarioId)
     {
         Descricao = descricao;
         Valor     = valor;
         Tipo      = tipo;
+        Status    = status;
         Data      = data;
         CofreId   = cofreId;
         UsuarioId = usuarioId;
         Validate();
     }
 
-    private MovimentacaoDomain(Guid id, string descricao, decimal valor, TipoMovimentacao tipo, DateTime data, Guid cofreId, Guid usuarioId, DateTime createdAt, DateTime? updatedAt)
+    private MovimentacaoDomain(Guid id, string descricao, decimal valor, TipoMovimentacao tipo, StatusMovimentacao status, DateTime data, Guid cofreId, Guid usuarioId, DateTime createdAt, DateTime? updatedAt)
     {
         Id        = id;
         Descricao = descricao;
         Valor     = valor;
         Tipo      = tipo;
+        Status    = status;
         Data      = data;
         CofreId   = cofreId;
         UsuarioId = usuarioId;
@@ -42,11 +47,27 @@ public class MovimentacaoDomain : BaseDomain
         UpdatedAt = updatedAt;
     }
 
-    public static MovimentacaoDomain Criar(string descricao, decimal valor, TipoMovimentacao tipo, DateTime data, Guid cofreId, Guid usuarioId)
-        => new(descricao, valor, tipo, data, cofreId, usuarioId);
+    public static MovimentacaoDomain Criar(string descricao, decimal valor, TipoMovimentacao tipo, DateTime data, Guid cofreId, Guid usuarioId, StatusMovimentacao status = StatusMovimentacao.Aprovada)
+        => new(descricao, valor, tipo, status, data, cofreId, usuarioId);
 
-    public static MovimentacaoDomain Reconstituir(Guid id, string descricao, decimal valor, TipoMovimentacao tipo, DateTime data, Guid cofreId, Guid usuarioId, DateTime createdAt, DateTime? updatedAt)
-        => new(id, descricao, valor, tipo, data, cofreId, usuarioId, createdAt, updatedAt);
+    public static MovimentacaoDomain Reconstituir(Guid id, string descricao, decimal valor, TipoMovimentacao tipo, StatusMovimentacao status, DateTime data, Guid cofreId, Guid usuarioId, DateTime createdAt, DateTime? updatedAt, string? usuarioNome = null)
+        => new(id, descricao, valor, tipo, status, data, cofreId, usuarioId, createdAt, updatedAt) { UsuarioNome = usuarioNome };
+
+    public void Aprovar()
+    {
+        if (Status != StatusMovimentacao.PendenteAprovacao)
+            throw new DomainValidationException(["Apenas movimentações pendentes podem ser aprovadas."]);
+        Status = StatusMovimentacao.Aprovada;
+        MarkAsUpdated();
+    }
+
+    public void Rejeitar()
+    {
+        if (Status != StatusMovimentacao.PendenteAprovacao)
+            throw new DomainValidationException(["Apenas movimentações pendentes podem ser rejeitadas."]);
+        Status = StatusMovimentacao.Rejeitada;
+        MarkAsUpdated();
+    }
 
     protected override void Validate()
     {

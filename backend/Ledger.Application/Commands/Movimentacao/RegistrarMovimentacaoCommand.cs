@@ -20,17 +20,23 @@ public record RegistrarMovimentacaoCommand(
 // ── Handler ───────────────────────────────────────────────────────────────────
 public class RegistrarMovimentacaoCommandHandler : IRequestHandler<RegistrarMovimentacaoCommand, MovimentacaoResponse>
 {
-    private readonly ICofreRepository        _cofreRepository;
-    private readonly IMovimentacaoRepository _movimentacaoRepository;
-    private readonly IMapper                 _mapper;
+    private readonly ICofreRepository         _cofreRepository;
+    private readonly IMovimentacaoRepository  _movimentacaoRepository;
+    private readonly IUsuarioRepository       _usuarioRepository;
+    private readonly IParticipanteRepository  _participanteRepository;
+    private readonly IMapper                  _mapper;
 
     public RegistrarMovimentacaoCommandHandler(
         ICofreRepository cofreRepository,
         IMovimentacaoRepository movimentacaoRepository,
+        IUsuarioRepository usuarioRepository,
+        IParticipanteRepository participanteRepository,
         IMapper mapper)
     {
         _cofreRepository        = cofreRepository;
         _movimentacaoRepository = movimentacaoRepository;
+        _usuarioRepository      = usuarioRepository;
+        _participanteRepository = participanteRepository;
         _mapper                 = mapper;
     }
 
@@ -42,8 +48,20 @@ public class RegistrarMovimentacaoCommandHandler : IRequestHandler<RegistrarMovi
         if (!Enum.TryParse<TipoMovimentacao>(cmd.Tipo, true, out var tipo))
             throw new DomainValidationException([$"Tipo de movimentação inválido: {cmd.Tipo}."]);
 
-        var mov = MovimentacaoDomain.Criar(
-            cmd.Descricao, cmd.Valor, tipo, cmd.Data, cmd.CofreId, cmd.UsuarioId);
+        var participante = await _participanteRepository.GetByCofreIdAndUsuarioIdAsync(cmd.CofreId, cmd.UsuarioId, ct);
+        var isAdmin = participante?.Role == RoleParticipante.Admin
+                   || participante == null; // criador sem registro explícito é tratado como admin
+
+        // Saída por não-admin entra como pendente de aprovação
+        var status = (tipo == TipoMovimentacao.Saida && !isAdmin)
+            ? StatusMovimentacao.PendenteAprovacao
+            : StatusMovimentacao.Aprovada;
+
+        var dataUtc = cmd.Data.Kind == DateTimeKind.Unspecified
+            ? DateTime.SpecifyKind(cmd.Data, DateTimeKind.Utc)
+            : cmd.Data.ToUniversalTime();
+
+        var mov = MovimentacaoDomain.Criar(cmd.Descricao, cmd.Valor, tipo, dataUtc, cmd.CofreId, cmd.UsuarioId, status);
 
         cofre.RegistrarMovimentacao(mov);
 
@@ -51,6 +69,10 @@ public class RegistrarMovimentacaoCommandHandler : IRequestHandler<RegistrarMovi
             throw new DomainValidationException(cofre.Notifications.Select(n => n.Message));
 
         await _movimentacaoRepository.AddAsync(mov, ct);
-        return _mapper.Map<MovimentacaoResponse>(mov);
+
+        var response = _mapper.Map<MovimentacaoResponse>(mov);
+        var usuario  = await _usuarioRepository.GetByIdAsync(cmd.UsuarioId, ct);
+        response.UsuarioNome = usuario?.Nome;
+        return response;
     }
 }
